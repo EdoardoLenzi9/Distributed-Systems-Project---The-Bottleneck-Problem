@@ -49,7 +49,7 @@ and \textbf{inconsistent view} of the global environment and a \textbf{time drif
 from the global time.
 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}
         % queues
@@ -99,26 +99,29 @@ Following the \textit{divide et impera} philosophy now we are going to split the
 into some subproblems and solve them. 
 
 
-\subsection{Starvation and FIFO}
+\subsection{Starvation/deadlock and order method}
 
-Ideally a car that reaches first the queue must pass before other incoming cars (FIFO).\\
+[TODO] Ideally a car that reaches first the queue must pass before other 
+incoming cars (FIFO).\\
 
-Moreover we have to consider the possibility of starvation when 
-cars doesn't reach the agreement (ie. in case of a bad agorithm that falls into 
-a deadlock).
+We have to avoid starvation (ie. when a car waits infinite time cause the opposite queue 
+has infinite lenght and it never has the priority) and deadlock (cars aren't able to 
+reach the agreement). 
 
 
 \subsection{Solution}
 
-Define the \textbf{local waiting time} $ltime$ as the time that passes between the instant when the car reaches 
-the queue and the instant in which the car ends to cross the bridge. \\
+In order to avoid \textbf{starvation} in a first stage cars syncronize themselves 
+(for the syncronization process we follow the \textbf{Berkeley algorithm})
+in terms of local timinig and in a second stage there will be a leader election 
+and the leader decides the crossing order. Using this method we also avoid 
+the possibility of a deadlock as long as the leader is running.\\
 
-Define the \textbf{global waiting time} $gtime$ as the sum of the $ltime$ of the cars.\\
+In a certain instant the elected leader is the first car that reaches the bridge; 
+once the current leader cross the bridge there is a new election of the car on the other side 
+of the bridge (if one is present).\\
 
-If we focus on minimizing the global waiting time (maximize the throughput of the bridge) 
-we implicit avoid deadlock but don't consider starvation and the FIFO constraint. 
-
-\begin{figure}
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}
         % queues
@@ -139,7 +142,7 @@ we implicit avoid deadlock but don't consider starvation and the FIFO constraint
 If on the right side we have an infinite queue then B waits forever and the 
 $gtime$ is the lowest.
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}
         % queues
@@ -163,7 +166,37 @@ $gtime$ and minimizing $ltime$ locally (starvation).
 
 The concept of equity comes to the rescue cause 
 
+
+\section{Syncronization problem}
+
+Every car has a local timing that can drifts out from the global timing so we need 
+to syncronize them using the Berkeley algorithm.
+
+
+\subsection{Solution}
+
+A new incoming car calls the \textit{get$\_$adjacent$\_$cars(p)} method in order to get 
+the name of the adjacent cars. \\
+
+[TODO] capire che c'e' prima e chi c'e' dopo\\
+
+The new car c sends a message to the nearest car n in order to get the current time 
+(we assume that n was already syncronized). With this information c is concious of the 
+RTT and its local drift from the global time. Finally c sends to the furthest car 
+reachable in the queue its arrival time (and the message is propagated along the 
+peer chain to the current leader).\\
+
+So basically the global timing is the timing of the first leader (or the average time 
+of the first block of incoming cars).\\
+
+If some new unsyncronized cars appear in block the syncronization process takes into 
+consideration the average RTT (according to the Berkeley algorithm). 
+
+
 \section{Agreement}
+
+The current leader identifies the block of cars that will cross the bridge and notifies
+this decision.  
 
 
 \section{Communications}
