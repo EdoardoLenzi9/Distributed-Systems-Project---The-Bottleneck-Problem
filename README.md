@@ -18,3 +18,28 @@ inside and can send messages with others adjacent cars with some wireless techno
 The projet requires the implementation of a **simulator/business logic** for the 
 environment setup and a **web server** that will expose the simulation state 
 with some API for any further **UI application**.
+
+
+## Team 
+
+* Edoardo Lenzi
+* Talissa Dreossi
+
+
+## Sprints and Deadlines
+
+The project deadline is 28 of June; we ar going to split the month into 4 sprints of a week:
+* Sprint 1 (28 May) **interconnections**
+    * Docker container with Docker container
+    * Erlang and Bash
+    * HTML client with Erlang Web Service (simple mok)
+    * Erlang with Mnesia or SQL/SQL Lite/ERTS
+    * Create a Docker Image with an embedded Erlang script
+    * Spawn a new Docker Container with a bash script
+> At the end of this sprint we will have an architecture like this one
+> <br/>
+>![Sprint0](report/assets/sprint0.png)
+* Sprint 2 (04 June) **business logic**
+* Sprint 3 (11 June) **testing**
+* Sprint 4 (18 June) **UI**
+* 4 days for code refactoring and report update

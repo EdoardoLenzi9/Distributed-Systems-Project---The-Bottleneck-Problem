@@ -32,15 +32,152 @@ The logical architecture is composed by the following component:
 
 \section{Protocols and algorithms}
 
-We provide a simplified sequence of UML (sequence) diagrams in order to describe the workflow/communication patterns.
+Following the \textit{divide et impera} philosophy now we are going to split the problem 
+into some subproblems and solve them. 
+We also provide a simplified sequence of UML (sequence) diagrams in order to 
+describe the workflow/communication patterns.
+
+\subsection{Starvation/deadlock and order method}
+
+Ideally a car that reaches first the queue must pass before other 
+incoming cars (\textbf{FIFO}).\\
+
+We have to \textbf{avoid starvation} (ie. when a car waits infinite time cause the opposite queue 
+has infinite lenght and it never has the priority) and \textbf{deadlock} (cars aren't able to 
+reach the agreement). 
+
+
+\subsection{Solution}
+
+In order to avoid \textbf{starvation} in a first stage cars syncronize themselves 
+(for the syncronization process we follow the \textbf{Berkeley algorithm})
+in terms of local timinig and in a second stage there will be a \textbf{leader election} 
+and the leader decides the crossing order. Using this method we also avoid 
+the possibility of a \textbf{deadlock} as long as the leader is running.\\
+
+In a certain instant the elected leader is the first car that has reached the bridge; 
+once the current leader cross the bridge there is a new election of the car on the other 
+side of the bridge (if one is present).\\
+
+
+\section{Syncronization problem}
+
+Every car has a \textbf{local timing} that can \textbf{drifts} out from the 
+global timing. 
+
+\subsection{Solution}
+
+So we need to syncronize the incoming cars using the \textbf{Berkeley algorithm}.\\
+
+A new incoming car calls the \textit{environment:get$\_$adjacent$\_$cars(p)} 
+method in order to get the name of the adjacent cars. \\
+
+The new car $c$ sends a message to the nearest car $n$ in order to get the current time 
+(we assume that $n$ was already syncronized). 
+With this information $c$ is concious of the RTT and its local drift from the global time. 
+Finally $c$ sends to the furthest car 
+reachable in the queue its arrival time (and the message is propagated along the 
+peer chain to the current leader).\\
+
+So basically the global timing is the timing of the first leader (or the average time 
+of the first block of incoming cars).\\
+
+If some new unsyncronized cars appear in block the syncronization process takes into 
+consideration the average RTT (according to the Berkeley algorithm). 
+
+
+\section{Agreement}
+
+The current leader identifies the block of cars that will cross the bridge and notifies
+this decision.  
+
+\subsection{Solution}
+
+The leader is concious of the current queue state in terms of arrival time of the cars; 
+so it decides how may cars have to cross the bridge in this turn (accordingly with the 
+bridge capacity c and FIFO ordering).\\
+
+Finally the leader notifies to the involved cars its decision and, after 
+an acknowledgement (agreement), the block starts crossing. 
+
+\begin{center}
+    \includegraphics[scale=0.6]{assets/ds2019_3.png}
+\end{center}
+
+
+\section{Failures}
+
+In case of failure another car (or the same car) has to call a \textbf{tow truck} for help.
+
+
+\subsection{Solution}
+
+Each car recursively checks if other reachable cars are safe; if a check message
+hasn't any response before a certain \textbf{timeout} (depends on the RTT) is assumed 
+that the receiver has a failure (and so the tow truck will be call).
+
+\begin{center}
+    \includegraphics[scale=0.9]{assets/ds2019_4.png}
+\end{center}
+
+
+\section{MIM attack}
+
+The system must withstand a MIM attack.
+
+
+\subsection{Solution}
+
+Each message will be encrypted (HTTPS).
+
+
+\section{Scalability}
+
+The system must \textbf{scale wrt. the load} 
+(the number of cars and clients can scale arbitrary).
+
+
+\subsection{Solution}
+
+Assume that the available machines are defined in an arbitrary 
+way in the initialization phase; on each machine some docker containers 
+will be raised and foreach one of those an arbitrary number of web services and 
+car processes will be spawned.\\
+
+
+[Bonus requirement, not necessary]
+We will design an embedded load balancer in order to avoid the web services overload 
+(considering the number of calls).
+
+\begin{center}
+    \includegraphics[scale=0.6]{assets/ds2019_2.png}
+\end{center}
+
+
+\section{SPOF}
+
+The system must be resilient wrt. failures (even multiple failures);
+so basically the architecture must be deeply \textbf{distributed} 
+and \textbf{decentralized} (avoid any SPOF). 
+
+
+\subsection{Solution}
+
+The scalability requirement imposes that every macro-component must be scalable 
+so the architecture provides some \textbf{peer-to-peer layers} 
+(web services layer, cars layer).
+The only SPOF in this context can be the \textit{environment} component 
+(which is embedded into the web services) that allows for a new spawned car to 
+start a message exchange with the adjacent cars. 
+A possible solution can be using a \textbf{distributed DBMS} like Mnesia~\cite{1} in order to keep 
+track of the queue state.
 
 \begin{center}
     \includegraphics[scale=0.8]{assets/ds2019_1.png}
-    \includegraphics[scale=0.6]{assets/ds2019_2.png}
-    \includegraphics[scale=0.6]{assets/ds2019_3.png}
-    \includegraphics[scale=0.9]{assets/ds2019_4.png}
-    %\captionof[figure]{a}
 \end{center}
+
+
+\subsection{Algorithms}
 
 We have used the Berkeley algorithm in order to syncronize new spawned car processes.
 
@@ -64,5 +201,5 @@ GitHub~\cite{2}.
 
 \section{Development plan}
 
-The proposed architecture is a classical \textbf{three-tier architecture} 
-(client, web service and DBMS).
+The proposed architecture is a \textbf{P2P} architecture flanked by a 
+\textbf{client-server} architecture (\textbf{three-tier architecture}: client, web service and DBMS).
