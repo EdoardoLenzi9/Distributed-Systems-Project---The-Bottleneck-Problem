@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="author" content="Edoardo Lenzi">
+    <meta name="author" content="Talissa Dreossi">
+    <title>Bottleneck Problem</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="index.css">
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <div class="jumbotron text-center">
+        <h1>The Bottleneck Problem</h1>
+    </div>
+
+    <div class="container">
+        <div class="container">
+            <div class="row">
+                <div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="btn-group btn-group-toggle btn-block" id="direction" data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="direction" id="left" autocomplete="off" checked> Left
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="direction" id="right" autocomplete="off"> Right
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="btn-group btn-group-toggle btn-block" id="state" data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="state" id="sane" autocomplete="off" checked onchange="HideTimer()"> Sane
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="state" id="broke" autocomplete="off" onchange="ShowTimer()"> Broke
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div id="timer-mask" class="d-none">
+                        <input type="number" id="timer" class="form-control" placeholder="Timer" aria-label="Timer"
+                            aria-describedby="button-addon4">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-primary btn-block"
+                                onclick="CreateCar()">Create</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>
+
+</html>
