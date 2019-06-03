@@ -39,10 +39,12 @@
                         <div class="col">
                             <div class="btn-group btn-group-toggle btn-block" id="state" data-toggle="buttons">
                                 <label class="btn btn-secondary active">
-                                    <input type="radio" name="state" id="sane" autocomplete="off" checked onchange="HideTimer()"> Sane
+                                    <input type="radio" name="state" id="sane" autocomplete="off" checked
+                                        onchange="HideTimer()"> Sane
                                 </label>
                                 <label class="btn btn-secondary">
-                                    <input type="radio" name="state" id="broke" autocomplete="off" onchange="ShowTimer()"> Broke
+                                    <input type="radio" name="state" id="broke" autocomplete="off"
+                                        onchange="ShowTimer()"> Broke
                                 </label>
                             </div>
                         </div>
@@ -50,10 +52,16 @@
 
                     <div class="row">
                         <div id="timer-mask" class="d-none">
-                        <input type="number" id="timer" class="form-control" placeholder="Timer" aria-label="Timer"
-                            aria-describedby="button-addon4">
+                            <input type="number" id="timer" class="form-control" placeholder="Timer" aria-label="Timer"
+                                aria-describedby="button-addon4">
                         </div>
                     </div>
+
+                    <div class="row">
+                        <input type="number" id="power" class="form-control" placeholder="Power" aria-label="Power"
+                            aria-describedby="button-addon4">
+                    </div>
+
                     <div class="row">
                         <div class="col">
                             <button type="button" class="btn btn-primary btn-block"

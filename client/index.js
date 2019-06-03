@@ -2,7 +2,8 @@ function CreateCar(){
     var parameters = {
         direction: $('#direction > .btn.active').text().trim(),
         state: $('#state > .btn.active').text().trim(),
-        timer: $('#timer')[0].value
+        timer: $('#timer')[0].value,
+        power: $('#power')[0].value
     }
     console.dir(parameters);
 }
