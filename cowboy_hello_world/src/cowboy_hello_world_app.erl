@@ -11,6 +11,15 @@
 
 start(_StartType, _StartArgs) ->
     {ok, Pid} = 'cowboy_hello_world_sup':start_link(),
+    
+%%To make Cowboy useful, you need to map URLs to Erlang modules that will handle the requests (route)
+%%Routes = [Host1, Host2, ... HostN].
+%%Host1 = {HostMatch, PathsList}.
+%%Host2 = {HostMatch, Constraints, PathsList}.
+%%PathsList = [Path1, Path2, ... PathN].
+%%Path1 = {PathMatch, Handler, Opts}.
+%%Path2 = {PathMatch, Constraints, Handler, Opts}.
+    
     Routes = [ {
         '_',
         [
