@@ -39,7 +39,8 @@ The project deadline is 28 of June; we ar going to split the month into 4 sprint
 > At the end of this sprint we will have an architecture like this one
 > <br/>
 >![Sprint0](report/assets/sprint0.png)
-* Sprint 2 (04 June) **business logic**
-* Sprint 3 (11 June) **testing**
-* Sprint 4 (18 June) **UI**
-* 4 days for code refactoring and report update
+* Sprint 2 (04 June - 09 June) **connections**
+* Sprint 3 (09 June - 16 June) **business logic**
+* Sprint 3 (16 June - 18 June) **testing**
+* Sprint 4 (18 June - 25 June) **UI and report**
+* 3 days for code refactoring
