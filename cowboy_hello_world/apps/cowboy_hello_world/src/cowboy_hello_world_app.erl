@@ -23,7 +23,8 @@ start(_StartType, _StartArgs) ->
     Routes = [ {
         '_',
         [
-            {"/", cowboy_hello_world_root, []}
+            {"/", cowboy_hello_world_root, []},
+            {"/create/car", cowboy_hello_world_create, []}
         ]
     } ],
     Dispatch = cowboy_router:compile(Routes),
