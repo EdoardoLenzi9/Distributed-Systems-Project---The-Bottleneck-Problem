@@ -1,0 +1,6 @@
+-sname cowboy_hello_world
+
+-setcookie cowboy_hello_world_cookie
+
++K true
++A30
