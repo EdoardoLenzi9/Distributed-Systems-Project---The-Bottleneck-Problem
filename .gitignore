@@ -1,4 +1,10 @@
+# Folders
 _build/
 rebar3_run/
+node_modules/
+
+# Extensions
 *.lock
 *.crashdump
+*.beam
+*.dump
