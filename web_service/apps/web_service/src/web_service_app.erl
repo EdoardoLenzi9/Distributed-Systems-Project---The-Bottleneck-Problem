@@ -17,13 +17,13 @@ start(_StartType, _StartArgs) ->
         [
             {"/", simulation_controller, []},   %% returns the current simulation state
             {"/car", car_controller, []},        %% creates a new car
-            {"/assets/[...]", cowboy_static, {dir, "../../../../../client"}}
+            {"/assets/[...]", cowboy_static, {dir, "../../../../client"}}
         ]
     } ],
     Dispatch = cowboy_router:compile(Routes),
 
     NumAcceptors = 100, %% max_keepalive https://ninenines.eu/docs/en/cowboy/1.0/guide/http_req_life/
-    TransOpts = [ {ip, {0,0,0,0}}, {port, 8086} ],
+    TransOpts = [ {ip, {0,0,0,0}}, {port, 8090} ],
     ProtoOpts = [{env, [{dispatch, Dispatch}]}],
 
     {ok, _} = cowboy:start_http(web_server,
