@@ -13,6 +13,13 @@ function CreateCar(){
 }
 
 
+function SimulationState(){
+    httpGetAsync(window.location.origin, function(content){
+        alert(content);
+    })
+}
+
+
 function httpGetAsync( uri, callback ){
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
