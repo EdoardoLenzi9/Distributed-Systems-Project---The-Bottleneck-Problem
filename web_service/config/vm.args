@@ -1,0 +1,6 @@
+-sname web_service
+
+-setcookie web_service_cookie
+
++K true
++A30
