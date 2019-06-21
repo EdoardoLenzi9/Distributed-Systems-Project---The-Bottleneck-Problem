@@ -6,6 +6,7 @@
 case "$1" in
     build)
         sh cleaner.sh
+        (client && npm install)
         echo "start image build"
         sudo docker build -t mywebservice:v1 .
         ;;
