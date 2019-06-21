@@ -8,3 +8,6 @@ node_modules/
 *.crashdump
 *.beam
 *.dump
+
+# Files
+package-lock.json
