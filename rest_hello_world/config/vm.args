@@ -1,0 +1,6 @@
+-sname rest_hello_world
+
+-setcookie rest_hello_world_cookie
+
++K true
++A30

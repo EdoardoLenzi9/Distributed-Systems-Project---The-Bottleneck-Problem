@@ -1,7 +1,7 @@
 %% Feel free to use, reuse and abuse the code in this file.
 
 %% @doc Hello world handler.
--module(cowboy_hello_world_create).
+-module(toppage_h).
 
 -export([init/2]).
 -export([content_types_provided/2]).
@@ -12,18 +12,12 @@
 init(Req, Opts) ->
 	{cowboy_rest, Req, Opts}.
 
-allowed_methods(Req, State) ->
-    {[<<"POST">>], Req, State}.
-
 content_types_provided(Req, State) ->
 	{[
-		{<<"application/json">>, hello_to_json}
+		{<<"text/html">>, hello_to_html},
+		{<<"application/json">>, hello_to_json},
+		{<<"text/plain">>, hello_to_text}
 	], Req, State}.
-
-content_types_accepted(Req, State) ->
-    {[{{<<"application">>, <<"x-www-form-urlencoded">>, '*'}, hello_to_html}],
-        Req, State}.
-    
 
 hello_to_html(Req, State) ->
 	Body = <<"<html>

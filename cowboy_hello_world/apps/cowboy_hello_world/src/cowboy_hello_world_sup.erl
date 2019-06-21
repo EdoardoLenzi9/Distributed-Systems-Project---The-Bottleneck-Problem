@@ -13,6 +13,7 @@
 
 -define(SERVER, ?MODULE).
 
+-spec start_link() -> {ok, pid()}.
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
@@ -26,10 +27,10 @@ start_link() ->
 %%                  type => worker(),       % optional
 %%                  modules => modules()}   % optional
 init([]) ->
-    SupFlags = #{strategy => one_for_all,
-                 intensity => 0,
-                 period => 1},
-    ChildSpecs = [],
-    {ok, {SupFlags, ChildSpecs}}.
+    SupFlags = #{strategy => one_for_one,
+                 intensity => 10,
+                 period => 10},
+    Procs = [],
+    {ok, {SupFlags, Procs}}.
 
 %% internal functions
