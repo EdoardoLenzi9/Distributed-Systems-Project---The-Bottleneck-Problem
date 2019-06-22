@@ -8,7 +8,7 @@
 
 
 // Global variables and constants
-var camera, scene, renderer, controls, stats;
+var camera, scene, renderer, controls, stats, state;
 var clock = new THREE.Clock();
 
 // Raycast
@@ -40,13 +40,14 @@ function Init() {
 	InitCamera();
 	scene.rotation.x -= Math.PI/8;
 	scene.rotation.z -= Math.PI/2;
-	var car = new AnimatedCar({});
-	scene.add(car);
 
 	// init scene and camera pose
 	camera.position.set( 0, 0, 10 );
 	scene.add( group );
 		
+	// load test state
+	LoadState( '../../assets/testState.json' );
+
 	// desktop events
 	BindEvent( window, 'mousemove', OnDocumentMouseMove );
 	BindEvent( document, 'mousedown', OnMouseDown );
@@ -60,6 +61,42 @@ function Init() {
 	BindEvent( window, 'click', OnDocumentMouseClick );
 
 	InitRenderer();
+}
+
+
+/*
+* deserialize the json content and setup each component defined
+*/ 
+function LoadState( file ) {
+	Read( file, function( content ){
+		state = JSON.parse(content);   
+		state[0].sort( arrivalTimeCriterion );
+		state[1].sort( arrivalTimeCriterion );
+		state[0].forEach(function(car){ 	//left side
+			car.side = -1;
+			car.position = car.arrivalTime;
+			scene.add(new AnimatedCar(car));
+		});
+		state[1].forEach(function(car){ 	//right side
+			car.position = car.arrivalTime;
+			car.side = 1;
+			scene.add(new AnimatedCar(car));
+		});
+	})
+}
+
+
+/*
+* Sorting criterion
+*/
+function arrivalTimeCriterion( a, b ) {
+	if ( a.arrivalTime < b.arrivalTime ){
+	  return -1;
+	}
+	if ( a.arrivalTime > b.arrivalTime ){
+	  return 1;
+	}
+	return 0;
 }
 
 

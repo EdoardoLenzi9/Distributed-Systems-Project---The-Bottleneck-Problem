@@ -11,14 +11,35 @@
 class AnimatedCar extends THREE.Mesh{
     
 
-    constructor( state, scaleFactor = 10 ){
-		var geometry = new THREE.BoxBufferGeometry(0.8 * scaleFactor, 0.8 * scaleFactor, 0.4 * scaleFactor);
-        var material = new THREE.MeshBasicMaterial( { color: 0xfff, side: THREE.DoubleSide } );
+    constructor( state ){
+		var geometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
+        var material = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } );
 		super( geometry, material );
-		this.position.z += 0.3 * scaleFactor;
+		this.scaleFactor = street.scaleFactor;
+		this.position.z += 0.3 * this.scaleFactor;
 		this.state = state;
+		this.updateState();
 	}
 
+
+	/*
+	* Update car state
+	*/
+	updateState(state = this.state){
+		debugger;
+		this.state = state;
+
+		// update position
+		this.position.y = (street.bridgeLength + state.position) * this.scaleFactor * state.side;
+		this.position.x = state.side * this.scaleFactor / 2;
+
+		// update state
+		if(state.side > 0){
+			this.material.color.setHex(0x0000ff);
+		} else {
+			this.material.color.setHex(0x00ff00);
+		}
+	} 
 
 	/*
 	* Mesh.clone() override to preserve the parameters
