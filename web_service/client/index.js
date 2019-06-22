@@ -1,24 +1,12 @@
-function CreateLeftCar(){
+function CreateCar(side){
     var parameters = {
-        direction:  "left",
-        state:      $('#left-state > .btn.active').text().trim(),
-        timer:      $('#left-timer')[0].value,
-        power:      $('#left-power')[0].value
+        direction:  side,
+        state:      $('#' + side + '-state > .btn.active').text().trim().toLowerCase(),
+        timer:      $('#' + side + '-timer')[0].value,
+        power:      $('#' + side + '-power')[0].value
     }
-    console.dir(parameters);
-
-    httpGetAsync(window.location.origin + '/car', function(content){
-        alert(content);
-    })
-}
-
-
-function CreateRightCar(){
-    var parameters = {
-        direction:  "right",
-        state:      $('#right-state > .btn.active').text().trim(),
-        timer:      $('#right-timer')[0].value,
-        power:      $('#right-power')[0].value
+    if(side == 'small'){
+        parameters.side = $('#direction > .btn.active').text().trim().toLowerCase();
     }
     console.dir(parameters);
 
