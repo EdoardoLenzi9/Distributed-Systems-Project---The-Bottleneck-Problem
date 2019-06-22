@@ -10,6 +10,7 @@
 // Global variables and constants
 var camera, scene, renderer, controls, stats, state;
 var clock = new THREE.Clock();
+const speed = 1000;
 
 // Raycast
 var group = new THREE.Group();
@@ -28,6 +29,8 @@ var hemiLight, dirLight;
 
 // Meshes
 var street;
+var cars = {};
+var i = 0;
 
 /*
 * Init function
@@ -45,8 +48,13 @@ function Init() {
 	camera.position.set( 0, 0, 10 );
 	scene.add( group );
 		
-	// load test state
-	LoadState( '../../assets/testState.json' );
+	// load test state (polling)
+	LoadState( '../../assets/testState0.json' );
+	window.setInterval(function(){
+		i++;
+		console.log('polling')
+		LoadState( '../../assets/testState'+ (i % 3) + '.json' );
+	}, speed);
 
 	// desktop events
 	BindEvent( window, 'mousemove', OnDocumentMouseMove );
@@ -75,12 +83,24 @@ function LoadState( file ) {
 		state[0].forEach(function(car){ 	//left side
 			car.side = -1;
 			car.position = car.arrivalTime;
-			scene.add(new AnimatedCar(car));
+			if(cars[car.name] != undefined){
+				cars[car.name].updateState(car);
+			} else {
+				var carInstance = new AnimatedCar(car); 
+				group.add(carInstance);
+				cars[car.name] = carInstance;
+			}
 		});
 		state[1].forEach(function(car){ 	//right side
 			car.position = car.arrivalTime;
 			car.side = 1;
-			scene.add(new AnimatedCar(car));
+			if(cars[car.name] != undefined){
+				cars[car.name].updateState(car);
+			} else {
+				var carInstance = new AnimatedCar(car); 
+				group.add(carInstance);
+				cars[car.name] = carInstance;
+			}
 		});
 	})
 }
