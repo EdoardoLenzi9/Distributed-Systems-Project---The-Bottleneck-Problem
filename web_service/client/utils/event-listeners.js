@@ -40,8 +40,6 @@ function OnWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderTarget1.setSize( window.innerWidth, window.innerHeight);
-	renderTarget2.setSize( window.innerWidth, window.innerHeight);	
 }
 
 

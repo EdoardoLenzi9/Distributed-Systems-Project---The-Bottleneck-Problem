@@ -11,13 +11,11 @@
 class AnimatedCar extends THREE.Mesh{
     
 
-    constructor( state ){
-		var geometry = new THREE.BoxBufferGeometry();
-        var material = new THREE.MeshBasicMaterial();
-        super( geometry, material );
-		//this.scale.set( 1, 1, 1 );
-		//this.rotation.set( params.frames[0].rotation.x * 180/Math.PI, params.frames[0].rotation.y* 180/Math.PI, params.frames[0].rotation.z* 180/Math.PI ); 
-		//this.position.set( params.frames[0].position.x, params.frames[0].position.y, params.frames[0].position.z );
+    constructor( state, scaleFactor = 10 ){
+		var geometry = new THREE.BoxBufferGeometry(0.8 * scaleFactor, 0.8 * scaleFactor, 0.4 * scaleFactor);
+        var material = new THREE.MeshBasicMaterial( { color: 0xfff, side: THREE.DoubleSide } );
+		super( geometry, material );
+		this.position.z += 0.3 * scaleFactor;
 		this.state = state;
 	}
 

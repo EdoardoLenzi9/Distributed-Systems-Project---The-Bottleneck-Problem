@@ -38,6 +38,10 @@ function Init() {
 	InitStat();
 	InitScene();
 	InitCamera();
+	scene.rotation.x -= Math.PI/8;
+	scene.rotation.z -= Math.PI/2;
+	var car = new AnimatedCar({});
+	scene.add(car);
 
 	// init scene and camera pose
 	camera.position.set( 0, 0, 10 );
