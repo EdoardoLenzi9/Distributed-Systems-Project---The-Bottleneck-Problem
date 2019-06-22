@@ -1,0 +1,50 @@
+#container{
+    margin: 5%;
+}
+
+
+iframe{
+    width:100%;
+    height: 60vh;
+}
+
+
+.col-input{
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+
+.vspace{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+/*
+* Small devices
+*/
+@media screen and (max-width: 40em) {
+	/* #menu is the original menu */
+	#right-panel {
+		display: none;
+    }
+    
+    #left-panel {
+		display: none;
+	}
+}
+
+
+/*
+* Large devices
+*/
+@media not screen and (max-width: 40em)  {
+	#right-panel {
+		display: block;
+    }
+    
+    #left-panel {
+		display: block;
+	}
+}

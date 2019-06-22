@@ -1,84 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta name="author" content="Edoardo Lenzi">
-    <meta name="author" content="Talissa Dreossi">
-    <title>Bottleneck Problem</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="index.css">
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-</head>
-
-<body>
-
-    <div class="jumbotron text-center">
-        <h1>The Bottleneck Problem</h1>
-    </div>
-
-    <div class="container">
-        <div class="container">
+    <head>
+        <meta name="author" content="Edoardo Lenzi">
+        <meta name="author" content="Talissa Dreossi">
+        <title>Bottleneck Problem</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="index.css">
+        <script src="node_modules/jquery/dist/jquery.min.js"></script>
+        <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <!--Title-->
+        <div class="jumbotron text-center">
+            <h1>The Bottleneck Problem</h1>
+        </div>
+        <!--Main view-->
+        <div id="container">
             <div class="row">
-                <div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="btn-group btn-group-toggle btn-block" id="direction" data-toggle="buttons">
-                                <label class="btn btn-secondary active">
-                                    <input type="radio" name="direction" id="left" autocomplete="off" checked> Left
-                                </label>
-                                <label class="btn btn-secondary">
-                                    <input type="radio" name="direction" id="right" autocomplete="off"> Right
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
+                <!--Left control pannel-->
+                <div id="left-panel" class="col-2 align-self-center">
+                    <!--Sane/Broken buttons-->
+                    <div class="row vspace">
                         <div class="col">
                             <div class="btn-group btn-group-toggle btn-block" id="state" data-toggle="buttons">
                                 <label class="btn btn-secondary active">
-                                    <input type="radio" name="state" id="sane" autocomplete="off" checked
-                                        onchange="HideTimer()"> Sane
+                                    <input type="radio" name="state" id="left-sane" autocomplete="off" checked
+                                        onchange="HideTimer('left')"> Sane
                                 </label>
                                 <label class="btn btn-secondary">
-                                    <input type="radio" name="state" id="broke" autocomplete="off"
-                                        onchange="ShowTimer()"> Broke
+                                    <input type="radio" name="state" id="left-broke" autocomplete="off"
+                                        onchange="ShowTimer('left')"> Broke
                                 </label>
                             </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div id="timer-mask" class="d-none">
-                            <input type="number" id="timer" class="form-control" placeholder="Timer" aria-label="Timer"
+                    <!--Broke timer buttons-->
+                    <div class="row vspace">
+                        <div id="left-timer-mask" class="d-none col-input">
+                            <input type="number" id="left-timer" class="form-control" placeholder="Timer" aria-label="Timer"
                                 aria-describedby="button-addon4">
                         </div>
                     </div>
-
-                    <div class="row">
-                        <input type="number" id="power" class="form-control" placeholder="Power" aria-label="Power"
+                    <!--Power-->
+                    <div class="row vspace">
+                        <input type="number" id="left-power" class="form-control col-input" placeholder="Power" aria-label="Power"
                             aria-describedby="button-addon4">
                     </div>
-
-                    <div class="row">
+                    <!--Create new car-->
+                    <div class="row vspace">
                         <div class="col">
                             <button type="button" class="btn btn-primary btn-block"
-                                onclick="CreateCar()">Create</button>
+                                onclick="CreateLeftCar()">Create</button>
                         </div>
                     </div>
-                    <div class="row">
+                </div>
+                <!--Simulation Canvas-->
+                <div id="simulation-canvas" class="col-md-8">
+                    <iframe id="arc-reactor-view" src="views/simulation-view/simulation-view.html"></iframe>
+                </div>
+                <!--Right control pannel-->
+                <div id="right-panel" class="col-2 align-self-center">
+                    <!--Sane/Broken buttons-->
+                    <div class="row vspace">
+                        <div class="col">
+                            <div class="btn-group btn-group-toggle btn-block" id="state" data-toggle="buttons">
+                                <label class="btn btn-secondary active">
+                                    <input type="radio" name="state" id="right-sane" autocomplete="off" checked
+                                        onchange="HideTimer('right')"> Sane
+                                </label>
+                                <label class="btn btn-secondary">
+                                    <input type="radio" name="state" id="right-broke" autocomplete="off"
+                                        onchange="ShowTimer('right')"> Broke
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Broke timer buttons-->
+                    <div class="row vspace">
+                        <div id="right-timer-mask" class="d-none col-input">
+                            <input type="number" id="right-timer" class="form-control" placeholder="Timer" aria-label="Timer"
+                                aria-describedby="button-addon4">
+                        </div>
+                    </div>
+                    <!--Power-->
+                    <div class="row vspace">
+                        <input type="number" id="right-power" class="form-control col-input" placeholder="Power" aria-label="Power"
+                            aria-describedby="button-addon4">
+                    </div>
+                    <!--Create new car-->
+                    <div class="row vspace">
                         <div class="col">
                             <button type="button" class="btn btn-primary btn-block"
-                                onclick="SimulationState()">Simulation State</button>
+                                onclick="CreateRightCar()">Create</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </body>
     <script src="index.js"></script>
-</body>
-
 </html>

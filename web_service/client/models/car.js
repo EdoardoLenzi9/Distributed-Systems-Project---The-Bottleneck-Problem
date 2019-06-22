@@ -55,7 +55,6 @@ class AnimatedCar extends THREE.Group {
 
 
 	computePosition(state){
-		debugger;
 		return {
 			x: state.side * this.scaleFactor / 2,
 			y: (street.bridgeLength + state.position) * this.scaleFactor * state.side,
@@ -77,7 +76,6 @@ class AnimatedCar extends THREE.Group {
 		
 		// update position
 		if(this.state.position != state.position){
-			debugger
 			this.TweenTo( this.computePosition(state) ).start();
 		}
 		switch (state.state) {
