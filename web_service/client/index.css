@@ -21,17 +21,26 @@ iframe{
 }
 
 
+#small-timer-mask{
+	width: 100%
+}
+
+
 /*
 * Small devices
 */
 @media screen and (max-width: 40em) {
 	/* #menu is the original menu */
 	#right-panel {
-		display: none;
-    }
+	  	display: none;
+  	}
     
     #left-panel {
 		display: none;
+	}
+
+	#small-left-panel{
+		display: block;
 	}
 }
 
@@ -46,5 +55,9 @@ iframe{
     
     #left-panel {
 		display: block;
+	}
+
+	#small-left-panel{
+		display: none;
 	}
 }
