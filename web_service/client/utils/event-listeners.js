@@ -47,8 +47,9 @@ function OnWindowResize() {
 * Ray-caster triggers an action (handler can change depending on the current view)
 */
 function OnDocumentMouseClick( event ){
-	if(selectedObject != null && selectedObject != undefined && !switchScene){
-		Trigger( selectedObject );
+	if(selectedObject != null && selectedObject != undefined){
+		// mouse click
+		// selectedObject;
 	}
 }
 
@@ -58,16 +59,20 @@ function OnDocumentMouseClick( event ){
 */
 function OnDocumentMouseMove( event ) {
 	event.preventDefault();
-	if ( selectedObject ) {
-		selectedObject = null;
-	}
 	var intersects = GetIntersects( event.layerX, event.layerY );
 	if ( intersects.length > 0 ) {
 		var res = intersects.filter( function ( res ) {
 			return res && res.object;
 		} )[ 0 ];
 		if ( res && res.object ) {
+			// mouse hover
+			if(selectedObject != null && selectedObject.parent != null){
+				selectedObject.parent.hideDetails();
+			}
 			selectedObject = res.object;
+			if(selectedObject != null && selectedObject.parent != null){
+				selectedObject.parent.showDetails();
+			}
 		}
 	}
 }
@@ -81,10 +86,7 @@ function GetIntersects( x, y ) {
 	y = - ( y / window.innerHeight ) * 2 + 1;
 	mouseVector.set( x, y, 0.5 );
 	raycaster.setFromCamera( mouseVector, camera );
-	if(!switchScene)
-		return raycaster.intersectObject( group, true );
-	else
-		return raycaster.intersectObject( inspectorScene, true );
+	return raycaster.intersectObject( group, true );
 }
 
 

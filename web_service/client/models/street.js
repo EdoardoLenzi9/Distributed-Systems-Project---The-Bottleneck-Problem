@@ -11,7 +11,7 @@
 class Street extends THREE.Group{
     
 
-    constructor( initialLegth = 10, bridgeLength = 2, scaleFactor = 10 ){
+    constructor( initialLegth = 15, bridgeLength = 2, scaleFactor = 10 ){
 		super();
 		this.length = initialLegth;
 		this.bridgeLength = bridgeLength;

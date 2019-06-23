@@ -134,4 +134,15 @@ class AnimatedCar extends THREE.Group {
 		//tween.easing( TWEEN.Easing.Elastic.InOut )
 		return tween;
 	}
+
+	showDetails(){
+		this.add( this.power );
+		setCarDetails(this.state);
+		carStateFolder.open();
+	}
+
+	hideDetails(){
+		this.remove( this.power );
+		carStateFolder.close();
+	}
 }
