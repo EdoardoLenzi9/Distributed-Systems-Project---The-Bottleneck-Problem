@@ -24,6 +24,8 @@ move() ->
 
 newleader() ->
         gen_fsm:send_event(?SERVER, newleader).
+
+
 %%%===================================================================
 %%% gen_fsm callbacks
 %%%===================================================================
@@ -31,21 +33,23 @@ newleader() ->
 init([]) ->
     {ok, create, [], 0}.
 
+
 create(Event, State) ->
     case Event of
         sync ->
             io:format("car is synchronized~n"),
     	    io:format("Car is waiting in the queue.~n"),
-            {next_state, coda, State};
-	crash ->
+            {next_state, queue, State};
+	    crash ->
             io:format("car is dead~n"),
             {next_state, dead, State, 5000};
-	_ ->
-	   io:format("cannot understand~n"),
-	   {next_state, create, State}   
+        _ ->
+            io:format("cannot understand~n"),
+            {next_state, create, State}   
     end.
 
-coda(Event, State) ->
+
+queue(Event, State) ->
     case Event of
         move ->
 	    io:format("car is crossing~n"),
@@ -58,8 +62,9 @@ coda(Event, State) ->
             {next_state, leader, State};
 	_ ->
 	   io:format("cannot understand~n"),
-	   {next_state, coda, State} 
+	   {next_state, queue, State} 
     end.
+
 
 leader(Event, State) ->
     case Event of
@@ -74,6 +79,7 @@ leader(Event, State) ->
 	   {next_state, leader, State}  
     end.
 
+
 crossing(Event, State) ->
     case Event of
 	crash ->
@@ -87,6 +93,7 @@ crossing(Event, State) ->
 	   {next_state, crossing, State,0}
     end.
 
+
 dead(Event, State) ->
     case Event of
    	timeout ->
@@ -97,21 +104,25 @@ dead(Event, State) ->
 	   {next_state, dead, State}
     end.
 
+
 handle_event(stop, _StateName, State) ->
         {stop, normal, State};
 handle_event(_Event, StateName, State) ->
         {next_state, StateName, State}.
+
+
 handle_sync_event(_Event, _From, StateName, State) ->
     Reply = ok,
     {reply, Reply, StateName, State}.
  
+
 handle_info(_Info, StateName, State) ->
     {next_state, StateName, State}.
  
+
 terminate(_Reason, _StateName, _State) ->
     ok.
  
+
 code_change(_OldVsn, StateName, State, _Extra) ->
     {ok, StateName, State}.
-
-
