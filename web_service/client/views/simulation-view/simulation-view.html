@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<meta name="author" content="Edoardo Lenzi">
+		<meta name="author" content="Talissa Dreossi">
+		<meta name="license" content="GPL-3.0">
+		<title>Simulation View</title>
+		<link rel="stylesheet" type="text/css" href="simulation-view.css">
+		<link rel="shortcut icon" type="image/png" href="../../assets/favicon.ico"/>	
+	</head>
+	<body>
+		<!--Placeholder for view injection-->
+		<div id="container" class="transparent"></div>
+		<script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+		<script src="../../node_modules/three/build/three.min.js"></script>
+		<script src="../../node_modules/three/examples/js/controls/OrbitControls.js"></script>
+		<script src="../../node_modules/threejs-utils/lib/stats.min.js"></script>
+		<script src="../../node_modules/@tweenjs/tween.js/src/Tween.js"></script>	
+		<script src="../../node_modules/threejs-utils/lib/dat.gui.min.js"></script>		
+		<!--Custom scripts-->
+		<script src="../../models/car.js"></script>
+		<script src="../../models/street.js"></script>
+		<script src="../../utils/utils.js"></script>
+		<script src="../../utils/event-listeners.js"></script>
+		<script src="../../utils/camera-manager.js"></script>
+		<script src="../../utils/light-manager.js"></script>
+		<script src="../../utils/gui-manager.js"></script>
+		<script src="simulation-view.js"></script>
+	</body>
+</html>

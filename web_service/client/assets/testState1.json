@@ -1,0 +1,30 @@
+[ 
+    [
+        {
+            "name": "B",
+            "arrivalTime": 2,
+            "state": 1,
+            "power": 1
+        },
+        {
+            "name": "A",
+            "arrivalTime": 0,
+            "state": 1,
+            "power": 1
+        }
+    ],
+    [        
+        {
+            "name": "C",
+            "arrivalTime": 0,
+            "state": 2,
+            "power": 2
+        },
+        {
+            "name": "D",
+            "arrivalTime": 2,
+            "state": 0,
+            "power": 2
+        }
+    ]
+]

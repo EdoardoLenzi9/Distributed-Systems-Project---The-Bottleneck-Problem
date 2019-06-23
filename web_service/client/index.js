@@ -1,9 +1,12 @@
-function CreateCar(){
+function CreateCar(side){
     var parameters = {
-        direction:  $('#direction > .btn.active').text().trim(),
-        state:      $('#state > .btn.active').text().trim(),
-        timer:      $('#timer')[0].value,
-        power:      $('#power')[0].value
+        direction:  side,
+        state:      $('#' + side + '-state > .btn.active').text().trim().toLowerCase(),
+        timer:      $('#' + side + '-timer')[0].value,
+        power:      $('#' + side + '-power')[0].value
+    }
+    if(side == 'small'){
+        parameters.side = $('#direction > .btn.active').text().trim().toLowerCase();
     }
     console.dir(parameters);
 
@@ -32,12 +35,12 @@ function httpGetAsync( uri, callback ){
 }
 
 
-function HideTimer(){
-    $( '#timer-mask' ).removeClass( 'd-block' ).addClass( 'd-hide' );
-    $( '#timer' )[ 0 ].value = '';
+function HideTimer(side){
+    $( '#' + side + '-timer-mask' ).removeClass( 'd-block' ).addClass( 'd-hide' );
+    $( '#' + side + '-timer' )[ 0 ].value = '';
 }
 
 
-function ShowTimer(){
-    $( '#timer-mask' ).removeClass( 'd-hide' ).addClass( 'd-block' );
+function ShowTimer(side){
+    $( '#' + side + '-timer-mask' ).removeClass( 'd-hide' ).addClass( 'd-block' );
 }
