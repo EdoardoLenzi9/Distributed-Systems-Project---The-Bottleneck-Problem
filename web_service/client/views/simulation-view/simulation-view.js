@@ -50,13 +50,12 @@ function Init() {
 	scene.add( group );
 		
 	// load test state (polling)
-	// LoadState( '../../assets/testState0.json' );
-	LoadState( '../../assets/testState1_0.json' );
 	window.setInterval(function(){
-		i++;
 		console.log('polling')
 		// LoadState( '../../assets/testState'+ (i % 3) + '.json' );
-		LoadState( '../../assets/testState1_'+ (i % 8) + '.json' );
+		// LoadState( '../../assets/testState1_'+ (i % 8) + '.json' );
+		LoadState( '../../assets/testState2_'+ (i % 12) + '.json' );
+		i++;
 	}, speed);
 
 	// desktop events

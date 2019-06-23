@@ -38,8 +38,7 @@ class AnimatedCar extends THREE.Group {
 		// cross index
 		this.crossIndex = 0;
 		// update position
-		var pos = this.computePosition(state)
-		this.position.set(pos.x, pos.y, pos.z);
+		this.computePosition(state)
 		// update state
 		this.setColor();
 	}
@@ -65,13 +64,19 @@ class AnimatedCar extends THREE.Group {
 		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridgeLength + 1))){
 			pos.x = 0;
 		}
-		
+
 		if(state.state == 4){
-			pos.y = ((street.bridgeLength + street.length) / 2) * this.scaleFactor;
+			pos.y = ((street.bridgeLength + street.length) / 2) * this.scaleFactor * ( - state.side);
+		}
+
+		if(state.state == 0){
+			this.position.set(pos.x, ((street.bridgeLength + street.length) / 2) * this.scaleFactor * state.side, pos.z);
+			this.initTween = this.TweenTo( pos ).start();
 		}
 
 		return pos;
 	}
+
 
 	/*
 	* Update car state
