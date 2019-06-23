@@ -39,11 +39,17 @@ killer(Timeout, ParentName) ->
     %%timer:apply_after(Timeout, os, cmd, ["gedit &"]).
     timer:apply_after(Timeout, gen_statem, call, [ParentName, crash]).
 
-    init([Name, Timeout]) ->
-        spawn(?MODULE, killer, [Timeout, Name]),
-        {ok, create, #state{arrivalTime=1, name = Name, timeout=0}};
-    init([Name]) ->
-        {ok, create, #state{arrivalTime=1, name = Name, timeout=0}}.
+syncronizer(ParentName) ->
+    gen_statem:call(ParentName, init).
+
+init([Name, Timeout]) ->
+    Adj = #adj{frontCars = [], rearCars = []},
+    spawn(?MODULE, killer, [Timeout, Name]),
+    spawn(?MODULE, syncronizer, [Name]),
+    {ok, create, #state{adj = Adj, arrivalTime=1, name = Name, timeout=0}};
+init([Name]) ->
+    Adj = #adj{frontCars = [], rearCars = []},
+    {ok, create, #state{adj = Adj, arrivalTime=1, name = Name, timeout=0}}.
         
 
 updateTimeout(Data, Timeout) ->
@@ -75,6 +81,11 @@ lastElement(List) ->
     Pivot.
 
 
+firstElement(List) ->
+    [First | Rest] = List,
+    First.
+
+
 getTimeStamp() ->
     {Mega, Seconds, Ms} = os:timestamp(),
     (Mega*1000000 + Seconds)*1000 + erlang:round(Ms/1000).                                                                                                                                              
@@ -82,24 +93,26 @@ getTimeStamp() ->
 
 berkeley(Pivot) ->
     CurrentTime = getTimeStamp(),
-    PivotTime = 1561303082320,
+    PivotTime = gen_statem:call(Pivot, sync),
     CurrentTime2 = getTimeStamp(),
     RTT = CurrentTime2 - CurrentTime,
     CurrentTime2 - (PivotTime + RTT / 2).
 
 
 create({call, From}, Event, Data) ->
-    Adj = #adj{frontCars = [], rearCars = []},
-    %if 
-    %    Adj#adj.frontCars == [] ->     % AND
-    %        {next_state, leader, updateAdj(Data, Adj), [{reply, From, "synchronized and leader"}]};
-    %    true ->
-    %        Pivot = lastElement(Data#state.adj#adj.frontCars),
-    %        {next_state, coda, updateDelta(Data, berkeley(Pivot)), [{reply, From, "synchronized"}]}
-    %end,
+   
     case Event of
+        init ->
+            Delta = if Data#state.adj#adj.frontCars =/= [] ->
+                Pivot = lastElement(Data#state.adj#adj.frontCars),
+                berkeley(Pivot);
+            true -> 
+                0
+            end,
+                {next_state, coda, updateDelta(Data, Delta), [{reply, From, "sync completed"}]};   
         sync ->
-            "";
+            no_sync;
+            %%gen_statem:call(From, getTimeStamp());
 	    crash ->
             io:format("car is dead~n"),
             {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]}   
