@@ -1,0 +1,1 @@
+erl -mnesia dir '"/tmp"'        #This flag indicates to Mnesia which directory will store the data.

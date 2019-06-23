@@ -1,5 +1,14 @@
-node_modules/
+# Folders
 _build/
-package-lock.json
+rebar3_run/
+node_modules/
+
+# Extensions
 *.lock
+*.crashdump
 *.beam
+*.dump
+
+# Files
+package-lock.json
+
