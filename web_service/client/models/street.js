@@ -55,7 +55,8 @@ class Street extends THREE.Group{
 
 	drawBottleneck(){
 		// straight lines
-		var leftBottleneckLine = this.newLine(0.1, this.bridgeLength, {x: 0, y: 0});
+		//var leftBottleneckLine = this.newLine(0.1, this.bridgeLength, {x: 0, y: 0});
+		var leftBottleneckLine = this.newLine(0.1, this.bridgeLength - 1, {x: 0, y: 0});
 		var rightBottleneckLine = leftBottleneckLine.clone();
 		leftBottleneckLine.position.x += 0.5 * this.scaleFactor;
 		rightBottleneckLine.position.x -= 0.5 * this.scaleFactor;
@@ -63,10 +64,10 @@ class Street extends THREE.Group{
 		this.add(rightBottleneckLine);
 
 		// crooked lines
-		var rightBottomCL = this.newCrookedLine(0.38, (this.bridgeLength/2 + 0.26), -1);
-		var rightTopCL =  this.newCrookedLine(1, (this.bridgeLength/2 + 0.26), 1);
-		var leftBottomCL = this.newCrookedLine(- 0.42, -(this.bridgeLength/2 + 0.26), 1);
-		var leftTopCL = this.newCrookedLine(- 1.12, -(this.bridgeLength/2 + 0.26), -1);
+		var rightBottomCL = this.newCrookedLine(0.38, (this.bridgeLength / 2 - 0.3), -1);
+		var rightTopCL =  this.newCrookedLine(1, (this.bridgeLength/2 - 0.3), 1);
+		var leftBottomCL = this.newCrookedLine(- 0.42, -(this.bridgeLength/2 - 0.3), 1);
+		var leftTopCL = this.newCrookedLine(- 1.12, -(this.bridgeLength/2 - 0.3), -1);
 
 		this.add(leftBottomCL);
 		this.add(leftTopCL);

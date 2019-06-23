@@ -1,5 +1,5 @@
 /*
-* Arc-reactor view script
+* Simulation view script
 *
 * author = 'Talissa Dreossi, Edoardo Lenzi'
 * version = '1.0'
@@ -32,6 +32,7 @@ var street;
 var cars = {};
 var i = 0;
 
+
 /*
 * Init function
 */ 
@@ -49,11 +50,13 @@ function Init() {
 	scene.add( group );
 		
 	// load test state (polling)
-	LoadState( '../../assets/testState0.json' );
+	// LoadState( '../../assets/testState0.json' );
+	LoadState( '../../assets/testState1_0.json' );
 	window.setInterval(function(){
 		i++;
 		console.log('polling')
-		LoadState( '../../assets/testState'+ (i % 3) + '.json' );
+		// LoadState( '../../assets/testState'+ (i % 3) + '.json' );
+		LoadState( '../../assets/testState1_'+ (i % 8) + '.json' );
 	}, speed);
 
 	// desktop events
@@ -80,29 +83,42 @@ function LoadState( file ) {
 		state = JSON.parse(content);   
 		state[0].sort( arrivalTimeCriterion );
 		state[1].sort( arrivalTimeCriterion );
-		state[0].forEach(function(car){ 	//left side
-			car.side = -1;
-			car.position = car.arrivalTime;
-			if(cars[car.name] != undefined){
-				cars[car.name].updateState(car);
-			} else {
-				var carInstance = new AnimatedCar(car); 
-				group.add(carInstance);
-				cars[car.name] = carInstance;
-			}
+		var offset = 0;
+		for (const [key, car] of Object.entries(cars)) {
+			car.check = false;
+		}
+		state[0].forEach(function(car, index){ 	//left side
+			UpdateState(car, index, offset, -1);
 		});
-		state[1].forEach(function(car){ 	//right side
-			car.position = car.arrivalTime;
-			car.side = 1;
-			if(cars[car.name] != undefined){
-				cars[car.name].updateState(car);
-			} else {
-				var carInstance = new AnimatedCar(car); 
-				group.add(carInstance);
-				cars[car.name] = carInstance;
-			}
+		offset = 0;
+		state[1].forEach(function(car, index){ 	//right side
+			UpdateState(car, index, offset, 1);
 		});
+		for (var [key, car] of Object.entries(cars)) {
+			if(!car.check){
+				group.remove(car);
+				car = null;
+				delete cars[key];
+			}
+		}
 	})
+}
+
+
+function UpdateState(carState, index, offset, side){
+	carState.side = side;
+	carState.position = index + offset;
+	if(carState.state == -1){
+		offset = index;
+	}
+	if(cars[carState.name] != undefined){
+		cars[carState.name].updateState(carState);
+	} else {
+		var carInstance = new AnimatedCar(carState); 
+		group.add(carInstance);
+		cars[carState.name] = carInstance;
+	}
+	cars[carState.name].check = true;
 }
 
 
