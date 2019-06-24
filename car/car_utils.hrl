@@ -64,11 +64,18 @@ lastElement(List) ->
     [Pivot] = lists:nthtail(length(List)-1, List),
     Pivot.
     
-
+lastElement(List, Hop) ->
+    [Pivot] = lists:nthtail(length(List)-Hop, List),
+    Pivot.
+    
 % [1,2,3] -> 1    
-firstElement(List) ->
-    [First | _ ] = List,
+firstElement([First | _ ]) ->
     First.
+
+firstElement([First | Rest], 1) ->
+    First;
+firstElement([First | Rest], Hop) ->
+    firstElement(Rest, Hop - 1).
 
 
 %%%===================================================================

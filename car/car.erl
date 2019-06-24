@@ -30,6 +30,10 @@ create({call, From}, Event, Data) ->
     case Event of
         crash -> 
             next(dead,  updateTimeout(Data, 5000), From);
+        {propagateFront, Event, Counter} -> 
+            propagateFrontHandler(Event, Counter, Data);
+        {propagateRear, Event, Counter} -> 
+            propagateRearHandler(Event, Counter, Data);
         sync ->
             log("STATE Create - Event sync"),
             no_sync;
@@ -50,6 +54,14 @@ queue({call, From}, Event, Data) ->
     case Event of
         crash ->
             next(dead, updateTimeout(Data, 5000), From);
+        {propagateFront, Event, Counter} -> 
+            propagateFrontHandler(Event, Counter, Data);
+        {propagateRear, Event, Counter} -> 
+            propagateRearHandler(Event, Counter, Data);
+        {readAndPropagateFront, Event, Counter} -> 
+            readAndPropagateFrontHandler(Event, Counter, Data);
+        {readAndPropagateRear, Event, Counter} -> 
+            readAndPropagateRearHandler(Event, Counter, Data);
         move ->
             log("STATE Queue - Event move"),
             next(crossing, updateTimeout(Data, 10000), From);
@@ -64,32 +76,13 @@ leader({call, From}, Event, Data) ->
         crash ->
             next(dead, updateTimeout(Data, 5000), From);
         {propagateFront, Event, Counter} -> 
-            % TODO potenza di propagazione
-            if Counter > 1 ->
-                Target = (lastElement(Data#carState.adj#adj.frontCars))#carState.name,
-                sendEvent(Target, {propagateFront, Event, Counter -1});
-            Counter == 1 -> 
-                launchEvent(launcher, [Event])
-            end;
+            propagateFrontHandler(Event, Counter, Data);
         {propagateRear, Event, Counter} -> 
-            if Counter > 1 ->
-                Target = (firstElement(Data#carState.adj#adj.rearCars))#carState.name,
-                sendEvent(Target, {propagateRear, Event, Counter -1});
-            Counter == 1 -> 
-                launchEvent(launcher, [Event])
-            end;
+            propagateRearHandler(Event, Counter, Data);
         {readAndPropagateFront, Event, Counter} -> 
-            if Counter > 1 ->
-                launchEvent(launcher, [Event]),
-                Target = (lastElement(Data#carState.adj#adj.frontCars))#carState.name,
-                sendEvent(Target, {readAndPropagateFront, Event, Counter -1})
-            end;
+            readAndPropagateFrontHandler(Event, Counter, Data);
         {readAndPropagateRear, Event, Counter} -> 
-            if Counter > 1 ->
-                launchEvent(launcher, [Event]),
-                Target = (firstElement(Data#carState.adj#adj.rearCars))#carState.name,
-                sendEvent(Target, {readAndPropagateRear, Event, Counter -1})
-            end;
+            readAndPropagateRearHandler(Event, Counter, Data);
         {newCar, front, NewCar} -> 
             keep(updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]), From);
         {newCar, rear, NewCar} -> 
@@ -109,6 +102,14 @@ crossing({call, From}, Event, Data) ->
     case Event of
     crash ->
         next(dead, updateTimeout(Data, 5000), From);
+    {propagateFront, Event, Counter} -> 
+        propagateFrontHandler(Event, Counter, Data);
+    {propagateRear, Event, Counter} -> 
+        propagateRearHandler(Event, Counter, Data);
+    {readAndPropagateFront, Event, Counter} -> 
+        readAndPropagateFrontHandler(Event, Counter, Data);
+    {readAndPropagateRear, Event, Counter} -> 
+        readAndPropagateRearHandler(Event, Counter, Data);
 	timeout ->
 	    log("car crossed the bridge~n"),
 	    stop()
@@ -122,3 +123,45 @@ dead({call, _From}, Event, _Data) ->
 	   stop()
     end.
  
+
+%%%===================================================================
+%%% generic event handling
+%%%===================================================================
+
+propagateFrontHandler(Event, Counter, Data) ->
+    % con la mia potenza copro tutti gli hop
+    % con la potenza non basta
+    % TODO potenza di propagazione
+    if Counter > 1 ->
+        Hop = erlang:min(Counter, Data#carState.power),
+        Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
+        sendEvent(Target, {propagateFront, Event, Counter - Hop});
+    Counter == 1 -> 
+        launchEvent(launcher, [Event])
+    end.
+
+
+propagateRearHandler(Event, Counter, Data) ->
+    if Counter > 1 ->
+        Hop = erlang:min(Counter, Data#carState.power),
+        Target = (firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
+        sendEvent(Target, {propagateRear, Event, Counter - Hop});
+    Counter == 1 -> 
+        launchEvent(launcher, [Event])
+    end.
+
+
+readAndPropagateFrontHandler(Event, Counter, Data) -> 
+    if Counter > 1 ->
+        launchEvent(launcher, [Event]),
+        Target = (lastElement(Data#carState.adj#adj.frontCars))#carState.name,
+        sendEvent(Target, {readAndPropagateFront, Event, Counter -1})
+    end.
+
+
+readAndPropagateRearHandler(Event, Counter, Data) -> 
+    if Counter > 1 ->
+        launchEvent(launcher, [Event]),
+        Target = (firstElement(Data#carState.adj#adj.rearCars))#carState.name,
+        sendEvent(Target, {readAndPropagateRear, Event, Counter -1})
+    end.

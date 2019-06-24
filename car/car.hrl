@@ -3,6 +3,7 @@
 %%%===================================================================
 
 -record (carState, {    
+                        power,
                         bridgeLength,
                         name,
                         arrivalTime, 
