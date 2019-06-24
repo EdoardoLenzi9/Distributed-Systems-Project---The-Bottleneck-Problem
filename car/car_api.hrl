@@ -6,15 +6,15 @@
 
 
 bs() -> 
-    start_link().
+    start_link(2).
 
 
-start_link(Timeout) ->
-    gen_statem:start_link({global, ?MODULE}, ?MODULE, [Timeout], []).
+start_link(BridgeLength, Timeout) ->
+    gen_statem:start_link({global, ?MODULE}, ?MODULE, [BridgeLength, Timeout], []).
 
 
-start_link() ->
-    gen_statem:start_link({global, ?MODULE}, ?MODULE, [], []).
+start_link(BridgeLength) ->
+    gen_statem:start_link({global, ?MODULE}, ?MODULE, [BridgeLength], []).
  
 
 stop() ->

@@ -11,77 +11,106 @@
 %%%===================================================================
 
 
-init([Timeout]) ->
-    log("STATE Init - Broken car, Timeout:~p~n", [Timeout]),
+init([BridgeLength, Timeout]) ->
+    log("STATE Init - Broken car, Timeout:~p", [Timeout]),
     Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(killer, [Timeout]),
     launchEvent(launcher, [init]),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, timeout=0}};
-init([]) ->
-    %log("STATE Init"),
+    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeLength = BridgeLength, timeout=0}};
+init([BridgeLength]) ->
+    log("STATE Init"),
     Adj = #adj{frontCars = [], rearCars = []},
-    launchEvent(launcher, [init]),
-    %log("STATE TRANSITION: Init -> Create"),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, timeout=0}}.
+    launchEvent(launcher, [defaultBehaviour]),
+    log("STATE TRANSITION: Init -> Create"),
+    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeLength = BridgeLength, timeout=0}}.
         
 
 create({call, From}, Event, Data) ->
+    log("STATE Create"),
     case Event of
-        init ->
-            io:format("init here~n"),
-            if Data#carState.adj#adj.frontCars =/= [] ->
-                Pivot = lastElement(Data#carState.adj#adj.frontCars),
-                {next_state, coda, updateDelta(Data, berkeley(Pivot)), [{reply, From, "sync completed"}]};   
-            true -> 
-                %launchEvent(launcher, defaultLeaderBehaviour),
-                {next_state, leader, Data, [{reply, From, "leader"}]}
-            end;
+        crash -> 
+            next(dead,  updateTimeout(Data, 5000), From);
         sync ->
+            log("STATE Create - Event sync"),
             no_sync;
-	    crash ->
-            io:format("car is dead here~n"),
-            {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]}   
+        defaultBehaviour ->
+            log("STATE Create - Event init"),
+            if Data#carState.adj#adj.frontCars =/= [] ->
+                log("Syncronize with front car"),
+                Pivot = lastElement(Data#carState.adj#adj.frontCars),
+                next(queue, updateDelta(Data, berkeley(Pivot)), From);
+            true -> 
+                launchEvent(launcher, [defaultBehaviour]),
+                next(leader, Data, From)
+            end
     end.
 
 
-coda({call, From}, Event, Data) ->
+queue({call, From}, Event, Data) ->
     case Event of
+        crash ->
+            next(dead, updateTimeout(Data, 5000), From);
         move ->
-	    io:format("car is crossing~n"),
-            {next_state, crossing, updateTimeout(Data, 10000), [{reply, From, "the car is crossing"}]};
-	    crash ->
-            io:format("car is dead~n"),
-            {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]};
-	    newleader ->
-            io:format("car is the new leader~n"),
-            {next_state, leader, Data, [{reply, From, "leader"}]}
+            log("STATE Queue - Event move"),
+            next(crossing, updateTimeout(Data, 10000), From);
+	    leader ->
+            log("STATE Queue - Event leader"),
+            next(leader, Data, From)
     end.
 
 
 leader({call, From}, Event, Data) ->
     case Event of
+        crash ->
+            next(dead, updateTimeout(Data, 5000), From);
+        {propagateFront, Event, Counter} -> 
+            % TODO potenza di propagazione
+            if Counter > 1 ->
+                Target = (lastElement(Data#carState.adj#adj.frontCars))#carState.name,
+                sendEvent(Target, {propagateFront, Event, Counter -1});
+            Counter == 1 -> 
+                launchEvent(launcher, [Event])
+            end;
+        {propagateRear, Event, Counter} -> 
+            if Counter > 1 ->
+                Target = (firstElement(Data#carState.adj#adj.rearCars))#carState.name,
+                sendEvent(Target, {propagateRear, Event, Counter -1});
+            Counter == 1 -> 
+                launchEvent(launcher, [Event])
+            end;
+        {readAndPropagateFront, Event, Counter} -> 
+            if Counter > 1 ->
+                launchEvent(launcher, [Event]),
+                Target = (lastElement(Data#carState.adj#adj.frontCars))#carState.name,
+                sendEvent(Target, {readAndPropagateFront, Event, Counter -1})
+            end;
+        {readAndPropagateRear, Event, Counter} -> 
+            if Counter > 1 ->
+                launchEvent(launcher, [Event]),
+                Target = (firstElement(Data#carState.adj#adj.rearCars))#carState.name,
+                sendEvent(Target, {readAndPropagateRear, Event, Counter -1})
+            end;
         {newCar, front, NewCar} -> 
-            NewData = updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]);
+            keep(updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]), From);
         {newCar, rear, NewCar} -> 
-            NewData = updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]);
-        defaultLeaderBehaviour ->
-            ok;        
-        move ->
-	        io:format("car is crossing~n"),
-            {next_state, crossing, updateTimeout(Data, 10000), [{reply, From, "the car is crossing"}]};
-	    crash ->
-            io:format("car is dead~n"),
-            {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]}  
+            keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
+        defaultBehaviour ->
+            % controllo che non ci sia nessuno davanti
+            if Data#carState.adj#adj.frontCars == [] ->
+                notifyCrossing(Data#carState.bridgeLength - 1, Data#carState.adj#adj.frontCars),
+                next(crossing, updateTimeout(Data, 10000), From);
+            true ->
+                keep(Data, From)
+            end
     end.
 
 
 crossing({call, From}, Event, Data) ->
     case Event of
-	crash ->
-            io:format("car is dead~n"),
-            {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]};
+    crash ->
+        next(dead, updateTimeout(Data, 5000), From);
 	timeout ->
-	    io:format("car crossed the bridge~n"),
+	    log("car crossed the bridge~n"),
 	    stop()
     end.
     
@@ -89,7 +118,7 @@ crossing({call, From}, Event, Data) ->
 dead({call, _From}, Event, _Data) ->
     case Event of
    	timeout ->
-	   io:format("the car has been removed~n"),
+	   log("the car has been removed~n"),
 	   stop()
     end.
  

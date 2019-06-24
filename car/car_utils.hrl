@@ -7,9 +7,11 @@
 %% Logger
 -ifdef(LOG).
     log(String)->
-        io:printf(String).
+        ParsedString = io:format(String),
+        io:format("~n~p~n", [ParsedString]).
     log(String, Args) ->
-        io:printf(String, Args).
+        ParsedString = io:format(String, Args),
+        io:format("~n~p~n", [ParsedString]).
 -else.
     log(String)-> ok.
     log(String, Args) -> ok.
@@ -33,7 +35,7 @@ killer(Timeout) ->
 
 %% Launch a given event until success (polling)
 launcher(Event) ->
-    try gen_statem:call({global, ?MODULE}, init) of 
+    try gen_statem:call({global, ?MODULE}, Event) of 
         _ -> { } 
     catch 
         exit:_ -> {launcher(Event)}; 
@@ -42,14 +44,25 @@ launcher(Event) ->
     end. 
 
 
+next(NextState, Data, From) ->
+    log("STATE TRANSITION -> ~p", [NextState]),
+    {next_state, NextState, Data, [{reply, From, io:format(NextState)}]}.
+
+keep(Data, From) ->
+    log("KEEP STATE"),
+    {keep_state, Data, [{reply, From, "keep_state"}]}.
 %%%===================================================================
 %%% list management
 %%%===================================================================
 
+
+%    Front        Rear
+% [A, B, C] CAR [D, E, F]
+
 % [1,2,3] -> 3
 lastElement(List) ->
-        [Pivot] = lists:nthtail(length(List)-1, List),
-        Pivot.
+    [Pivot] = lists:nthtail(length(List)-1, List),
+    Pivot.
     
 
 % [1,2,3] -> 1    
