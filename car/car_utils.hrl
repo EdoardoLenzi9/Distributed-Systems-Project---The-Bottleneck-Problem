@@ -16,10 +16,13 @@
 -endif.
 
 
+%%%===================================================================
+%%% spawn support processes
+%%%===================================================================
+
 %% Spawn a process that launches an event
-launchEvent(Handler, [Args]) -> 
-    spawn(?MODULE, Handler, [Args]);
 launchEvent(Handler, Args) -> 
+    log("launchEvent: ~p~p~n", [Handler, Args]),
     spawn(?MODULE, Handler, Args).
 
 
@@ -30,12 +33,52 @@ killer(Timeout) ->
 
 %% Launch a given event until success (polling)
 launcher(Event) ->
-    io:format("launcher: call ~p~n", [Event]),
-    try gen_statem:call({global, ?MODULE}, Event) of 
+    try gen_statem:call({global, ?MODULE}, init) of 
         _ -> { } 
     catch 
         exit:_ -> {launcher(Event)}; 
         error:_ -> {launcher(Event)};
         throw:_ -> {launcher(Event)} 
     end. 
-        
+
+
+%%%===================================================================
+%%% list management
+%%%===================================================================
+
+% [1,2,3] -> 3
+lastElement(List) ->
+        [Pivot] = lists:nthtail(length(List)-1, List),
+        Pivot.
+    
+
+% [1,2,3] -> 1    
+firstElement(List) ->
+    [First | _ ] = List,
+    First.
+
+
+%%%===================================================================
+%%% time management
+%%%===================================================================
+
+getTimeStamp() ->
+    {Mega, Seconds, Ms} = os:timestamp(),
+    (Mega*1000000 + Seconds)*1000 + erlang:round(Ms/1000).                                                                                                                                              
+
+
+berkeley(Pivot) ->
+    {CurrentTime, PivotTime} = getPivotTime(Pivot),
+    CurrentTime2 = getTimeStamp(),
+    RTT = CurrentTime2 - CurrentTime,
+    CurrentTime2 - (PivotTime + RTT / 2).
+
+
+getPivotTime(Pivot) -> 
+    CurrentTime = getTimeStamp(), 
+    Res = gen_statem:call(Pivot, sync),
+    if Res == no_sync -> 
+        {CurrentTime, getPivotTime(Pivot)};
+    true ->
+        {CurrentTime, Res}
+    end.
