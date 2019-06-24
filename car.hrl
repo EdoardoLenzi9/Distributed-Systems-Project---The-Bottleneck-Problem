@@ -1,4 +1,4 @@
--record (state, {   name,
+-record (carState, {   name,
                     arrivalTime, 
                     delta,
                     timeout, 
@@ -7,3 +7,4 @@
 
 -record (adj, { frontCars, 
                 rearCars }).
+

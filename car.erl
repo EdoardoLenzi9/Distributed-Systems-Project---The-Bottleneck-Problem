@@ -7,27 +7,31 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
- 
-start_link(Timeout, Name="dodo") ->
-    gen_statem:start_link({local, ?SERVER}, ?MODULE, [Name, Timeout], []).
+name() -> ?SERVER.
 
-start_link(Name = "dodo") ->
-    gen_statem:start_link({local, ?SERVER}, ?MODULE, [Name], []).
+bs() -> 
+    start_link().
+
+start_link(Timeout) ->
+    gen_statem:start_link({global, name()}, ?MODULE, [Timeout], []).
+
+start_link() ->
+    gen_statem:start_link({global, name()}, ?MODULE, [], []).
  
 stop() ->
-        gen_statem:stop(?SERVER).
+        gen_statem:stop({global, name()}).
 
 sync() ->
-        gen_statem:call(?SERVER, sync).
+        gen_statem:call({global, name()}, sync).
  
 crash() ->
-        gen_statem:call(?SERVER, crash).
+        gen_statem:call({global, name()}, crash).
 
 move() ->
-        gen_statem:call(?SERVER, move).
+        gen_statem:call({global, name()}, move).
 
 newleader() ->
-        gen_statem:call(?SERVER, newleader).
+        gen_statem:call({global, name()}, newleader).
 
 callback_mode()-> state_functions.
 
@@ -35,45 +39,59 @@ callback_mode()-> state_functions.
 %%% gen_statem callbacks
 %%%===================================================================
 
-killer(Timeout, ParentName) ->
-    %%timer:apply_after(Timeout, os, cmd, ["gedit &"]).
-    timer:apply_after(Timeout, gen_statem, call, [ParentName, crash]).
+killer(Timeout) ->
+    timer:apply_after(Timeout, gen_statem, call, [{global, name()}, crash]).
 
-syncronizer(ParentName) ->
-    gen_statem:call(ParentName, init).
 
-init([Name, Timeout]) ->
+launcher(Event) ->
+    io:format("launcher: call ~p~n", [Event]),
+    try gen_statem:call({global, name()}, Event) of 
+        _ -> { } 
+    catch 
+        exit:_ -> {launcher(Event)}; 
+        error:_ -> {launcher(Event)};
+        throw:_ -> {launcher(Event)} 
+    end. 
+
+launchEvent(Handler, [Args]) -> 
+    spawn(?MODULE, Handler, [Args]);
+launchEvent(Handler, Args) -> 
+    spawn(?MODULE, Handler, Args).
+
+init([Timeout]) ->
     Adj = #adj{frontCars = [], rearCars = []},
-    spawn(?MODULE, killer, [Timeout, Name]),
-    spawn(?MODULE, syncronizer, [Name]),
-    {ok, create, #state{adj = Adj, arrivalTime=1, name = Name, timeout=0}};
-init([Name]) ->
+    launchEvent(killer, [Timeout]),
+    launchEvent(launcher, init),
+    {ok, create, #carState{adj = Adj, arrivalTime=1, timeout=0}};
+init([]) ->
+    io:format("~p", [?MODULE]),
     Adj = #adj{frontCars = [], rearCars = []},
-    {ok, create, #state{adj = Adj, arrivalTime=1, name = Name, timeout=0}}.
+    launchEvent(launcher, init),
+    {ok, create, #carState{adj = Adj, arrivalTime=1, timeout=0}}.
         
 
 updateTimeout(Data, Timeout) ->
-    #state{ arrivalTime = Data#state.arrivalTime, 
-            name = Data#state.name,
-            delta = Data#state.delta,
-            adj = Data#state.adj,
+    #carState{ arrivalTime = Data#carState.arrivalTime, 
+            name = Data#carState.name,
+            delta = Data#carState.delta,
+            adj = Data#carState.adj,
             timeout=Timeout }.
 
 
 updateAdj(Data, Adj) ->
-    #state{ arrivalTime = Data#state.arrivalTime, 
-            name = Data#state.name,
-            delta = Data#state.delta,
+    #carState{ arrivalTime = Data#carState.arrivalTime, 
+            name = Data#carState.name,
+            delta = Data#carState.delta,
             adj = Adj,
-            timeout=Data#state.timeout }.
+            timeout=Data#carState.timeout }.
 
 
 updateDelta(Data, Delta) ->
-    #state{ arrivalTime = Data#state.arrivalTime, 
-            name = Data#state.name,
+    #carState{ arrivalTime = Data#carState.arrivalTime, 
+            name = Data#carState.name,
             delta = Delta,
-            adj = Data#state.adj,
-            timeout=Data#state.timeout }.
+            adj = Data#carState.adj,
+            timeout=Data#carState.timeout }.
 
 
 lastElement(List) ->
@@ -92,27 +110,36 @@ getTimeStamp() ->
 
 
 berkeley(Pivot) ->
-    CurrentTime = getTimeStamp(),
-    PivotTime = gen_statem:call(Pivot, sync),
+    {CurrentTime, PivotTime} = getPivotTime(Pivot),
     CurrentTime2 = getTimeStamp(),
     RTT = CurrentTime2 - CurrentTime,
     CurrentTime2 - (PivotTime + RTT / 2).
 
 
+getPivotTime(Pivot) -> 
+    CurrentTime = getTimeStamp(), 
+    Res = gen_statem:call(Pivot, sync),
+    if Res == no_sync -> 
+        {CurrentTime, getPivotTime(Pivot)};
+    true ->
+        {CurrentTime, Res}
+    end.
+
+
+
+
 create({call, From}, Event, Data) ->
-   
     case Event of
         init ->
-            Delta = if Data#state.adj#adj.frontCars =/= [] ->
-                Pivot = lastElement(Data#state.adj#adj.frontCars),
-                berkeley(Pivot);
+            if Data#carState.adj#adj.frontCars =/= [] ->
+                Pivot = lastElement(Data#carState.adj#adj.frontCars),
+                {next_state, coda, updateDelta(Data, berkeley(Pivot)), [{reply, From, "sync completed"}]};   
             true -> 
-                0
-            end,
-                {next_state, coda, updateDelta(Data, Delta), [{reply, From, "sync completed"}]};   
+                launchEvent(launcher, defaultLeaderBehaviour),
+                {next_state, leader, Data, [{reply, From, "leader"}]}
+            end;
         sync ->
             no_sync;
-            %%gen_statem:call(From, getTimeStamp());
 	    crash ->
             io:format("car is dead~n"),
             {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]}   
@@ -132,15 +159,23 @@ coda({call, From}, Event, Data) ->
             {next_state, leader, Data, [{reply, From, "leader"}]}
     end.
 
+
 leader({call, From}, Event, Data) ->
     case Event of
+        {newCar, front, NewCar} -> 
+            NewData = updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]);
+        {newCar, rear, NewCar} -> 
+            NewData = updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]);
+        defaultLeaderBehaviour ->
+                        
         move ->
-	    io:format("car is crossing~n"),
+	        io:format("car is crossing~n"),
             {next_state, crossing, updateTimeout(Data, 10000), [{reply, From, "the car is crossing"}]};
-	crash ->
+	    crash ->
             io:format("car is dead~n"),
             {next_state, dead, updateTimeout(Data, 5000), [{reply, From, "dead"}]}  
     end.
+
 
 crossing({call, From}, Event, Data) ->
     case Event of
@@ -151,6 +186,7 @@ crossing({call, From}, Event, Data) ->
 	    io:format("car crossed the bridge~n"),
 	    stop()
     end.
+    
 
 dead({call, From}, Event, Data) ->
     case Event of
@@ -159,10 +195,10 @@ dead({call, From}, Event, Data) ->
 	   stop()
     end.
  
+
 terminate(_Reason, _StateName, _State) ->
     ok.
  
+
 code_change(_OldVsn, StateName, State, _Extra) ->
     {ok, StateName, State}.
-
-
