@@ -16,8 +16,7 @@ start(_StartType, _StartArgs) ->
         [
             {"/", simulation_controller, []},   %% returns the current simulation state
             {"/car", car_controller, []},        %% creates a new car
-            {"/assets/[...]", cowboy_static, {dir, "../../../../client"}},
-            {"/test", test_controller, []}
+            {"/assets/[...]", cowboy_static, {dir, "../../../../client"}}
         ]
     } ],
     Dispatch = cowboy_router:compile(Routes),
