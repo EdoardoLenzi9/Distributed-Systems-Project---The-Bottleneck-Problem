@@ -1,0 +1,3 @@
+-module(sync_repository).
+-compile(export_all).
+-include("entity.hrl").

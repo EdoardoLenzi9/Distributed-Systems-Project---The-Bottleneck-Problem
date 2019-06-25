@@ -1,10 +1,7 @@
 
 %% @doc car handler.
 -module(car_controller).
-
--export([init/2]).
--export([content_types_provided/2]).
--export([check/2]).
+-compile(export_all).
 
 init(Req, Opts) ->
 	{cowboy_rest, Req, Opts}.

@@ -4,10 +4,9 @@
 %%%-------------------------------------------------------------------
 
 -module(web_service_app).
-
+-compile(export_all).
 -behaviour(application).
 
--export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
     {ok, Pid} = 'web_service_sup':start_link(),
