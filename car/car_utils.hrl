@@ -19,39 +19,6 @@
 
 
 %%%===================================================================
-%%% spawn support processes
-%%%===================================================================
-
-%% Spawn a process that launches an event
-launchEvent(Handler, Args) -> 
-    log("launchEvent: ~p~p~n", [Handler, Args]),
-    spawn(?MODULE, Handler, Args).
-
-
-%% Simulate a car crash after a given timeout
-killer(Timeout) ->
-    timer:apply_after(Timeout, gen_statem, call, [{global, ?MODULE}, crash]).
-        
-
-%% Launch a given event until success (polling)
-launcher(Event) ->
-    try gen_statem:call({global, ?MODULE}, Event) of 
-        _ -> { } 
-    catch 
-        exit:_ -> {launcher(Event)}; 
-        error:_ -> {launcher(Event)};
-        throw:_ -> {launcher(Event)} 
-    end. 
-
-
-next(NextState, Data, From) ->
-    log("STATE TRANSITION -> ~p", [NextState]),
-    {next_state, NextState, Data, [{reply, From, io:format(NextState)}]}.
-
-keep(Data, From) ->
-    log("KEEP STATE"),
-    {keep_state, Data, [{reply, From, "keep_state"}]}.
-%%%===================================================================
 %%% list management
 %%%===================================================================
 
@@ -60,21 +27,29 @@ keep(Data, From) ->
 % [A, B, C] CAR [D, E, F]
 
 % [1,2,3] -> 3
+lastElement([ ]) ->
+        -1;
 lastElement(List) ->
     [Pivot] = lists:nthtail(length(List)-1, List),
     Pivot.
-    
+
+lastElement([ ], _) ->
+        -1;
 lastElement(List, Hop) ->
     [Pivot] = lists:nthtail(length(List)-Hop, List),
     Pivot.
     
 % [1,2,3] -> 1    
+firstElement([ ]) ->
+    -1;
 firstElement([First | _ ]) ->
     First.
 
-firstElement([First | Rest], 1) ->
+firstElement([ ], _) ->
+    -1;
+firstElement([First | _Rest], 1) ->
     First;
-firstElement([First | Rest], Hop) ->
+firstElement([_First | Rest], Hop) ->
     firstElement(Rest, Hop - 1).
 
 

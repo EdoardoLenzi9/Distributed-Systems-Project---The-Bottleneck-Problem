@@ -11,25 +11,30 @@
 %%%===================================================================
 
 
-init([BridgeLength, Timeout]) ->
+init([bridgeCapacity, Timeout]) ->
     log("STATE Init - Broken car, Timeout:~p", [Timeout]),
     Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(killer, [Timeout]),
     launchEvent(launcher, [init]),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeLength = BridgeLength, timeout=0}};
-init([BridgeLength]) ->
+    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeCapacity = bridgeCapacity, timeout=0}};
+init([bridgeCapacity]) ->
     log("STATE Init"),
     Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(launcher, [defaultBehaviour]),
     log("STATE TRANSITION: Init -> Create"),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeLength = BridgeLength, timeout=0}}.
+    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeCapacity = bridgeCapacity, timeout=0}}.
         
 
 create({call, From}, Event, Data) ->
     log("STATE Create"),
     case Event of
-        crash -> 
-            next(dead,  updateTimeout(Data, 5000), From);
+        engineCrash -> 
+            launchEvent(towTruck, [2000]),
+            next(dead, Data, From);
+        systemCrash -> 
+            next(dead, Data, From);
+        check ->
+            keep(Data, From, ok);
         {propagateFront, Event, Counter} -> 
             propagateFrontHandler(Event, Counter, Data);
         {propagateRear, Event, Counter} -> 
@@ -38,7 +43,10 @@ create({call, From}, Event, Data) ->
             log("STATE Create - Event sync"),
             no_sync;
         defaultBehaviour ->
-            log("STATE Create - Event init"),
+            log("STATE Create - Event defaultBehaviour"),
+            callTowTruck(Data),
+            Responses = sendToAllAdj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
+            callTowTruck(Responses),
             if Data#carState.adj#adj.frontCars =/= [] ->
                 log("Syncronize with front car"),
                 Pivot = lastElement(Data#carState.adj#adj.frontCars),
@@ -62,9 +70,15 @@ queue({call, From}, Event, Data) ->
             readAndPropagateFrontHandler(Event, Counter, Data);
         {readAndPropagateRear, Event, Counter} -> 
             readAndPropagateRearHandler(Event, Counter, Data);
-        move ->
-            log("STATE Queue - Event move"),
-            next(crossing, updateTimeout(Data, 10000), From);
+        defaultBehaviour ->
+            log("STATE Create - Event defaultBehaviour"),
+            callTowTruck(Data);
+        {crossing, _WaitingCar} ->
+            next(crossing, Data, From);
+        {newCar, front, NewCar} -> 
+            keep(updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]), From);
+        {newCar, rear, NewCar} -> 
+            keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
 	    leader ->
             log("STATE Queue - Event leader"),
             next(leader, Data, From)
@@ -76,26 +90,30 @@ leader({call, From}, Event, Data) ->
         crash ->
             next(dead, updateTimeout(Data, 5000), From);
         {propagateFront, Event, Counter} -> 
-            propagateFrontHandler(Event, Counter, Data);
+            propagateFrontHandler(Event, Counter, Data),
+            keep(Data, From);
         {propagateRear, Event, Counter} -> 
-            propagateRearHandler(Event, Counter, Data);
+            propagateRearHandler(Event, Counter, Data),
+            keep(Data, From);
         {readAndPropagateFront, Event, Counter} -> 
-            readAndPropagateFrontHandler(Event, Counter, Data);
+            readAndPropagateFrontHandler(Event, Counter, Data),
+            keep(Data, From);
         {readAndPropagateRear, Event, Counter} -> 
-            readAndPropagateRearHandler(Event, Counter, Data);
+            readAndPropagateRearHandler(Event, Counter, Data),
+            keep(Data, From);
+        {crossing, _WaitingCar} ->
+            next(crossing, Data, From);
         {newCar, front, NewCar} -> 
             keep(updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]), From);
         {newCar, rear, NewCar} -> 
             keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
         defaultBehaviour ->
-            % controllo che non ci sia nessuno davanti
-            if Data#carState.adj#adj.frontCars == [] ->
-                notifyCrossing(Data#carState.bridgeLength - 1, Data#carState.adj#adj.frontCars),
-                next(crossing, updateTimeout(Data, 10000), From);
-            true ->
-                keep(Data, From)
-            end
-    end.
+            log("STATE Leader - Event defaultBehaviour"),
+            callTowTruck(Data),
+            WaitingCar = lastElement(Data#carState.adj#adj.frontCars),
+            readAndPropagateRearHandler({crossing, WaitingCar}, Data#carState.bridgeCapacity, Data),
+            keep(Data, From)
+        end.
 
 
 crossing({call, From}, Event, Data) ->
@@ -110,28 +128,27 @@ crossing({call, From}, Event, Data) ->
         readAndPropagateFrontHandler(Event, Counter, Data);
     {readAndPropagateRear, Event, Counter} -> 
         readAndPropagateRearHandler(Event, Counter, Data);
-	timeout ->
-	    log("car crossed the bridge~n"),
-	    stop()
+    defaultBehaviour ->
+        log("STATE Leader - Event defaultBehaviour"),
+        callTowTruck(Data)
     end.
-    
 
-dead({call, _From}, Event, _Data) ->
+
+dead({call, _From}, Event, _Data) -> 
     case Event of
-   	timeout ->
-	   log("the car has been removed~n"),
-	   stop()
+        removed ->
+            % notifica agli altri
+            stop()
     end.
- 
+
 
 %%%===================================================================
 %%% generic event handling
 %%%===================================================================
 
+
+% ordine non serve 
 propagateFrontHandler(Event, Counter, Data) ->
-    % con la mia potenza copro tutti gli hop
-    % con la potenza non basta
-    % TODO potenza di propagazione
     if Counter > 1 ->
         Hop = erlang:min(Counter, Data#carState.power),
         Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
@@ -154,14 +171,101 @@ propagateRearHandler(Event, Counter, Data) ->
 readAndPropagateFrontHandler(Event, Counter, Data) -> 
     if Counter > 1 ->
         launchEvent(launcher, [Event]),
-        Target = (lastElement(Data#carState.adj#adj.frontCars))#carState.name,
-        sendEvent(Target, {readAndPropagateFront, Event, Counter -1})
+        Hop = erlang:min(Counter, Data#carState.power),
+        sendNearFrontCars(Event, Data, Hop - 1),
+        Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
+        sendEvent(Target, {readAndPropagateFront, Event, Counter - Hop});
+    Counter == 1 ->
+        launchEvent(launcher, [Event])
+    end.
+
+
+sendNearFrontCars(Event, Data, Hop) ->
+    if Hop > 0 ->
+        Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
+        sendEvent(Target, Event),
+        sendNearFrontCars(Event, Data, Hop - 1)
     end.
 
 
 readAndPropagateRearHandler(Event, Counter, Data) -> 
     if Counter > 1 ->
         launchEvent(launcher, [Event]),
-        Target = (firstElement(Data#carState.adj#adj.rearCars))#carState.name,
-        sendEvent(Target, {readAndPropagateRear, Event, Counter -1})
+        Hop = erlang:min(Counter, Data#carState.power),
+        sendNearRearCars(Event, Data, Hop - 1),
+        Target = (firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
+        sendEvent(Target, {readAndPropagateRear, Event, Counter - Hop});
+    Counter == 1 ->
+        launchEvent(launcher, [Event])
     end.
+    
+    
+sendNearRearCars(Event, Data, Hop) ->
+    if Hop > 0 ->
+        Target = (firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
+        sendEvent(Target, Event),
+        sendNearRearCars(Event, Data, Hop - 1)
+    end.
+
+
+%%%===================================================================
+%%% spawn support processes
+%%%===================================================================
+
+
+%% Simulate a car crash after a given timeout
+killer(Timeout) ->
+    timer:apply_after(Timeout, gen_statem, call, [{global, ?MODULE}, crash]).
+
+%% Spawn a process that launches an event
+launchEvent(Handler, Args) -> 
+    log("launchEvent: ~p~p~n", [Handler, Args]),
+    spawn(?MODULE, Handler, Args).
+
+
+callTowTruck(Data) ->
+    Responses = sendToAllAdj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
+    callTowTruckWrap(Responses).
+
+
+callTowTruckWrap([{Car, Response} | Rest]) ->
+    if Response =/= ok ->
+        launchEvent(towTruck, [Car#carState.name, 3000])
+    end,
+    callTowTruckWrap(Rest).
+
+%% Launch a given event until success (polling)
+launcher(Event) ->
+    try gen_statem:call({global, ?MODULE}, Event) of 
+        _ -> { } 
+    catch 
+        exit:_ -> {launcher(Event)}; 
+        error:_ -> {launcher(Event)};
+        throw:_ -> {launcher(Event)} 
+    end. 
+
+
+next(NextState, Data, From) ->
+    log("STATE TRANSITION -> ~p", [NextState]),
+    if NextState =/= dead ->
+        launchEvent(launcher, [defaultBehaviour])
+    end,
+    {next_state, NextState, Data, [{reply, From, io:format(NextState)}]}.
+
+
+next(NextState, Data, From, Reply) ->
+    log("STATE TRANSITION -> ~p", [NextState]),
+    if NextState =/= dead ->
+        launchEvent(launcher, [defaultBehaviour])
+    end,
+    {next_state, NextState, Data, [{reply, From, Reply}]}.
+        
+
+keep(Data, From) ->
+    log("KEEP STATE"),
+    {keep_state, Data, [{reply, From, "keep_state"}]}.
+
+
+keep(Data, From, Reply) ->
+    log("KEEP STATE"),
+    {keep_state, Data, [{reply, From, Reply}]}.

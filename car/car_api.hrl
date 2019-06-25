@@ -9,12 +9,12 @@ bs() ->
     start_link(2).
 
 
-start_link(BridgeLength, Timeout) ->
-    gen_statem:start_link({global, ?MODULE}, ?MODULE, [BridgeLength, Timeout], []).
+start_link(bridgeCapacity, Timeout) ->
+    gen_statem:start_link({global, ?MODULE}, ?MODULE, [bridgeCapacity, Timeout], []).
 
 
-start_link(BridgeLength) ->
-    gen_statem:start_link({global, ?MODULE}, ?MODULE, [BridgeLength], []).
+start_link(bridgeCapacity) ->
+    gen_statem:start_link({global, ?MODULE}, ?MODULE, [bridgeCapacity], []).
  
 
 stop() ->
