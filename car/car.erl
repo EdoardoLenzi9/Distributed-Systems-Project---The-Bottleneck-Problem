@@ -6,23 +6,36 @@
 -include("car_api.hrl").
 -include("car_utils.hrl").
 
+
 %%%===================================================================
 %%% gen_statem callbacks
 %%%===================================================================
 
+%% TODO il web service ha una lista con l'ordine di sincronizzazione
+%% in fase di sincronizzazione tu chiami per la lista di sinc 
+%% una volta sincronizzati fai l'update della lista delle adiacenze
 
-init([bridgeCapacity, Timeout]) ->
+init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
     log("STATE Init - Broken car, Timeout:~p", [Timeout]),
+    % TODO call webservice
     Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(killer, [Timeout]),
     launchEvent(launcher, [init]),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeCapacity = bridgeCapacity, timeout=0}};
+    {ok, create, #carState{
+                            name = Name, 
+                            side = Side, 
+                            power = Power, 
+                            adj = getAdjacencies(Name), 
+                            arrivalTime = getTimeStamp(), 
+                            bridgeCapacity = BridgeCapacity, 
+                            bridgeCrossingTime = BridgeCrossingTime
+                        }};
 init([bridgeCapacity]) ->
     log("STATE Init"),
     Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(launcher, [defaultBehaviour]),
     log("STATE TRANSITION: Init -> Create"),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeCapacity = bridgeCapacity, timeout=0}}.
+    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeCapacity = bridgeCapacity}}.
         
 
 create({call, From}, Event, Data) ->
@@ -61,7 +74,7 @@ create({call, From}, Event, Data) ->
 queue({call, From}, Event, Data) ->
     case Event of
         crash ->
-            next(dead, updateTimeout(Data, 5000), From);
+            next(dead, Data, From);
         {propagateFront, Event, Counter} -> 
             propagateFrontHandler(Event, Counter, Data);
         {propagateRear, Event, Counter} -> 
@@ -88,7 +101,7 @@ queue({call, From}, Event, Data) ->
 leader({call, From}, Event, Data) ->
     case Event of
         crash ->
-            next(dead, updateTimeout(Data, 5000), From);
+            next(dead, Data, From);
         {propagateFront, Event, Counter} -> 
             propagateFrontHandler(Event, Counter, Data),
             keep(Data, From);
@@ -119,7 +132,7 @@ leader({call, From}, Event, Data) ->
 crossing({call, From}, Event, Data) ->
     case Event of
     crash ->
-        next(dead, updateTimeout(Data, 5000), From);
+        next(dead, Data, From);
     {propagateFront, Event, Counter} -> 
         propagateFrontHandler(Event, Counter, Data);
     {propagateRear, Event, Counter} -> 
@@ -146,7 +159,9 @@ dead({call, _From}, Event, _Data) ->
 %%% generic event handling
 %%%===================================================================
 
-
+% TODO se arriva una nuova macchina propaga un messaggio a TUTTI con il numero di salti 
+    % se la potenza e maggiore del numero di salti allora chiamo il web service per fare l'update della lista delle adiacenze
+% TODO se invio il check a distanza tot e un destinatario non mi puo rispondere direttamente?!?
 % ordine non serve 
 propagateFrontHandler(Event, Counter, Data) ->
     if Counter > 1 ->

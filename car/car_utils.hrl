@@ -20,11 +20,9 @@
 
 %%%===================================================================
 %%% list management
+%%         Front        Rear
+%%      [A, B, C] CAR [D, E, F]
 %%%===================================================================
-
-
-%    Front        Rear
-% [A, B, C] CAR [D, E, F]
 
 % [1,2,3] -> 3
 lastElement([ ]) ->
@@ -36,9 +34,14 @@ lastElement(List) ->
 lastElement([ ], _) ->
         -1;
 lastElement(List, Hop) ->
-    [Pivot] = lists:nthtail(length(List)-Hop, List),
-    Pivot.
-    
+    if Hop < length(List) ->
+        [Pivot] = lists:nthtail(length(List) - Hop, List),
+        Pivot;
+    true ->
+        -1
+    end.
+
+
 % [1,2,3] -> 1    
 firstElement([ ]) ->
     -1;
@@ -50,7 +53,11 @@ firstElement([ ], _) ->
 firstElement([First | _Rest], 1) ->
     First;
 firstElement([_First | Rest], Hop) ->
-    firstElement(Rest, Hop - 1).
+    if Hop < length(Rest) + 1 ->
+        firstElement(Rest, Hop - 1);
+    true ->
+        -1
+    end.
 
 
 %%%===================================================================
@@ -77,3 +84,4 @@ getPivotTime(Pivot) ->
     true ->
         {CurrentTime, Res}
     end.
+

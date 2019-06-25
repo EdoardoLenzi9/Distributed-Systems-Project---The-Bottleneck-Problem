@@ -6,32 +6,29 @@
 
 
 bs() -> 
-    start_link(2).
+    start_link(car1, left, 2, 3, 3000).
 
 
-start_link(bridgeCapacity, Timeout) ->
-    gen_statem:start_link({global, ?MODULE}, ?MODULE, [bridgeCapacity, Timeout], []).
+% TODO update api
+start_link(Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout) ->
+    gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout], []).
 
 
-start_link(bridgeCapacity) ->
-    gen_statem:start_link({global, ?MODULE}, ?MODULE, [bridgeCapacity], []).
+start_link(Name, Side, Power, BridgeCapacity, BridgeCrossingTime) ->
+    gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, BridgeCapacity, BridgeCrossingTime], []).
  
 
-stop() ->
-        gen_statem:stop({global, ?MODULE}).
+stop(Name) ->
+        gen_statem:stop({global, Name}).
 
 
-sync() ->
-        gen_statem:call({global, ?MODULE}, sync).
+sync(Name) ->
+        gen_statem:call({global, Name}, sync).
  
 
-crash() ->
-        gen_statem:call({global, ?MODULE}, crash).
+crash(Name) ->
+        gen_statem:call({global, Name}, crash).
 
 
-move() ->
-        gen_statem:call({global, ?MODULE}, move).
-
-
-newleader() ->
-        gen_statem:call({global, ?MODULE}, newleader).
+newleader(Name) ->
+        gen_statem:call({global, Name}, newleader).

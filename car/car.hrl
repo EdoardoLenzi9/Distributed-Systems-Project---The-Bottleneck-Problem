@@ -3,49 +3,52 @@
 %%%===================================================================
 
 -record (carState, {    
-                        power,
-                        bridgeCapacity,
+                        % car metadata
                         name,
-                        arrivalTime, 
+                        side,
+                        power,
                         delta,
-                        timeout, 
-                        adj 
+                        arrivalTime, 
+                        adj,
+                        % bridge metadata 
+                        bridgeCapacity,
+                        bridgeCrossingTime
                     }).
 
 
 -record (adj, { frontCars, 
-                rearCars }).
+                rearCars 
+              }).
 
 
 %%%===================================================================
 %%% update records
 %%%===================================================================
 
-updateTimeout(Data, Timeout) ->
-    #carState{  arrivalTime = Data#carState.arrivalTime, 
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                name = Data#carState.name,
-                delta = Data#carState.delta,
-                adj = Data#carState.adj,
-                timeout=Timeout }.
-
-
 updateAdj(Data, Adj) ->
-    #carState{  arrivalTime = Data#carState.arrivalTime, 
-                bridgeCapacity =  Data#carState.bridgeCapacity,
+    #carState{  
                 name = Data#carState.name,
+                side = Data#carState.side,
+                power = Data#carState.power,
                 delta = Data#carState.delta,
+                arrivalTime = Data#carState.arrivalTime, 
                 adj = Adj,
-                timeout=Data#carState.timeout }.
+                bridgeCapacity =  Data#carState.bridgeCapacity,
+                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
+            }.
 
 
 updateDelta(Data, Delta) ->
-    #carState{  arrivalTime = Data#carState.arrivalTime, 
-                bridgeCapacity =  Data#carState.bridgeCapacity,
+    #carState{  
                 name = Data#carState.name,
+                side = Data#carState.side,
+                power = Data#carState.power,
                 delta = Delta,
+                arrivalTime = Data#carState.arrivalTime, 
                 adj = Data#carState.adj,
-                timeout=Data#carState.timeout }.
+                bridgeCapacity =  Data#carState.bridgeCapacity,
+                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
+            }.
 
 
 %%%===================================================================
@@ -84,3 +87,10 @@ sendToAllAdj(List, Event) ->
         Responses
     end.
 
+
+%%%===================================================================
+%%% web service calls
+%%%===================================================================
+
+getAdjacencies() -> 
+    #adj{ frontCars = [], rearCars = []}.

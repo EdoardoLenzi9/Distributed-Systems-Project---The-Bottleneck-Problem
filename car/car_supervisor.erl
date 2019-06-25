@@ -6,14 +6,13 @@ start(Name) ->
     register(Name, self()),
     car:bs(),
     receive
+        % TODO update api
         crash ->
-            car:crash(); 
+            car:crash(Name); 
         stop ->
-            car:stop(); 
+            car:stop(Name); 
         sync ->
-            car:sync(); 
-        move ->
-            car:move();
+            car:sync(Name); 
         newleader ->
-            car:newleader()
+            car:newleader(Name)
     end.
