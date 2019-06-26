@@ -4,7 +4,10 @@
 start() ->
     io:format("hello world", []),
     inets:start(),
-    {ok, {{Version, 200, ReasonPhrase}, Headers, Body}} = httpc:request(get, {"http://localhost:8086/assets/index.html", []}, [], []).
-
+    httpc:request(post, {"http://localhost:8090/car/sync", "application/json", "application/json", "{
+        \"name\": \"car123\",
+        \"side\": \"left\",
+        \"power\": 2
+    }"}, [], []).
 main(args) ->
     start().

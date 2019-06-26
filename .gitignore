@@ -11,4 +11,5 @@ node_modules/
 
 # Files
 package-lock.json
-
+car/priv/
+car/jiffy.app

@@ -15,9 +15,13 @@ start(_StartType, _StartArgs) ->
         '_', %% Host match https://ninenines.eu/docs/en/cowboy/1.0/guide/routing/
         [
             % Simulation end points
-            {"/", simulation_controller, []},   %% returns the current simulation state
+            {"/simulation", simulation_controller, []},   %% returns the current simulation state
+
             % Car end points
             {"/car/sync", car_controller, []},        %% creates a new car
+            {"/car/adj", car_controller, []},        %% creates a new car
+
+            % Client 
             {"/assets/[...]", cowboy_static, {dir, "../../../../client"}}
         ]
     } ],

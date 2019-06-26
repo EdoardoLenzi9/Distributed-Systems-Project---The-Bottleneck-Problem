@@ -25,7 +25,7 @@ init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
                             name = Name, 
                             side = Side, 
                             power = Power, 
-                            adj = getAdjacencies(Name), 
+                            adj = getSyncAdj(Name, Side, Power), 
                             arrivalTime = getTimeStamp(), 
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
