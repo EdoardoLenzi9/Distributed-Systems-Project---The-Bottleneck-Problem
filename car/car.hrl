@@ -98,19 +98,19 @@ sendToAllAdj(List, Event) ->
                         power
                     }).
 
-unmarshalling_sync(Dto) ->
-    #carState{}.
-  
+
 
 %%%===================================================================
 %%% web service calls
 %%%===================================================================
 
 getSyncAdj(Name, Side, Power) -> 
-    Content = {[{name, Name}, {side, Side}, {power, Power}]},
-    http_client:call(post, "/car/sync", Content, unmarshalling_sync).
+    Content = {[{name, list_to_atom(Name)}, {side, list_to_atom(Side)}, {power, Power}]},
+    http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
 
-
+unmarshalling_sync(Dto) ->
+        io:format("~p", [Dto]),
+        #carState{}.
 
 %%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)

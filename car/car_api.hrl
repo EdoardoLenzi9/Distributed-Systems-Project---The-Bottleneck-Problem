@@ -6,7 +6,7 @@
 
 
 bs() -> 
-    start_link(car1, left, 2, 3, 3000).
+    start_link("car1", "right", 2, 3, 3000).
 
 
 % TODO update api
