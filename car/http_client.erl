@@ -10,12 +10,9 @@ call(Method, Uri, Content, Module, Unmarshalling) ->
     %    \"power\": 2
     %}"}, [], []).
     {ok, {_, _, Body}} = httpc:request(Method, {?URL ++ Uri, "application/json", "application/json", marshalling(Content)}, [], []),
-    Module:Unmarshalling(Body).
+    Module:Unmarshalling(jiffy:decode(Body)).
 
 
 marshalling(Content) ->
     jiffy:encode(Content).
 
-
-
-  

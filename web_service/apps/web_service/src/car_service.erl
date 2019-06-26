@@ -7,7 +7,7 @@ add_sync(Name, Side, Power) ->
     Adj = if Side == "left" -> 
         firstElements(Sync, Power);
     Side == "right" ->
-        lastElements(Sync, Power)
+        lists:reverse(lastElements(Sync, Power))
     end,    
     db_manager:add(#syncEntity{timeStamp = db_manager:getTimeStamp(), name = Name, side = Side, power = Power}),
     sync_marshalling(Adj).

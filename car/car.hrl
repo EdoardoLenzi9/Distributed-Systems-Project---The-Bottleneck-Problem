@@ -62,7 +62,7 @@ towTruck(Name, Timeout) ->
 
 
 sendEvent(Name, Event) ->
-    {list_to_atom(Name), list_to_atom(io:format("~p@~p", [Name, Name]))} ! Event,
+    {Name, list_to_atom(atom_to_list(Name) ++ "@" ++ atom_to_list(Name))} ! Event,
     receive
         Response ->
             Response        
@@ -105,12 +105,15 @@ sendToAllAdj(List, Event) ->
 %%%===================================================================
 
 getSyncAdj(Name, Side, Power) -> 
-    Content = {[{name, list_to_atom(Name)}, {side, list_to_atom(Side)}, {power, Power}]},
+    Content = {[{name, Name}, {side, list_to_atom(Side)}, {power, Power}]},
     http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
 
-unmarshalling_sync(Dto) ->
-        io:format("~p", [Dto]),
-        #carState{}.
+
+unmarshalling_sync([]) ->
+    [];
+unmarshalling_sync([First| Rest]) ->
+    { [ {<<"name">>, Name},{<<"side">>,Side},{<<"power">>,Power} ] } = First,
+    [#carState{name = binary_to_list(Name), side = binary_to_list(Side), power = Power} | unmarshalling_sync(Rest)].
 
 %%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)

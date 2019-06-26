@@ -17,27 +17,27 @@
 
 init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
     log("STATE Init - Broken car, Timeout:~p", [Timeout]),
-    launchEvent(killer, [Timeout]),
-    launchEvent(launcher, [defaultBehaviour]),
+    launchEvent(killer, [Name, Timeout]),
+    launchEvent(launcher, [Name, defaultBehaviour]),
     log("STATE TRANSITION: Init -> Create"),
     {ok, create, #carState{
                             name = Name, 
                             side = Side, 
                             power = Power, 
-                            adj = getSyncAdj(Name, Side, Power), 
+                            adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = getTimeStamp(), 
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
                         }};
 init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime]) ->
     log("STATE Init"),
-    launchEvent(launcher, [defaultBehaviour]),
+    launchEvent(launcher, [Name, defaultBehaviour]),
     log("STATE TRANSITION: Init -> Create"),
     {ok, create, #carState{
                             name = Name, 
                             side = Side, 
                             power = Power, 
-                            adj = getSyncAdj(Name, Side, Power), 
+                            adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = getTimeStamp(), 
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
@@ -46,7 +46,7 @@ init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime]) ->
 
 create({call, From}, Event, Data) ->
     log("STATE Create"),
-    case Event of
+    case Event of        
         engineCrash -> 
             launchEvent(towTruck, [2000]),
             next(dead, Data, From);
@@ -63,16 +63,17 @@ create({call, From}, Event, Data) ->
             no_sync;
         defaultBehaviour ->
             log("STATE Create - Event defaultBehaviour"),
-            callTowTruck(Data),
-            Responses = sendToAllAdj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
-            callTowTruck(Responses),
+            %callTowTruck(Data),
             if Data#carState.adj#adj.frontCars =/= [] ->
                 log("Syncronize with front car"),
-                Pivot = lastElement(Data#carState.adj#adj.frontCars),
-                next(queue, updateDelta(Data, berkeley(Pivot)), From);
+                %Pivot = lastElement(Data#carState.adj#adj.frontCars),
+                %next(queue, updateDelta(Data, berkeley(Pivot)), From);
+                keep(Data, From);
             true -> 
-                launchEvent(launcher, [defaultBehaviour]),
-                next(leader, Data, From)
+                log("The only car - no sync needed"),
+                keep(Data, From)
+                %launchEvent(launcher, [defaultBehaviour]),
+                %next(leader, Data, From)
             end
     end.
 
@@ -235,8 +236,8 @@ sendNearRearCars(Event, Data, Hop) ->
 
 
 %% Simulate a car crash after a given timeout
-killer(Timeout) ->
-    timer:apply_after(Timeout, gen_statem, call, [{global, ?MODULE}, crash]).
+killer(Name, Timeout) ->
+    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
 
 %% Spawn a process that launches an event
 launchEvent(Handler, Args) -> 
@@ -256,13 +257,15 @@ callTowTruckWrap([{Car, Response} | Rest]) ->
     callTowTruckWrap(Rest).
 
 %% Launch a given event until success (polling)
-launcher(Event) ->
-    try gen_statem:call({global, ?MODULE}, Event) of 
+launcher(Name, Event) ->
+    %gen_statem:call({global, Name}, Event).
+    %io:format("aiuttoo"),
+    try gen_statem:call({global, Name}, Event) of 
         _ -> { } 
     catch 
-        exit:_ -> {launcher(Event)}; 
-        error:_ -> {launcher(Event)};
-        throw:_ -> {launcher(Event)} 
+        exit:_ -> {launcher(Name, Event)}; 
+        error:_ -> {launcher(Name, Event)};
+        throw:_ -> {launcher(Name, Event)} 
     end. 
 
 
