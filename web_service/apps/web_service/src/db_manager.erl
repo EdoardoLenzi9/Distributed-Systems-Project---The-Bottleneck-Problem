@@ -4,8 +4,8 @@
 
 
 start() ->
-    mnesia:create_schema([node()]), 
     mnesia:start(),
+    mnesia:create_schema([node()]), 
     create_table_scheme().
     %initStettings(Turn, BridgeCapacity, BridgeCrossingTime).
 

@@ -10,7 +10,6 @@
 
 start(_StartType, _StartArgs) ->
     {ok, Pid} = 'web_service_sup':start_link(),
-    
     Routes = [ {
         '_', %% Host match https://ninenines.eu/docs/en/cowboy/1.0/guide/routing/
         [

@@ -25,19 +25,19 @@ content_types_provided(Req, State) ->
 
 handler(Req, State) ->
 	URL = cowboy_req:url(Req),
-	{ok, Body, Req2} = cowboy_req:body(Req),
-	{HTTP, Domain, Path, _, Qs} = mochiweb_util:urlsplit(binary_to_list(URL)),
+	Method = cowboy_req:method(Req),
+	{ok, Body, _Req2} = cowboy_req:body(Req),
+	{_HTTP, _Domain, Path, _, _Qs} = mochiweb_util:urlsplit(binary_to_list(URL)),
+	utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
 	ResponseBody = case Path of 
 		"/car/sync" ->
 			sync_handler(Body)
 	end,
-	Req3 = cowboy_req:set_resp_body(list_to_binary(ResponseBody), Req),
+	Req3 = cowboy_req:set_resp_body(ResponseBody, Req),
 	{true, Req3, State}.
 
 
 sync_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
 	{[{<<"name">>,Name},{<<"side">>,Side},{<<"power">>,Power}]} = DecodedTuple, 
-	%car_service:addSync(Name, list_to_atom(Side), Power),	
-	%Body.
-	"Fattoooo".
+	jiffy:encode(car_service:add_sync(binary_to_list(Name), binary_to_list(Side), Power)).

@@ -17,10 +17,9 @@
 
 init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
     log("STATE Init - Broken car, Timeout:~p", [Timeout]),
-    % TODO call webservice
-    Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(killer, [Timeout]),
-    launchEvent(launcher, [init]),
+    launchEvent(launcher, [defaultBehaviour]),
+    log("STATE TRANSITION: Init -> Create"),
     {ok, create, #carState{
                             name = Name, 
                             side = Side, 
@@ -30,12 +29,19 @@ init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
                         }};
-init([bridgeCapacity]) ->
+init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime]) ->
     log("STATE Init"),
-    Adj = #adj{frontCars = [], rearCars = []},
     launchEvent(launcher, [defaultBehaviour]),
     log("STATE TRANSITION: Init -> Create"),
-    {ok, create, #carState{adj = Adj, arrivalTime=1, bridgeCapacity = bridgeCapacity}}.
+    {ok, create, #carState{
+                            name = Name, 
+                            side = Side, 
+                            power = Power, 
+                            adj = getSyncAdj(Name, Side, Power), 
+                            arrivalTime = getTimeStamp(), 
+                            bridgeCapacity = BridgeCapacity, 
+                            bridgeCrossingTime = BridgeCrossingTime
+                        }}.
         
 
 create({call, From}, Event, Data) ->
@@ -147,11 +153,11 @@ crossing({call, From}, Event, Data) ->
     end.
 
 
-dead({call, _From}, Event, _Data) -> 
+dead({call, _From}, Event, Data) -> 
     case Event of
         removed ->
             % notifica agli altri
-            stop()
+            stop(Data#carState.name)
     end.
 
 

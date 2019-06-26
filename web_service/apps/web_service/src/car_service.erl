@@ -4,12 +4,14 @@
 
 add_sync(Name, Side, Power) ->
     Sync = db_manager:get_all(syncEntity),
-    Adj = if Side == left -> 
+    io:format("~p", [Sync]),
+    Adj = if Side == "left" -> 
         firstElements(Sync, Power);
-    Side == right ->
+    Side == "right" ->
         lastElements(Sync, Power)
     end,    
-db_manager:add(#syncEntity{timeStamp = db_manager:getTimeStamp(), name = Name, side = Side, power = Power}).
+    db_manager:add(#syncEntity{timeStamp = db_manager:getTimeStamp(), name = Name, side = Side, power = Power}),
+    sync_marshalling([]).
 
 
 lastElements(List, Hop) ->

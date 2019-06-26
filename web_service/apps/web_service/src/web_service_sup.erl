@@ -31,6 +31,7 @@ init([]) ->
                  intensity => 10,
                  period => 10},
     ChildSpecs = [],
+    db_manager:start(),
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
