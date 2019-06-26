@@ -3,7 +3,7 @@
 -include("entity.hrl").
 
 add_sync(Name, Side, Power) ->
-    Sync = db_manager:get_all(syncEntity),
+    Sync = order(db_manager:get_all(syncEntity)),
     io:format("~n~p", [Sync]),
     io:format("~n~p", [Power]),
     io:format("~n~p", [Side]),
@@ -13,22 +13,15 @@ add_sync(Name, Side, Power) ->
     Side == "right" ->
         lastElements(Sync, Power)
     end,    
-    io:format("~n~p", [Adj]),
-
-    %db_manager:clear(syncEntity),
-%    db_manager:addRange(Sync),
     db_manager:add(#syncEntity{timeStamp = db_manager:getTimeStamp(), name = Name, side = Side, power = Power}),
-
-    %io:format("~n~n~n ~p ~n~n~n", [sync_marshalling(Adj)]),
+    io:format("~n~p", [Adj]),
+    
+    io:format("~n~n~n ~p ~n~n~n", [sync_marshalling(Adj)]),
     sync_marshalling(Adj).
 
 
 lastElements(List, Hop) ->
-    if length(List) > Hop ->
-        lists:nthtail(length(List) - Hop, List);
-    true -> 
-        List
-    end.
+    lists:nthtail(length(List) - erlang:min(length(List), Hop), List).
 
 
 firstElements([ ], _) ->
@@ -39,3 +32,18 @@ firstElements([ ], _) ->
         true -> 
             [ ]
         end.
+
+
+order(List) ->
+    F = fun(X, Y) -> 
+        if X#syncEntity.side == "right", Y#syncEntity.side == "right" -> 
+            X#syncEntity.timeStamp < Y#syncEntity.timeStamp;
+        X#syncEntity.side == "right", Y#syncEntity.side == "left" ->
+            false;
+        X#syncEntity.side == "left", Y#syncEntity.side == "right" ->
+            true; 
+        X#syncEntity.side == "left", Y#syncEntity.side == "left" -> 
+            X#syncEntity.timeStamp > Y#syncEntity.timeStamp
+            end
+        end,
+    lists:sort(F, List).

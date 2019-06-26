@@ -30,4 +30,4 @@
 sync_marshalling([]) ->
     [];
 sync_marshalling([First|Rest]) ->
-    [ {[{name, First#syncEntity.name}, {side, First#syncEntity.side}, {power, First#syncEntity.power}]} | sync_marshalling(Rest)].
+    [ {[{name, list_to_atom(First#syncEntity.name)}, {side, list_to_atom(First#syncEntity.side)}, {power, First#syncEntity.power}]} | sync_marshalling(Rest)].

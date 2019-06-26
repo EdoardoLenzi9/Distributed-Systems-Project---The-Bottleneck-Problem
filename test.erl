@@ -1,15 +1,31 @@
 -module(test).
 -compile(export_all).
+-record(syncEntity, {              
+                        timeStamp,             
+                        name,
+                        side,
+                        power
+                    }).
 
 start() ->
-    A = [1,2,3,4,5,6],
-    firstElements([], 3).
+    F = fun(X, Y) -> 
+        %X#syncEntity.timeStamp > Y#syncEntity.timeStamp
+        if X#syncEntity.side == "right", Y#syncEntity.side == "right" -> 
+            X#syncEntity.timeStamp > Y#syncEntity.timeStamp;
+        X#syncEntity.side == "right", Y#syncEntity.side == "left" ->
+            true;
+        X#syncEntity.side == "left", Y#syncEntity.side == "right" ->
+            false; 
+        X#syncEntity.side == "left", Y#syncEntity.side == "left" -> 
+            X#syncEntity.timeStamp < Y#syncEntity.timeStamp
+            end
+        end,
+    List = [
+        #syncEntity{timeStamp = 1, side = "right"},
+        #syncEntity{timeStamp = 2, side = "left"},
+        #syncEntity{timeStamp = 3, side = "right"},
+        #syncEntity{timeStamp = 4, side = "left"},
+        #syncEntity{timeStamp = 5, side = "right"}
+    ],
 
-firstElements([ ], _) ->
-    [ ];
-firstElements([First | Rest], Hop) ->
-    if Hop > 0 -> 
-        [First | firstElements(Rest, Hop - 1)];
-    true -> 
-        [ ]
-    end.
+    lists:sort(F, List).
