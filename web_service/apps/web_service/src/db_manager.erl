@@ -16,6 +16,28 @@ create_table_scheme() ->
     mnesia:create_table(adjEntity, [{attributes, record_info(fields, adjEntity)}]).
 
 
+addRange(List) ->
+    if length(List) > 0 -> 
+        Fun = fun() ->
+            addRangeWrapper(List)
+    	end,
+        mnesia:transaction(Fun);
+    true ->
+        ok
+    end.    
+
+
+addRangeWrapper([First | Rest]) ->
+    mnesia:write(First),
+    addRangeWrapper(Rest);
+addRangeWrapper([]) ->
+    ok.
+
+
+clear(Entity) ->
+    mnesia:clear_table(Entity).
+
+
 add(Item) ->
     Fun = fun() -> mnesia:write(Item) end,
     mnesia:transaction(Fun).
@@ -23,7 +45,8 @@ add(Item) ->
 
 get_all(Entity) ->
     F = fun() -> mnesia:select(Entity,[{'_',[],['$_']}]) end,
-    mnesia:transaction(F).
+    {atomic, Data} = mnesia:transaction(F),
+    Data.
 
 
 getTimeStamp() ->

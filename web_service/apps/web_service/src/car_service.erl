@@ -4,14 +4,23 @@
 
 add_sync(Name, Side, Power) ->
     Sync = db_manager:get_all(syncEntity),
-    io:format("~p", [Sync]),
+    io:format("~n~p", [Sync]),
+    io:format("~n~p", [Power]),
+    io:format("~n~p", [Side]),
+    io:format("~n~p", [Name]),
     Adj = if Side == "left" -> 
         firstElements(Sync, Power);
     Side == "right" ->
         lastElements(Sync, Power)
     end,    
+    io:format("~n~p", [Adj]),
+
+    %db_manager:clear(syncEntity),
+%    db_manager:addRange(Sync),
     db_manager:add(#syncEntity{timeStamp = db_manager:getTimeStamp(), name = Name, side = Side, power = Power}),
-    sync_marshalling([]).
+
+    %io:format("~n~n~n ~p ~n~n~n", [sync_marshalling(Adj)]),
+    sync_marshalling(Adj).
 
 
 lastElements(List, Hop) ->
@@ -22,20 +31,11 @@ lastElements(List, Hop) ->
     end.
 
 
-firstElements(List, Hop) -> 
-    Result = firstElementsWrapper(List, Hop),
-    if length(Result) > 0 ->
-        [[], Rest] = Result,
-        Rest;
-    true ->
-        []
-    end.
-
-firstElementsWrapper([ ], _) ->
-    [ ];
-firstElementsWrapper([First | Rest], Hop) ->
-    if Hop > 0 -> 
-        [firstElementsWrapper(Rest, Hop - 1) | First];
-    true -> 
-        [ ]
-    end.
+firstElements([ ], _) ->
+        [ ];
+    firstElements([First | Rest], Hop) ->
+        if Hop > 0 -> 
+            [First | firstElements(Rest, Hop - 1)];
+        true -> 
+            [ ]
+        end.
