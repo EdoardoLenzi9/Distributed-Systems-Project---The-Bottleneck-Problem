@@ -21,6 +21,18 @@ iframe{
 }
 
 
+.vspace-10{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+.vspace-20{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
 .full-width{
 	width: 100%
 }
@@ -42,6 +54,14 @@ iframe{
 	#small-left-panel{
 		display: block;
 	}
+
+	.vspace-10{
+		margin-bottom: 10px;
+	}
+
+	.vspace-20{
+		margin-bottom: 0px;
+	}
 }
 
 
@@ -59,5 +79,13 @@ iframe{
 
 	#small-left-panel{
 		display: none;
+	}
+
+	.vspace-10{
+		margin-bottom: 5px;
+	}
+
+	.vspace-20{
+		margin-bottom: 20px;
 	}
 }

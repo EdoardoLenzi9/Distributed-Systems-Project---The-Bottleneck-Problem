@@ -18,8 +18,7 @@ content_types_accepted(Req, State) ->
 
 
 content_types_provided(Req, State) ->
-	{[
-		{<<"application/json">>, handler}
+	{[{<<"application/json">>, handler}
 	], Req, State}.
 
 
