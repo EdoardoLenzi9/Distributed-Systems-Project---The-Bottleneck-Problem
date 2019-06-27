@@ -14,44 +14,51 @@ add(Name, Side, Power, ArrivalTime, Delta, State) ->
 
 get_all(Name, Side) ->
     split(order(db_manager:get_all(adjEntity)), Name, Side).
-
-
+                                
+                                
 split(List, Name, Side) ->
     ItemIndex = get_index(List, Name, 0),
     [split_left(List, ItemIndex, Side), split_right(List, ItemIndex, Side)].
 
 
-split_left(List, -1, "left") ->
+split_left(List, -1, "right") ->
     List;
-split_left(_List, -1, "right") ->
+split_left(_List, -1, "left") ->
     [];
 split_left(_List, 0, _Side) ->
     [];
-split_left([First, Rest], ItemIndex, Side) ->
+split_left([First | Rest], ItemIndex, Side) ->
     [First | split_left(Rest, ItemIndex - 1, Side)].
 
 
 split_right(List, ItemIndex, Side) -> 
-    split_right_wrapper(List, ItemIndex -1, Side).
+    RightChunk = split_right_wrapper(List, ItemIndex - 1, Side),
+    if length(RightChunk) > 0, ItemIndex =/= -1 -> 
+        [_First | Rest] = RightChunk,
+        Rest;
+    true -> 
+        RightChunk
+    end.
 
 
-split_right_wrapper(_List, - 2, "left") ->
+split_right_wrapper(_List, -2, "right") ->
     [];
-split_right_wrapper(List, - 2, "right") ->
+split_right_wrapper(List, -2, "left") ->
     List;
 split_right_wrapper([], _ItemIndex, _Side) ->
     [];
-split_right_wrapper([First, Rest], ItemIndex, Side) ->
-    if ItemIndex > - 1 -> 
+split_right_wrapper([First | Rest], ItemIndex, Side) ->
+    if ItemIndex > -1 -> 
         split_right_wrapper(Rest, ItemIndex - 1, Side);
     true ->
-        [ First | split_right_wrapper(Rest, ItemIndex - 1, Side) ]
+        [ First | split_right_wrapper(Rest, ItemIndex, Side) ]
     end.
+
 
 
 get_index([], _Name, _Counter) ->
     -1;
-get_index([First, Rest], Name, Counter) ->
+get_index([First | Rest], Name, Counter) ->
     if First#adjEntity.name == Name ->
         Counter;
     true ->
