@@ -23,6 +23,10 @@ content_types_provided(Req, State) ->
 	], Req, State}.
 
 
+%%%===================================================================
+%%% end-points
+%%%===================================================================
+
 handler(Req, State) ->
 	URL = cowboy_req:url(Req),
 	Method = cowboy_req:method(Req),
@@ -31,7 +35,9 @@ handler(Req, State) ->
 	utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
 	ResponseBody = case Path of 
 		"/car/sync" ->
-			sync_handler(Body)
+			sync_handler(Body);
+		"/car/adj" ->
+			adj_handler(Body)
 	end,
 	Req3 = cowboy_req:set_resp_body(ResponseBody, Req),
 	{true, Req3, State}.
@@ -39,5 +45,25 @@ handler(Req, State) ->
 
 sync_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
-	{[{<<"name">>,Name},{<<"side">>,Side},{<<"power">>,Power}]} = DecodedTuple, 
-	jiffy:encode(car_service:add_sync(binary_to_list(Name), binary_to_list(Side), Power)).
+	{[	{<<"name">>, Name},
+		{<<"side">>, Side},
+		{<<"power">>, Power} ]} = DecodedTuple, 
+	jiffy:encode(car_service:add_sync(	binary_to_list(Name), 
+										binary_to_list(Side), 
+										Power )).
+
+
+adj_handler(Body) ->
+	DecodedTuple = jiffy:decode(Body),
+	{[	{<<"name">>, Name},
+		{<<"side">>, Side},
+		{<<"power">>, Power},
+		{<<"arrivalTime">>, ArrivalTime},
+		{<<"delta">>, Delta},
+		{<<"state">>, State} ]} = DecodedTuple, 
+	jiffy:encode(car_service:add_adj(	binary_to_list(Name), 
+										binary_to_list(Side), 
+										Power, 
+										ArrivalTime, 
+										Delta, 
+										binary_to_list(State) )).

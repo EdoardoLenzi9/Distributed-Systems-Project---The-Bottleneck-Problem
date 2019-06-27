@@ -4,4 +4,4 @@
 
 
 initStettings(Turn, BridgeCapacity, BridgeCrossingTime) ->
-    db_manager:add(#settings{turn = Turn, bridgeCapacity = BridgeCapacity, bridgeCrossingTime = BridgeCrossingTime}).
+    db_manager:add(#settingsEntity{turn = Turn, bridgeCapacity = BridgeCapacity, bridgeCrossingTime = BridgeCrossingTime}).

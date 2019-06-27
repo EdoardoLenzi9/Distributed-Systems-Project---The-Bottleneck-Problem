@@ -70,7 +70,8 @@ sendEvent(Name, Event) ->
             no_response
     end. 
 
-
+sendToAllAdjWrap([], _Event) -> 
+    [];
 sendToAllAdjWrap([Car], Event) -> 
     sendEvent(Car#carState.name, Event);
 sendToAllAdjWrap([FirstCar | Rest], Event) -> 

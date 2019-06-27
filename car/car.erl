@@ -63,17 +63,14 @@ create({call, From}, Event, Data) ->
             no_sync;
         defaultBehaviour ->
             log("STATE Create - Event defaultBehaviour"),
-            %callTowTruck(Data),
+            callTowTruck(Data),
             if Data#carState.adj#adj.frontCars =/= [] ->
                 log("Syncronize with front car"),
-                %Pivot = lastElement(Data#carState.adj#adj.frontCars),
-                %next(queue, updateDelta(Data, berkeley(Pivot)), From);
-                keep(Data, From);
+                Pivot = lastElement(Data#carState.adj#adj.frontCars),
+                next(queue, updateDelta(Data, berkeley(Pivot)), From);
             true -> 
                 log("The only car - no sync needed"),
-                keep(Data, From)
-                %launchEvent(launcher, [defaultBehaviour]),
-                %next(leader, Data, From)
+                next(leader, Data, From)
             end
     end.
 
@@ -195,8 +192,13 @@ readAndPropagateFrontHandler(Event, Counter, Data) ->
         launchEvent(launcher, [Event]),
         Hop = erlang:min(Counter, Data#carState.power),
         sendNearFrontCars(Event, Data, Hop - 1),
-        Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
-        sendEvent(Target, {readAndPropagateFront, Event, Counter - Hop});
+        Target = lastElement(Data#carState.adj#adj.frontCars, Hop),
+        if Target =/= [] ->
+            TargetName = Target#carState.name,
+            sendEvent(TargetName, {readAndPropagateFront, Event, Counter - Hop});
+        true ->
+            []
+        end;
     Counter == 1 ->
         launchEvent(launcher, [Event])
     end.
@@ -204,9 +206,14 @@ readAndPropagateFrontHandler(Event, Counter, Data) ->
 
 sendNearFrontCars(Event, Data, Hop) ->
     if Hop > 0 ->
-        Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
-        sendEvent(Target, Event),
-        sendNearFrontCars(Event, Data, Hop - 1)
+        Target = lastElement(Data#carState.adj#adj.frontCars, Hop),
+        if Target =/= [] ->
+            TargetName = Target#carState.name,
+            sendEvent(TargetName, Event),
+            sendNearFrontCars(Event, Data, Hop - 1);
+        true ->
+            []
+        end
     end.
 
 
@@ -215,8 +222,13 @@ readAndPropagateRearHandler(Event, Counter, Data) ->
         launchEvent(launcher, [Event]),
         Hop = erlang:min(Counter, Data#carState.power),
         sendNearRearCars(Event, Data, Hop - 1),
-        Target = (firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
-        sendEvent(Target, {readAndPropagateRear, Event, Counter - Hop});
+        Target = firstElement(Data#carState.adj#adj.rearCars, Hop),
+        if Target =/= [] ->
+            TargetName = Target#carState.name,
+            sendEvent(TargetName, {readAndPropagateRear, Event, Counter - Hop});
+        true ->
+            []
+        end;
     Counter == 1 ->
         launchEvent(launcher, [Event])
     end.
@@ -224,9 +236,14 @@ readAndPropagateRearHandler(Event, Counter, Data) ->
     
 sendNearRearCars(Event, Data, Hop) ->
     if Hop > 0 ->
-        Target = (firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
-        sendEvent(Target, Event),
-        sendNearRearCars(Event, Data, Hop - 1)
+        Target = firstElement(Data#carState.adj#adj.rearCars, Hop),
+        if Target =/= [] ->
+            TargetName = Target#carState.name,
+            sendEvent(TargetName, Event),
+            sendNearRearCars(Event, Data, Hop - 1);
+        true ->
+            []
+        end
     end.
 
 
@@ -249,7 +266,8 @@ callTowTruck(Data) ->
     Responses = sendToAllAdj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
     callTowTruckWrap(Responses).
 
-
+callTowTruckWrap([]) ->
+    [];
 callTowTruckWrap([{Car, Response} | Rest]) ->
     if Response =/= ok ->
         launchEvent(towTruck, [Car#carState.name, 3000])
@@ -258,29 +276,30 @@ callTowTruckWrap([{Car, Response} | Rest]) ->
 
 %% Launch a given event until success (polling)
 launcher(Name, Event) ->
+    timer:apply_after(500, gen_statem, call, [{global, Name}, Event]).
     %gen_statem:call({global, Name}, Event).
     %io:format("aiuttoo"),
-    try gen_statem:call({global, Name}, Event) of 
-        _ -> { } 
-    catch 
-        exit:_ -> {launcher(Name, Event)}; 
-        error:_ -> {launcher(Name, Event)};
-        throw:_ -> {launcher(Name, Event)} 
-    end. 
+    %try gen_statem:call({global, Name}, Event) of 
+    %    _ -> { } 
+    %catch 
+    %    exit:_ -> {launcher(Name, Event)}; 
+    %    error:_ -> {launcher(Name, Event)};
+    %    throw:_ -> {launcher(Name, Event)} 
+    %end. 
 
 
 next(NextState, Data, From) ->
     log("STATE TRANSITION -> ~p", [NextState]),
     if NextState =/= dead ->
-        launchEvent(launcher, [defaultBehaviour])
+        launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
-    {next_state, NextState, Data, [{reply, From, io:format(NextState)}]}.
+    {next_state, NextState, Data, [{reply, From, atom_to_list(NextState)}]}.
 
 
 next(NextState, Data, From, Reply) ->
     log("STATE TRANSITION -> ~p", [NextState]),
     if NextState =/= dead ->
-        launchEvent(launcher, [defaultBehaviour])
+        launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
     {next_state, NextState, Data, [{reply, From, Reply}]}.
         
