@@ -25,14 +25,14 @@
                 <div class="col-12 col-md-4 align-self-center">
                     <!--Turn time-->
                     <div class="row vspace">
-                        <input type="number" id="turn" class="form-control col-input" placeholder="Turn time" aria-label="Turn time"
+                        <input type="number" id="turn" class="form-control col-input" placeholder="Turn time (1000)" aria-label="Turn time"
                             aria-describedby="button-addon4">
                     </div>
                 </div>
                 <div class="col-12 col-md-4 align-self-center">
-                    <!--Bridge Length-->
+                    <!--Bridge Capacity-->
                     <div class="row vspace">
-                        <input type="number" id="bridge-length" class="form-control col-input" placeholder="Bridge length" aria-label="Bridge length"
+                        <input type="number" id="bridge-capacity" class="form-control col-input" placeholder="Bridge capacity (2)" aria-label="Bridge capacity"
                             aria-describedby="button-addon4">
                     </div>
                 </div>
@@ -41,7 +41,7 @@
                 <div class="col-12 col-md-4 align-self-center">
                     <!--Bridge Crossing Time-->
                     <div class="row vspace">
-                        <input type="number" id="bridge-crossing-time" class="form-control col-input" placeholder="Bridge crossing time" aria-label="Bridge crossing time"
+                        <input type="number" id="bridge-crossing-time" class="form-control col-input" placeholder="Bridge crossing time (2000)" aria-label="Bridge crossing time"
                             aria-describedby="button-addon4">
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                     <div class="row vspace-10">
                         <div class="col">
                         <button type="button" class="btn btn-primary btn-block"
-                            onclick="CreateCar('left')">Save</button>
+                            onclick="SaveSettings()">Save</button>
                     </div> </div>
                 </div>
                 <div class="col-0 col-md-2"></div>
@@ -185,7 +185,22 @@
                     </div>
                 </div>
             </div>
+            <div class="row vspace">
+                <div class="col-0 col-md-2"></div>
+                <div class="col-12 col-md-8 ">  
+                    <div id="random-field">
+                        <button type="button" class="btn btn-primary btn-block"
+                        onclick="SwitchMode()">Random mode</button>
+                    </div> 
+                    <div class="d-none" id="manual-field">
+                        <button type="button" class="btn btn-primary btn-block"
+                        onclick="SwitchMode()">Manual mode</button>
+                    </div> 
+                </div>
+                <div class="col-0 col-md-2"></div>
+            </div>
         </div>
     </body>
+    <script src="utils/utils.js"></script>
     <script src="index.js"></script>
 </html>

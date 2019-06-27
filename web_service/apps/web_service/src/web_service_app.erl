@@ -25,7 +25,8 @@ start(_StartType, _StartArgs) ->
             {"/car/state", car_controller, []},                 %% update car state
 
             % Client 
-            {"/assets/[...]", cowboy_static, {dir, "../../../../client"}}
+            {"/", cowboy_static, {file, "../../../../client/index.html"}},
+            {"/[...]", cowboy_static, {dir, "../../../../client"}}
         ]
     } ],
     Dispatch = cowboy_router:compile(Routes),

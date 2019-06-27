@@ -1,3 +1,19 @@
+var host = window.location.origin;
+var settings;
+var manualGeneration = false;
+
+
+Read("environment.json", function(env){
+    var environment = JSON.parse(env);
+    host = environment.host; 
+    settings = {
+        turn:               env.turn,
+        bridgeCapacity:     env.bridgeCapacity,
+        bridgeCrossingTime: env.bridgeCrossingTime
+    }
+})
+
+
 function CreateCar(side){
     var parameters = {
         direction:  side,
@@ -10,7 +26,20 @@ function CreateCar(side){
     }
     console.dir(parameters);
 
-    httpGetAsync(window.location.origin + '/car', function(content){
+    httpGetAsync(host + '/car', function(content){
+        alert(content);
+    })
+}
+
+
+function SaveSettings(){
+    var parameters = {
+        turn:               $('#turn')[0].value,
+        bridgeCapacity:     $('#bridge-capacity')[0].value,
+        bridgeCrossingTime: $('#bridge-crossing-time')[0].value
+    }
+
+    httpPostAsync('/simulation/init', parameters, function(content){
         alert(content);
     })
 }
@@ -35,6 +64,24 @@ function httpGetAsync( uri, callback ){
 }
 
 
+function httpPostAsync( uri, params, callback ){
+    var http = new XMLHttpRequest();
+    var url = host + "" + uri
+    console.log(url)
+    http.open('POST', url, true);
+
+    //Send the proper header information along with the request
+    http.setRequestHeader('Content-Type', 'application/json');
+
+    http.onreadystatechange = function() {//Call a function when the state changes.
+        if(http.readyState == 4 && http.status == 200) {
+            callback(http.responseText);
+        }
+    }
+    http.send(JSON.stringify(params));
+}
+
+
 function HideTimer(side){
     $( '#' + side + '-timer-mask' ).removeClass( 'd-block' ).addClass( 'd-hide' );
     $( '#' + side + '-timer' )[ 0 ].value = '';
@@ -43,4 +90,15 @@ function HideTimer(side){
 
 function ShowTimer(side){
     $( '#' + side + '-timer-mask' ).removeClass( 'd-hide' ).addClass( 'd-block' );
+}
+
+function SwitchMode(){
+    manualGeneration = !manualGeneration;
+    if(manualGeneration){
+        $( '#random-field' ).removeClass( 'd-block' ).addClass( 'd-none' );
+        $( '#manual-field' ).removeClass( 'd-none' ).addClass( 'd-block' );
+    } else {
+        $( '#random-field' ).removeClass( 'd-none' ).addClass( 'd-block' );
+        $( '#manual-field' ).removeClass( 'd-block' ).addClass( 'd-none' );   
+    }
 }
