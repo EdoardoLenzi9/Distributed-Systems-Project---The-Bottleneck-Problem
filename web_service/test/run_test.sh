@@ -1,8 +1,9 @@
 #!/bin/bash
 
-cp -r ../apps/web_service/src .
-mv src tmp
+#cp -r ../apps/web_service/src .
+#mv src tmp
 cp *.erl ./tmp/
+#TODO
 #sudo sh ../../setup_jiffy.sh
 cd ./tmp 
 
