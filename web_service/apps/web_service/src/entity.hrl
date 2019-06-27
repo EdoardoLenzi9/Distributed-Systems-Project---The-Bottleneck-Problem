@@ -30,20 +30,20 @@
 sync_marshalling([]) ->
     [];
 sync_marshalling([First|Rest]) ->
-    [{[ {name, list_to_atom(First#syncEntity.name)}, 
-        {side, list_to_atom(First#syncEntity.side)}, 
+    [{[ {name, First#syncEntity.name}, 
+        {side, First#syncEntity.side}, 
         {power, First#syncEntity.power} ]} | sync_marshalling(Rest)].
 
 
 adj_marshalling([]) ->
     [];
 adj_marshalling([First|Rest]) ->
-    [{[ {name, list_to_atom(First#adjEntity.name)}, 
-        {side, list_to_atom(First#adjEntity.side)}, 
+    [{[ {name, First#adjEntity.name}, 
+        {side, First#adjEntity.side}, 
         {power, First#adjEntity.power}, 
         {arrivalTime, First#adjEntity.arrivalTime},
         {delta, First#adjEntity.delta},
-        {state, list_to_atom(First#adjEntity.state)} ]} | adj_marshalling(Rest)].
+        {state, First#adjEntity.state} ]} | adj_marshalling(Rest)].
 
 
 settings_marshalling(Settings) ->

@@ -3,90 +3,32 @@
 -include("entity.hrl").
 
 
-add(Name, Side, Power, ArrivalTime, Delta, State) ->
-    db_manager:add(#adjEntity{  arrivalTime = ArrivalTime, 
-                                name = Name, 
-                                side = Side, 
-                                power = Power, 
-                                delta = Delta, 
-                                state = State }).
+%%%===================================================================
+%%% public functions
+%%%===================================================================
+
+add(Entity) ->
+    db_manager:add(Entity).
 
 
-get_all(Name, Side) ->
-    split(order(db_manager:get_all(adjEntity)), Name, Side).
-                                
-                                
-split(List, Name, Side) ->
-    ItemIndex = get_index(List, Name, 0),
-    [split_left(List, ItemIndex, Side), split_right(List, ItemIndex, Side)].
+get_all() ->
+    order(db_manager:get_all(adjEntity)).
 
 
-split_left(List, -1, "right") ->
-    List;
-split_left(_List, -1, "left") ->
-    [];
-split_left(_List, 0, _Side) ->
-    [];
-split_left([First | Rest], ItemIndex, Side) ->
-    [First | split_left(Rest, ItemIndex - 1, Side)].
-
-
-split_right(List, ItemIndex, Side) -> 
-    RightChunk = split_right_wrapper(List, ItemIndex - 1, Side),
-    if length(RightChunk) > 0, ItemIndex =/= -1 -> 
-        [_First | Rest] = RightChunk,
-        Rest;
-    true -> 
-        RightChunk
-    end.
-
-
-split_right_wrapper(_List, -2, "right") ->
-    [];
-split_right_wrapper(List, -2, "left") ->
-    List;
-split_right_wrapper([], _ItemIndex, _Side) ->
-    [];
-split_right_wrapper([First | Rest], ItemIndex, Side) ->
-    if ItemIndex > -1 -> 
-        split_right_wrapper(Rest, ItemIndex - 1, Side);
-    true ->
-        [ First | split_right_wrapper(Rest, ItemIndex, Side) ]
-    end.
-
-
-
-get_index([], _Name, _Counter) ->
-    -1;
-get_index([First | Rest], Name, Counter) ->
-    if First#adjEntity.name == Name ->
-        Counter;
-    true ->
-        get_index(Rest, Name, Counter + 1)
-    end.
-
-
-get_left(Name, Counter) ->
-    [Left , Right] = get_all(Name, "left"),
-    [ utils:first_elements(Right, Counter), lists:reverse(utils:last_elements(Left, Counter)) ].
-
-
-get_right(Name, Counter) ->
-    [Left , Right] = get_all(Name, "right"),
-    [ lists:reverse(utils:last_elements(Left, Counter)), utils:first_elements(Right, Counter) ].
-
+%%%===================================================================
+%%% private functions
+%%%===================================================================
 
 order(List) ->
     F = fun(X, Y) -> 
-        if X#adjEntity.side == "right", Y#adjEntity.side == "right" -> 
+        if X#adjEntity.side == right, Y#adjEntity.side == right -> 
             X#adjEntity.arrivalTime + X#adjEntity.delta < Y#adjEntity.arrivalTime + Y#adjEntity.delta;
-        X#adjEntity.side == "right", Y#adjEntity.side == "left" ->
+        X#adjEntity.side == right, Y#adjEntity.side == left ->
             false;
-        X#adjEntity.side == "left", Y#adjEntity.side == "right" ->
+        X#adjEntity.side == left, Y#adjEntity.side == right ->
             true; 
-        X#adjEntity.side == "left", Y#adjEntity.side == "left" -> 
+        X#adjEntity.side == left, Y#adjEntity.side == left -> 
             X#adjEntity.arrivalTime + X#adjEntity.delta > Y#adjEntity.arrivalTime + Y#adjEntity.delta
             end
         end,
     lists:sort(F, List).
-

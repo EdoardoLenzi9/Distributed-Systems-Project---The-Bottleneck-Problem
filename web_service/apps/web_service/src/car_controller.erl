@@ -2,7 +2,7 @@
 %% @doc car handler.
 -module(car_controller).
 -compile(export_all).
-
+-include("entity.hrl").
 
 init(Req, Opts) ->
 	{cowboy_rest, Req, Opts}.
@@ -48,9 +48,10 @@ sync_handler(Body) ->
 	{[	{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power} ]} = DecodedTuple, 
-	jiffy:encode(car_service:add_sync(	binary_to_list(Name), 
-										binary_to_list(Side), 
-										Power )).
+	jiffy:encode(car_service:sync(#syncEntity{	name = list_to_atom(binary_to_list(Name)), 
+												side = list_to_atom(binary_to_list(Side)), 
+												power = Power,
+												timeStamp = utils:get_timestamp() })).
 
 
 adj_handler(Body) ->
@@ -61,9 +62,9 @@ adj_handler(Body) ->
 		{<<"arrivalTime">>, ArrivalTime},
 		{<<"delta">>, Delta},
 		{<<"state">>, State} ]} = DecodedTuple, 
-	jiffy:encode(car_service:add_adj(	binary_to_list(Name), 
-										binary_to_list(Side), 
-										Power, 
-										ArrivalTime, 
-										Delta, 
-										binary_to_list(State) )).
+	jiffy:encode(car_service:adj(#adjEntity{ 	name = list_to_atom(binary_to_list(Name)), 
+											 	side = list_to_atom(binary_to_list(Side)), 
+											 	power = Power, 
+											 	arrivalTime = ArrivalTime, 
+												delta = Delta, 
+												state = list_to_atom(binary_to_list(State)) })).

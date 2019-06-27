@@ -110,6 +110,11 @@ getSyncAdj(Name, Side, Power) ->
     http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
 
 
+getAdj(Name, Side, Power) -> 
+    Content = {[{name, Name}, {side, list_to_atom(Side)}, {power, Power}]},
+    http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
+
+
 unmarshalling_sync([]) ->
     [];
 unmarshalling_sync([First| Rest]) ->
