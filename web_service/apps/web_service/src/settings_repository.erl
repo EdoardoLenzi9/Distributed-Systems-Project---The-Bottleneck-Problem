@@ -2,6 +2,14 @@
 -compile(export_all).
 -include("entity.hrl").
 
+%%%===================================================================
+%%% public functions
+%%%===================================================================
 
-initStettings(Turn, BridgeCapacity, BridgeCrossingTime) ->
-    db_manager:add(#settingsEntity{turn = Turn, bridgeCapacity = BridgeCapacity, bridgeCrossingTime = BridgeCrossingTime}).
+add(Entity) ->
+    db_manager:clear(settingsEntity),
+    db_manager:add(Entity).
+
+
+get_all() ->
+    db_manager:get_all(settingsEntity).

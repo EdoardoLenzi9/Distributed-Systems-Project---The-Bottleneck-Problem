@@ -17,11 +17,18 @@
 
 
 -record(settingsEntity, {
-                    turn,
-                    bridgeCapacity,
-                    bridgeCrossingTime
-                }).
+                            turn,
+                            bridgeCapacity,
+                            bridgeCrossingTime
+                        }).
 
+
+-record(newCarEntity, {
+                        name,
+                        side,
+                        power,
+                        timeout  
+                    }).
 
 %%%===================================================================
 %%% Marshalling (Entity -> Dto)

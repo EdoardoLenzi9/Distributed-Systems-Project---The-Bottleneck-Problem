@@ -6,12 +6,13 @@
 start() ->
     mnesia:start(),
     mnesia:create_schema([node()]), 
-    create_table_scheme().
+    create_table_scheme(),
+    clear_all().
     %initStettings(Turn, BridgeCapacity, BridgeCrossingTime).
 
 
 create_table_scheme() ->
-    mnesia:create_table(settings, [{attributes, record_info(fields, settingsEntity)}]),
+    mnesia:create_table(settingsEntity, [{attributes, record_info(fields, settingsEntity)}]),
     mnesia:create_table(syncEntity, [{attributes, record_info(fields, syncEntity)}]),
     mnesia:create_table(adjEntity, [{attributes, record_info(fields, adjEntity)}]).
 
@@ -36,6 +37,12 @@ addRangeWrapper([]) ->
 
 clear(Entity) ->
     mnesia:clear_table(Entity).
+
+
+clear_all() ->
+    clear(adjEntity),
+    clear(syncEntity),
+    clear(settingsEntity).
 
 
 add(Item) ->

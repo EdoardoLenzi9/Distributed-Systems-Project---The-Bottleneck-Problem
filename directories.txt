@@ -285,6 +285,12 @@
 /home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/report/assets
 /home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/launcher
 /home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service
+/home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/test
+/home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/test/tmp
+/home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/test/tmp/src
+/home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/test/tmp/src/Mnesia.nonode@nohost
+/home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/test/tmp/priv
+/home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/test/tmp/Mnesia.nonode@nohost
 /home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/_build
 /home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/_build/default
 /home/eddy/Note/Magistrale/Magistrale/Distributed_Systems/Project/web_service/_build/default/plugins

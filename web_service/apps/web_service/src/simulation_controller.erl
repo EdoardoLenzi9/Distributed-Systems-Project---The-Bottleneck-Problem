@@ -2,6 +2,7 @@
 %% @doc car handler.
 -module(simulation_controller).
 -compile(export_all).
+-include("entity.hrl").
 
 init(Req, Opts) ->
 	{cowboy_rest, Req, Opts}.
@@ -29,12 +30,17 @@ content_types_provided(Req, State) ->
 handler(Req, State) ->
 	URL = cowboy_req:url(Req),
 	Method = cowboy_req:method(Req),
-	{ok, Body, _Req2} = cowboy_req:body(Req),
+	Body = if Method == <<"POST">> ->
+		{ok, ReqBody, _Req2} = cowboy_req:body(Req),
+		ReqBody;
+	true -> 
+		<<"">>
+	end,
 	{_HTTP, _Domain, Path, _, _Qs} = mochiweb_util:urlsplit(binary_to_list(URL)),
 	utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
 	ResponseBody = case Path of 
 		"/simulation" ->
-			state_handler(Body);
+			state_handler();
 		"/simulation/init" ->
 			init_handler(Body);
 		"/simulation/new" ->
@@ -46,16 +52,32 @@ handler(Req, State) ->
 	{true, Req3, State}.
 
 
-state_handler(Body) ->
-	ok.
+state_handler() ->
+	jiffy:encode(simulation_service:state()).
 
 
 init_handler(Body) ->
-	ok.
+	DecodedTuple = jiffy:decode(Body),
+	{[	{<<"turn">>, Turn},
+		{<<"bridgeCapacity">>, BridgeCapacity},
+		{<<"bridgeCrossingTime">>, BridgeCrossingTime} ]} = DecodedTuple, 
+	simulation_service:init(#settingsEntity{ 	turn = Turn, 
+												bridgeCapacity = BridgeCapacity, 
+												bridgeCrossingTime = BridgeCrossingTime }),
+	jiffy:encode({[{result, success}]}). 
 
 
 new_node_handler(Body) ->
-	ok.
+	DecodedTuple = jiffy:decode(Body),
+	{[	{<<"name">>, Name},
+		{<<"side">>, Side},
+		{<<"power">>, Power},
+		{<<"timeout">>, Timeout} ]} = DecodedTuple, 
+	simulation_service:new(#newCarEntity{ 	name = binary_to_list(Name), 
+											side = binary_to_list(Side), 
+											power = Power, 
+											timeout = Timeout }),
+	jiffy:encode({[{result, success}]}). 
 
 
 reset_handler(Body) ->
