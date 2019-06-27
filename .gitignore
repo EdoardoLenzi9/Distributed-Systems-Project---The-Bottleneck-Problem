@@ -13,3 +13,4 @@ node_modules/
 package-lock.json
 car/priv/
 car/jiffy.app
+web_service/test/tmp
