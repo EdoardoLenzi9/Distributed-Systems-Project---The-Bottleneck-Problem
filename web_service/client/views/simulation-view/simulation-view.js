@@ -38,7 +38,7 @@ var i = 0;
 */ 
 function Init() {
 
-	// loads arc-reactor-controls view
+	// loads simulator view
 	InitStat();
 	InitScene();
 	InitCamera();

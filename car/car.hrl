@@ -10,7 +10,8 @@
                         delta,
                         arrivalTime, 
                         adj,
-                        % bridge metadata 
+                        % settings and bridge metadata 
+                        turn,
                         bridgeCapacity,
                         bridgeCrossingTime
                     }).
@@ -106,12 +107,12 @@ sendToAllAdj(List, Event) ->
 %%%===================================================================
 
 getSyncAdj(Name, Side, Power) -> 
-    Content = {[{name, Name}, {side, list_to_atom(Side)}, {power, Power}]},
+    Content = {[{name, Name}, {side, Side}, {power, Power}]},
     http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
 
 
 getAdj(Name, Side, Power) -> 
-    Content = {[{name, Name}, {side, list_to_atom(Side)}, {power, Power}]},
+    Content = {[{name, Name}, {side, Side}, {power, Power}]},
     http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
 
 

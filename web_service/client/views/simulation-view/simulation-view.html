@@ -6,10 +6,20 @@
 		<title>Simulation View</title>
 		<link rel="stylesheet" type="text/css" href="simulation-view.css">
 		<link rel="shortcut icon" type="image/png" href="../../assets/favicon.ico"/>	
+		<link href="../../node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 	</head>
 	<body>
 		<!--Placeholder for view injection-->
-		<div id="container" class="transparent"></div>
+		<div id="container" class="transparent">
+			<div id="buttons-bar">
+				<span id="expand" class="icon" onclick="OpenFullscreen()" data-toggle="tooltip" title="Full Screen">
+					<i class="grow fa fa-expand"></i>
+				</span>
+				<span id="compress" class="invisible icon" onclick="CloseFullscreen()" data-toggle="tooltip" title="Exit Full Screen">
+					<i class="grow fa fa-compress"></i>
+				</span>
+			</div>
+		</div>
 		<script src="../../node_modules/jquery/dist/jquery.min.js"></script>
 		<script src="../../node_modules/three/build/three.min.js"></script>
 		<script src="../../node_modules/three/examples/js/controls/OrbitControls.js"></script>

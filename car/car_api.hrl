@@ -5,17 +5,33 @@
 -compile(export_all).
 
 
+start(Args) -> 
+    [PName, PSide, PPower, PTurn, PBridgeCapacity, PBridgeCrossingTime, PTimeout] = Args,
+    Name = list_to_atom(PName),
+    Side = list_to_atom(PSide),
+    {Power, _ } = string:to_integer(PPower),
+    {Turn, _ } = string:to_integer(PTurn),
+    {BridgeCapacity, _ } = string:to_integer(PBridgeCapacity),
+    {BridgeCrossingTime, _ } = string:to_integer(PBridgeCrossingTime),
+	{Timeout, _ } = string:to_integer(PTimeout),
+	if Timeout > 0 ->
+		start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout);
+	true ->
+		start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime)
+	end.
+
+
 bs() -> 
-    start_link(car1, "right", 2, 3, 3000).
+    start_link(car1, right, 1, 1000, 3, 3000).
 
 
 % TODO update api
-start_link(Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout) ->
-    gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout], []).
+start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout) ->
+    gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout], []).
 
 
-start_link(Name, Side, Power, BridgeCapacity, BridgeCrossingTime) ->
-    gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, BridgeCapacity, BridgeCrossingTime], []).
+start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime) ->
+    gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime], []).
  
 
 stop(Name) ->

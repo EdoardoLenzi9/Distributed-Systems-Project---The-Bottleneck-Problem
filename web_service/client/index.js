@@ -1,6 +1,7 @@
 var host = window.location.origin;
 var settings;
 var manualGeneration = false;
+var carIndex = 0;
 
 
 Read("environment.json", function(env){
@@ -15,19 +16,20 @@ Read("environment.json", function(env){
 
 
 function CreateCar(side){
+    carIndex++;
     var parameters = {
-        direction:  side,
-        state:      $('#' + side + '-state > .btn.active').text().trim().toLowerCase(),
-        timer:      $('#' + side + '-timer')[0].value,
-        power:      $('#' + side + '-power')[0].value
+        name:       "car" + carIndex,     
+        side:       side,
+        power:      parseInt($('#' + side + '-power')[0].value),
+        timeout:    parseInt($('#' + side + '-timer')[0].value),
     }
     if(side == 'small'){
         parameters.side = $('#direction > .btn.active').text().trim().toLowerCase();
     }
     console.dir(parameters);
 
-    httpGetAsync(host + '/car', function(content){
-        alert(content);
+    httpPostAsync('/simulation/new', parameters, function(content){
+        console.log(content);
     })
 }
 
@@ -47,7 +49,7 @@ function SaveSettings(){
 
 function SimulationState(){
     httpGetAsync(window.location.origin, function(content){
-        alert(content);
+        console.log(content);
     })
 }
 
@@ -97,8 +99,14 @@ function SwitchMode(){
     if(manualGeneration){
         $( '#random-field' ).removeClass( 'd-block' ).addClass( 'd-none' );
         $( '#manual-field' ).removeClass( 'd-none' ).addClass( 'd-block' );
+        $( '#small-panel-content' ).removeClass( 'd-block' ).addClass( 'd-none' );  
+        $( '#left-panel-content' ).removeClass( 'd-block' ).addClass( 'd-none' );  
+        $( '#right-panel-content' ).removeClass( 'd-block' ).addClass( 'd-none' );  
     } else {
         $( '#random-field' ).removeClass( 'd-none' ).addClass( 'd-block' );
-        $( '#manual-field' ).removeClass( 'd-block' ).addClass( 'd-none' );   
+        $( '#manual-field' ).removeClass( 'd-block' ).addClass( 'd-none' );  
+        $( '#small-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
+        $( '#left-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
+        $( '#right-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
     }
 }

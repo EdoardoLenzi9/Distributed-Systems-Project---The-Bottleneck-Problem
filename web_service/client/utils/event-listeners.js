@@ -91,17 +91,6 @@ function GetIntersects( x, y ) {
 
 
 /*
-* Close inspector view
-*/
-function CloseInspector() {
-	switchScene = false;
-	ApplyTemplate( '../arc-reactor-controls/arc-reactor-controls.html' );
-	scene.add( skyMesh );
-	switchScene = false;
-}
-
-
-/*
 * Mouse events used to know if mouse or touch focus is on the iframe
 */
 var mouseDown = false;

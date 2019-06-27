@@ -7,7 +7,8 @@ start() ->
     mnesia:start(),
     mnesia:create_schema([node()]), 
     create_table_scheme(),
-    clear_all().
+    clear_all(),
+    settings_repository:add(#settingsEntity{turn = 1000, bridgeCapacity = 2, bridgeCrossingTime = 2000}).
     %initStettings(Turn, BridgeCapacity, BridgeCrossingTime).
 
 

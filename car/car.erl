@@ -15,7 +15,7 @@
 %% in fase di sincronizzazione tu chiami per la lista di sinc 
 %% una volta sincronizzati fai l'update della lista delle adiacenze
 
-init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
+init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
     log("STATE Init - Broken car, Timeout:~p", [Timeout]),
     launchEvent(killer, [Name, Timeout]),
     launchEvent(launcher, [Name, defaultBehaviour]),
@@ -26,10 +26,11 @@ init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
                             power = Power, 
                             adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = getTimeStamp(), 
+                            turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
                         }};
-init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime]) ->
+init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime]) ->
     log("STATE Init"),
     launchEvent(launcher, [Name, defaultBehaviour]),
     log("STATE TRANSITION: Init -> Create"),
@@ -39,6 +40,7 @@ init([Name, Side, Power, BridgeCapacity, BridgeCrossingTime]) ->
                             power = Power, 
                             adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = getTimeStamp(), 
+                            turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
                         }}.
