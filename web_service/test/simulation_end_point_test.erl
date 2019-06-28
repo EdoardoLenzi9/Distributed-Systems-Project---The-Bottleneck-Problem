@@ -13,5 +13,5 @@ init_test_() ->
 new_test_() ->
     db_manager:start(),
     Params = "{\"name\":\"car1\",\"side\":\"left\",\"power\":2,\"timeout\":4000}",
-    Res = <<"{\"result\":\"success\"}">>,
+    Res = <<"{\"name\":\"car1\",\"side\":\"left\",\"power\":2,\"turn\":1000,\"bridgeCapacity\":2,\"bridgeCrossingTime\":2000,\"timeout\":4000}">>,
     [   ?_assert(simulation_controller:new_node_handler(Params) =:= Res) ].

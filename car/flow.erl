@@ -17,6 +17,11 @@ killer(Name, Timeout) ->
     timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
 
 
+%% Simulate a car crash after a given timeout
+crossingTimer(Name, Timeout) ->
+    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crossed]).
+
+
 %% Simulate a tow truck fix after a given timeout
 towTruck(Name, Timeout) ->
     timer:apply_after(Timeout, ?MODULE, sendEvent, [{global, Name}, removed]).
@@ -51,18 +56,22 @@ launcher(Name, Event) ->
 
 next(NextState, Data, From) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
+    NewData = updateState(Data, NextState),
+    Adj = http_client:getAdj(NewData),
     if NextState =/= dead ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
-    {next_state, NextState, Data, [{reply, From, atom_to_list(NextState)}]}.
+    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, atom_to_list(NextState)}]}.
 
 
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
+    NewData = updateState(Data, NextState),
+    Adj = http_client:getAdj(NewData),
     if NextState =/= dead ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
-    {next_state, NextState, Data, [{reply, From, Reply}]}.
+    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, Reply}]}.
         
 
 keep(Data, From) ->

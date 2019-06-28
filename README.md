@@ -44,3 +44,17 @@ The project deadline is 28 of June; we ar going to split the month into 4 sprint
 * Sprint 3 (16 June - 18 June) **testing**
 * Sprint 4 (18 June - 25 June) **UI and report**
 * 3 days for code refactoring
+
+## Get Started
+
+```
+sh clean.sh
+sh setup.sh
+cd web_service/client/
+npm install
+```
+
+## TODO
+
+* Creare un makefile
+* Tutti i test anche della macchina

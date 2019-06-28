@@ -16,7 +16,7 @@ propagateFrontHandler(Event, Counter, Data) ->
         Target = (utils:lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
         sendEvent(Target, {propagateFront, Event, Counter - Hop});
     Counter == 1 -> 
-        flow:launchEvent(launcher, [Event])
+        flow:launchEvent(launcher, [Data#carState.name, Event])
     end.
 
 
@@ -26,13 +26,13 @@ propagateRearHandler(Event, Counter, Data) ->
         Target = (utils:firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
         sendEvent(Target, {propagateRear, Event, Counter - Hop});
     Counter == 1 -> 
-        flow:launchEvent(launcher, [Event])
+        flow:launchEvent(launcher, [Data#carState.name, Event])
     end.
 
 
 readAndPropagateFrontHandler(Event, Counter, Data) -> 
     if Counter > 1 ->
-        flow:launchEvent(launcher, [Event]),
+        flow:launchEvent(launcher, [Data#carState.name, Event]),
         Hop = erlang:min(Counter, Data#carState.power),
         sendNearFrontCars(Event, Data, Hop - 1),
         Target = utils:lastElement(Data#carState.adj#adj.frontCars, Hop),
@@ -43,7 +43,7 @@ readAndPropagateFrontHandler(Event, Counter, Data) ->
             []
         end;
     Counter == 1 ->
-        flow:launchEvent(launcher, [Event])
+        flow:launchEvent(launcher, [Data#carState.name, Event])
     end.
 
 
@@ -56,24 +56,26 @@ sendNearFrontCars(Event, Data, Hop) ->
             sendNearFrontCars(Event, Data, Hop - 1);
         true ->
             []
-        end
+        end;
+    true ->
+        ok
     end.
 
 
 readAndPropagateRearHandler(Event, Counter, Data) -> 
     if Counter > 1 ->
-        flow:launchEvent(launcher, [Event]),
+        flow:launchEvent(launcher, [Data#carState.name, Event]),
         Hop = erlang:min(Counter, Data#carState.power),
         sendNearRearCars(Event, Data, Hop - 1),
         Target = utils:firstElement(Data#carState.adj#adj.rearCars, Hop),
-        if Target =/= [] ->
+        if Target =/= -1 ->
             TargetName = Target#carState.name,
             sendEvent(TargetName, {readAndPropagateRear, Event, Counter - Hop});
         true ->
             []
         end;
     Counter == 1 ->
-        flow:launchEvent(launcher, [Event])
+        flow:launchEvent(launcher, [Data#carState.name, Event])
     end.
     
     
@@ -86,7 +88,9 @@ sendNearRearCars(Event, Data, Hop) ->
             sendNearRearCars(Event, Data, Hop - 1);
         true ->
             []
-        end
+        end;
+    true -> 
+        ok
     end.
 
 

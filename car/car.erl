@@ -22,6 +22,7 @@ init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
                             power = Power, 
                             adj = #adj{frontCars = http_client:getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = utils:getTimeStamp(), 
+                            state = create,
                             turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
@@ -36,6 +37,7 @@ init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime]) ->
                             power = Power, 
                             adj = #adj{frontCars = http_client:getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = utils:getTimeStamp(), 
+                            state = create,
                             turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
@@ -46,7 +48,7 @@ create({call, From}, Event, Data) ->
     utils:log("STATE Create"),
     case Event of        
         engineCrash -> 
-            flow:launchEvent(towTruck, [2000]),
+            flow:launchEvent(towTruck, [Data#carState.name, 2000]),
             flow:next(dead, Data, From);
         systemCrash -> 
             flow:next(dead, Data, From);
@@ -143,10 +145,22 @@ crossing({call, From}, Event, Data) ->
         message:readAndPropagateFrontHandler(Event, Counter, Data);
     {readAndPropagateRear, Event, Counter} -> 
         message:readAndPropagateRearHandler(Event, Counter, Data);
+    crossed ->
+        flow:next(crossed, Data, From);
     defaultBehaviour ->
-        utils:log("STATE Leader - Event defaultBehaviour"),
-        %callTowTruck(Data)
+        utils:log("STATE Crossing - Event defaultBehaviour"),
+        flow:callTowTruck(Data),
+        flow:launchEvent(crossingTimer, [Data#carState.name, Data#carState.bridgeCrossingTime]),
         flow:keep(Data, From)
+    end.
+
+
+crossed({call, _From}, Event, Data) -> 
+    case Event of
+        defaultBehaviour ->
+            utils:log("STATE Crossed - Event defaultBehaviour"),
+            % notifica agli altri
+            stop(Data#carState.name)
     end.
 
 
