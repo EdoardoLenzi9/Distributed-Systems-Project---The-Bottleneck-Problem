@@ -16,22 +16,12 @@ state() ->
 
 
 new(Entity) ->
-    %os:cmd(utils:concat([   "echo \"gnome-terminal -e 'erl -name ", 
-    %                        Entity#newCarEntity.name, 
-    %                        "@", 
-    %                        Entity#newCarEntity.name, 
-    %                        " -run car_moq start ",
-    %                        Entity#newCarEntity.name, " ",
-    %                        Entity#newCarEntity.side, " ", 
-    %                        lists:flatten(io_lib:format("~p", [Entity#newCarEntity.power])), " ",
-    %                        lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
-    %                        "'\" > a.txt; gedit a.txt &"])).
     [Settings] = settings_repository:get_all(),
     os:cmd(utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -name ", 
                             Entity#newCarEntity.name, 
                             "@", 
                             Entity#newCarEntity.name, 
-                            " -run car start ",
+                            " -run car_supervisor start ",
                             Entity#newCarEntity.name, " ",
                             Entity#newCarEntity.side, " ", 
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.power])), " ",
