@@ -52,10 +52,10 @@ function Init() {
 	// load test state (polling)
 	window.setInterval(function(){
 		console.log('polling')
-		// LoadState( '../../assets/testState'+ (i % 3) + '.json' );
-		// LoadState( '../../assets/testState1_'+ (i % 8) + '.json' );
-		LoadState( '../../assets/testState2_'+ (i % 12) + '.json' );
-		i++;
+		httpPostAsync('/simulation', {}, function(content){
+			console.log(content);
+			LoadState(JSON.parse(content));
+		})
 	}, speed);
 
 	// desktop events
@@ -77,39 +77,31 @@ function Init() {
 /*
 * deserialize the json content and setup each component defined
 */ 
-function LoadState( file ) {
-	Read( file, function( content ){
-		state = JSON.parse(content);   
-		state[0].sort( arrivalTimeCriterion );
-		state[1].sort( arrivalTimeCriterion );
-		var offset = 0;
-		for (const [key, car] of Object.entries(cars)) {
-			car.check = false;
+function LoadState( state ) {
+	var leftIndex = 0;
+	var rightIndex = 0;
+	for (const [key, car] of Object.entries(cars)) {
+		car.check = false;
+	}
+	state.forEach(function(car){ 	//left side
+		if(car.side == "left"){
+			car.position = leftIndex++;
+		} else {
+			car.position = rightIndex++;				
 		}
-		state[0].forEach(function(car, index){ 	//left side
-			UpdateState(car, index, offset, -1);
-		});
-		offset = 0;
-		state[1].forEach(function(car, index){ 	//right side
-			UpdateState(car, index, offset, 1);
-		});
-		for (var [key, car] of Object.entries(cars)) {
-			if(!car.check){
-				group.remove(car);
-				car = null;
-				delete cars[key];
-			}
+		UpdateState(car);
+	});
+	for (var [key, car] of Object.entries(cars)) {
+		if(!car.check){
+			group.remove(car);
+			car = null;
+			delete cars[key];
 		}
-	})
+	}
 }
 
 
-function UpdateState(carState, index, offset, side){
-	carState.side = side;
-	carState.position = index + offset;
-	if(carState.state == -1){
-		offset = index;
-	}
+function UpdateState(carState){
 	if(cars[carState.name] != undefined){
 		cars[carState.name].updateState(carState);
 	} else {
