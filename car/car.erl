@@ -48,21 +48,26 @@ create({call, From}, Event, Data) ->
     utils:log("STATE Create"),
     case Event of        
         engineCrash -> 
+            utils:log("Event engineCrash"),
             flow:launchEvent(towTruck, [Data#carState.name, 2000]),
             flow:next(dead, Data, From);
         systemCrash -> 
+            utils:log("Event systemCrash"),
             flow:next(dead, Data, From);
         check ->
+            utils:log("Event check"),
             flow:keep(Data, From, ok);
         {propagateFront, Event, Counter} -> 
+            utils:log("Event propagateFront"),
             message:propagateFrontHandler(Event, Counter, Data);
         {propagateRear, Event, Counter} -> 
+            utils:log("Event propagateRear"),
             message:propagateRearHandler(Event, Counter, Data);
         sync ->
-            utils:log("STATE Create - Event sync"),
+            utils:log("Event sync"),
             no_sync;
         defaultBehaviour ->
-            utils:log("STATE Create - Event defaultBehaviour"),
+            utils:log("Event defaultBehaviour"),
             flow:callTowTruck(Data),
             if Data#carState.adj#adj.frontCars =/= [] ->
                 utils:log("Syncronize with front car"),
@@ -76,56 +81,84 @@ create({call, From}, Event, Data) ->
 
 
 queue({call, From}, Event, Data) ->
+    utils:log("STATE Queue"),
     case Event of
-        crash ->
+        engineCrash -> 
+            utils:log("Event engineCrash"),
+            flow:launchEvent(towTruck, [Data#carState.name, 2000]),
             flow:next(dead, Data, From);
+        systemCrash -> 
+            utils:log("Event systemCrash"),
+            flow:next(dead, Data, From);
+        check ->
+            utils:log("Event check"),
+            flow:keep(Data, From, ok);
         {propagateFront, Event, Counter} -> 
+            utils:log("Event propagateFront"),
             message:propagateFrontHandler(Event, Counter, Data);
         {propagateRear, Event, Counter} -> 
+            utils:log("Event propagateRear"),
             message:propagateRearHandler(Event, Counter, Data);
         {readAndPropagateFront, Event, Counter} -> 
+            utils:log("Event readAndPropagateFront"),
             message:readAndPropagateFrontHandler(Event, Counter, Data);
         {readAndPropagateRear, Event, Counter} -> 
+            utils:log("Event readAndPropagateRear"),
             message:readAndPropagateRearHandler(Event, Counter, Data);
         defaultBehaviour ->
-            utils:log("STATE Create - Event defaultBehaviour"),
+            utils:log("Event defaultBehaviour"),
             flow:callTowTruck(Data);
         {crossing, _WaitingCar} ->
+            utils:log("Event crossing"),
             flow:next(crossing, Data, From);
         {newCar, front, NewCar} -> 
+            utils:log("Event newCar front"),
             flow:keep(updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]), From);
         {newCar, rear, NewCar} -> 
+            utils:log("Event newCar rear"),
             flow:keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
 	    leader ->
-            utils:log("STATE Queue - Event leader"),
+            utils:log("Event leader"),
             flow:next(leader, Data, From)
     end.
 
 
 leader({call, From}, Event, Data) ->
+    utils:log("STATE Queue"),
     case Event of
-        crash ->
+        engineCrash -> 
+            utils:log("Event engineCrash"),
+            flow:launchEvent(towTruck, [Data#carState.name, 2000]),
             flow:next(dead, Data, From);
+        systemCrash -> 
+            utils:log("Event systemCrash"),
+            flow:next(dead, Data, From);
+        check ->
+            utils:log("Event check"),
+            flow:keep(Data, From, ok);
         {propagateFront, Event, Counter} -> 
-            message:propagateFrontHandler(Event, Counter, Data),
-            flow:keep(Data, From);
+            utils:log("Event propagateFront"),
+            message:propagateFrontHandler(Event, Counter, Data);
         {propagateRear, Event, Counter} -> 
-            message:propagateRearHandler(Event, Counter, Data),
-            flow:keep(Data, From);
+            utils:log("Event propagateRear"),
+            message:propagateRearHandler(Event, Counter, Data);
         {readAndPropagateFront, Event, Counter} -> 
-            message:readAndPropagateFrontHandler(Event, Counter, Data),
-            flow:keep(Data, From);
+            utils:log("Event readAndPropagateFront"),
+            message:readAndPropagateFrontHandler(Event, Counter, Data);
         {readAndPropagateRear, Event, Counter} -> 
-            message:readAndPropagateRearHandler(Event, Counter, Data),
-            flow:keep(Data, From);
+            utils:log("Event readAndPropagateRear"),
+            message:readAndPropagateRearHandler(Event, Counter, Data);
         {crossing, _WaitingCar} ->
+            utils:log("Event crossing"),
             flow:next(crossing, Data, From);
         {newCar, front, NewCar} -> 
+            utils:log("Event newCar front"),
             flow:keep(updateAdj(Data, Data#carState.adj#adj.frontCars ++ [NewCar]), From);
         {newCar, rear, NewCar} -> 
+            utils:log("Event newCar rear"),
             flow:keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
         defaultBehaviour ->
-            utils:log("STATE Leader - Event defaultBehaviour"),
+            utils:log("Event defaultBehaviour"),
             flow:callTowTruck(Data),
             WaitingCar = utils:lastElement(Data#carState.adj#adj.frontCars),
             message:readAndPropagateRearHandler({crossing, WaitingCar}, Data#carState.bridgeCapacity, Data),
@@ -134,21 +167,35 @@ leader({call, From}, Event, Data) ->
 
 
 crossing({call, From}, Event, Data) ->
+    utils:log("STATE Crossing"),
     case Event of
-    crash ->
+    engineCrash -> 
+        utils:log("Event engineCrash"),
+        flow:launchEvent(towTruck, [Data#carState.name, 2000]),
         flow:next(dead, Data, From);
+    systemCrash -> 
+        utils:log("Event systemCrash"),
+        flow:next(dead, Data, From);
+    check ->
+        utils:log("Event check"),
+        flow:keep(Data, From, ok);
     {propagateFront, Event, Counter} -> 
+        utils:log("Event propagateFront"),
         message:propagateFrontHandler(Event, Counter, Data);
     {propagateRear, Event, Counter} -> 
+        utils:log("Event propagateRear"),
         message:propagateRearHandler(Event, Counter, Data);
     {readAndPropagateFront, Event, Counter} -> 
+        utils:log("Event readAndPropagateFront"),
         message:readAndPropagateFrontHandler(Event, Counter, Data);
     {readAndPropagateRear, Event, Counter} -> 
+        utils:log("Event readAndPropagateRear"),
         message:readAndPropagateRearHandler(Event, Counter, Data);
     crossed ->
+        utils:log("Event crossed"),
         flow:next(crossed, Data, From);
     defaultBehaviour ->
-        utils:log("STATE Crossing - Event defaultBehaviour"),
+        utils:log("Event defaultBehaviour"),
         flow:callTowTruck(Data),
         flow:launchEvent(crossingTimer, [Data#carState.name, Data#carState.bridgeCrossingTime]),
         flow:keep(Data, From)
@@ -156,17 +203,20 @@ crossing({call, From}, Event, Data) ->
 
 
 crossed({call, _From}, Event, Data) -> 
+    utils:log("STATE Crossed"),
     case Event of
         defaultBehaviour ->
-            utils:log("STATE Crossed - Event defaultBehaviour"),
+            utils:log("Event defaultBehaviour"),
             % notifica agli altri
             stop(Data#carState.name)
     end.
 
 
 dead({call, _From}, Event, Data) -> 
+    utils:log("STATE Dead"),
     case Event of
-        removed ->
+        defaultBehaviour ->
+            utils:log("Event defaultBehaviour"),
             % notifica agli altri
             stop(Data#carState.name)
     end.

@@ -24,7 +24,7 @@ crossingTimer(Name, Timeout) ->
 
 %% Simulate a tow truck fix after a given timeout
 towTruck(Name, Timeout) ->
-    timer:apply_after(Timeout, ?MODULE, sendEvent, [{global, Name}, removed]).
+    timer:apply_after(Timeout, ?MODULE, sendEvent, [{global, Name}, defaultBehaviour]).
 
 
 callTowTruck(Data) ->

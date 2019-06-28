@@ -26,24 +26,30 @@ bs() ->
 
 
 start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout) ->
+    utils:log("API Start link with timeout"),
     gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout], []).
 
 
 start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime) ->
+    utils:log("API Start link"),
     gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime], []).
  
 
 stop(Name) ->
-        gen_statem:stop({global, Name}).
+    utils:log("API Stop"),
+    gen_statem:stop({global, Name}).
 
 
 sync(Name) ->
-        gen_statem:call({global, Name}, sync).
+    utils:log("API Sync"),
+    gen_statem:call({global, Name}, sync).
  
 
 crash(Name) ->
-        gen_statem:call({global, Name}, crash).
+    utils:log("API Crash"),
+    gen_statem:call({global, Name}, crash).
 
 
 newleader(Name) ->
-        gen_statem:call({global, Name}, newleader).
+    utils:log("API New Leader"),
+    gen_statem:call({global, Name}, newleader).
