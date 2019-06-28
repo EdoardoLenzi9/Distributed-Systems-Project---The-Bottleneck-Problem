@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#cp -r ../apps/web_service/src .
-#mv src tmp
+cp -r ../apps/web_service/src .
+mv src tmp
 cp *.erl ./tmp/
 cp ../apps/web_service/src/*.erl ./tmp/
 cp ../apps/web_service/src/*.hrl ./tmp/

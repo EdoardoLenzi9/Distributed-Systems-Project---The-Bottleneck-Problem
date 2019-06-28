@@ -1,6 +1,3 @@
-{receiver, ab@eddy} ! crash.
-erl -sname ab -run car_supervisor start ab
-
 # The Bottleneck Problem - Distributed Systems Project 2019
 
 The aim of this project is the analysis, the implementation and testing of a 

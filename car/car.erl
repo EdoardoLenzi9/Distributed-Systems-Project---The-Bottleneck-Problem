@@ -4,7 +4,6 @@
 -include("car.hrl"). 
 -include("car_std.hrl").
 -include("car_api.hrl").
--include("car_utils.hrl").
 
 
 %%%===================================================================
@@ -16,30 +15,30 @@
 %% una volta sincronizzati fai l'update della lista delle adiacenze
 
 init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
-    log("STATE Init - Broken car, Timeout:~p", [Timeout]),
+    utils:log("STATE Init - Broken car, Timeout:~p", [Timeout]),
     launchEvent(killer, [Name, Timeout]),
     launchEvent(launcher, [Name, defaultBehaviour]),
-    log("STATE TRANSITION: Init -> Create"),
+    utils:log("STATE TRANSITION: Init -> Create"),
     {ok, create, #carState{
                             name = Name, 
                             side = Side, 
                             power = Power, 
                             adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
-                            arrivalTime = getTimeStamp(), 
+                            arrivalTime = utils:getTimeStamp(), 
                             turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
                         }};
 init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime]) ->
-    log("STATE Init"),
+    utils:log("STATE Init"),
     launchEvent(launcher, [Name, defaultBehaviour]),
-    log("STATE TRANSITION: Init -> Create"),
+    utils:log("STATE TRANSITION: Init -> Create"),
     {ok, create, #carState{
                             name = Name, 
                             side = Side, 
                             power = Power, 
                             adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
-                            arrivalTime = getTimeStamp(), 
+                            arrivalTime = utils:getTimeStamp(), 
                             turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
                             bridgeCrossingTime = BridgeCrossingTime
@@ -47,7 +46,7 @@ init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime]) ->
         
 
 create({call, From}, Event, Data) ->
-    log("STATE Create"),
+    utils:log("STATE Create"),
     case Event of        
         engineCrash -> 
             launchEvent(towTruck, [2000]),
@@ -61,17 +60,17 @@ create({call, From}, Event, Data) ->
         {propagateRear, Event, Counter} -> 
             propagateRearHandler(Event, Counter, Data);
         sync ->
-            log("STATE Create - Event sync"),
+            utils:log("STATE Create - Event sync"),
             no_sync;
         defaultBehaviour ->
-            log("STATE Create - Event defaultBehaviour"),
+            utils:log("STATE Create - Event defaultBehaviour"),
             callTowTruck(Data),
             if Data#carState.adj#adj.frontCars =/= [] ->
-                log("Syncronize with front car"),
-                Pivot = lastElement(Data#carState.adj#adj.frontCars),
-                next(queue, updateDelta(Data, berkeley(Pivot)), From);
+                utils:log("Syncronize with front car"),
+                Pivot = utils:lastElement(Data#carState.adj#adj.frontCars),
+                next(queue, updateDelta(Data, utils:berkeley(Pivot)), From);
             true -> 
-                log("The only car - no sync needed"),
+                utils:log("The only car - no sync needed"),
                 next(leader, Data, From)
             end
     end.
@@ -90,7 +89,7 @@ queue({call, From}, Event, Data) ->
         {readAndPropagateRear, Event, Counter} -> 
             readAndPropagateRearHandler(Event, Counter, Data);
         defaultBehaviour ->
-            log("STATE Create - Event defaultBehaviour"),
+            utils:log("STATE Create - Event defaultBehaviour"),
             callTowTruck(Data);
         {crossing, _WaitingCar} ->
             next(crossing, Data, From);
@@ -99,7 +98,7 @@ queue({call, From}, Event, Data) ->
         {newCar, rear, NewCar} -> 
             keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
 	    leader ->
-            log("STATE Queue - Event leader"),
+            utils:log("STATE Queue - Event leader"),
             next(leader, Data, From)
     end.
 
@@ -127,9 +126,9 @@ leader({call, From}, Event, Data) ->
         {newCar, rear, NewCar} -> 
             keep(updateAdj(Data, [NewCar | Data#carState.adj#adj.frontCars]), From);
         defaultBehaviour ->
-            log("STATE Leader - Event defaultBehaviour"),
+            utils:log("STATE Leader - Event defaultBehaviour"),
             callTowTruck(Data),
-            WaitingCar = lastElement(Data#carState.adj#adj.frontCars),
+            WaitingCar = utils:lastElement(Data#carState.adj#adj.frontCars),
             readAndPropagateRearHandler({crossing, WaitingCar}, Data#carState.bridgeCapacity, Data),
             keep(Data, From)
         end.
@@ -148,7 +147,7 @@ crossing({call, From}, Event, Data) ->
     {readAndPropagateRear, Event, Counter} -> 
         readAndPropagateRearHandler(Event, Counter, Data);
     defaultBehaviour ->
-        log("STATE Leader - Event defaultBehaviour"),
+        utils:log("STATE Leader - Event defaultBehaviour"),
         callTowTruck(Data)
     end.
 
@@ -172,7 +171,7 @@ dead({call, _From}, Event, Data) ->
 propagateFrontHandler(Event, Counter, Data) ->
     if Counter > 1 ->
         Hop = erlang:min(Counter, Data#carState.power),
-        Target = (lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
+        Target = (utils:lastElement(Data#carState.adj#adj.frontCars, Hop))#carState.name,
         sendEvent(Target, {propagateFront, Event, Counter - Hop});
     Counter == 1 -> 
         launchEvent(launcher, [Event])
@@ -182,7 +181,7 @@ propagateFrontHandler(Event, Counter, Data) ->
 propagateRearHandler(Event, Counter, Data) ->
     if Counter > 1 ->
         Hop = erlang:min(Counter, Data#carState.power),
-        Target = (firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
+        Target = (utils:firstElement(Data#carState.adj#adj.rearCars, Hop))#carState.name,
         sendEvent(Target, {propagateRear, Event, Counter - Hop});
     Counter == 1 -> 
         launchEvent(launcher, [Event])
@@ -194,7 +193,7 @@ readAndPropagateFrontHandler(Event, Counter, Data) ->
         launchEvent(launcher, [Event]),
         Hop = erlang:min(Counter, Data#carState.power),
         sendNearFrontCars(Event, Data, Hop - 1),
-        Target = lastElement(Data#carState.adj#adj.frontCars, Hop),
+        Target = utils:lastElement(Data#carState.adj#adj.frontCars, Hop),
         if Target =/= [] ->
             TargetName = Target#carState.name,
             sendEvent(TargetName, {readAndPropagateFront, Event, Counter - Hop});
@@ -208,7 +207,7 @@ readAndPropagateFrontHandler(Event, Counter, Data) ->
 
 sendNearFrontCars(Event, Data, Hop) ->
     if Hop > 0 ->
-        Target = lastElement(Data#carState.adj#adj.frontCars, Hop),
+        Target = utils:lastElement(Data#carState.adj#adj.frontCars, Hop),
         if Target =/= [] ->
             TargetName = Target#carState.name,
             sendEvent(TargetName, Event),
@@ -224,7 +223,7 @@ readAndPropagateRearHandler(Event, Counter, Data) ->
         launchEvent(launcher, [Event]),
         Hop = erlang:min(Counter, Data#carState.power),
         sendNearRearCars(Event, Data, Hop - 1),
-        Target = firstElement(Data#carState.adj#adj.rearCars, Hop),
+        Target = utils:firstElement(Data#carState.adj#adj.rearCars, Hop),
         if Target =/= [] ->
             TargetName = Target#carState.name,
             sendEvent(TargetName, {readAndPropagateRear, Event, Counter - Hop});
@@ -238,7 +237,7 @@ readAndPropagateRearHandler(Event, Counter, Data) ->
     
 sendNearRearCars(Event, Data, Hop) ->
     if Hop > 0 ->
-        Target = firstElement(Data#carState.adj#adj.rearCars, Hop),
+        Target = utils:firstElement(Data#carState.adj#adj.rearCars, Hop),
         if Target =/= [] ->
             TargetName = Target#carState.name,
             sendEvent(TargetName, Event),
@@ -260,7 +259,7 @@ killer(Name, Timeout) ->
 
 %% Spawn a process that launches an event
 launchEvent(Handler, Args) -> 
-    log("launchEvent: ~p~p~n", [Handler, Args]),
+    utils:log("launchEvent: ~p~p~n", [Handler, Args]),
     spawn(?MODULE, Handler, Args).
 
 
@@ -291,7 +290,7 @@ launcher(Name, Event) ->
 
 
 next(NextState, Data, From) ->
-    log("STATE TRANSITION -> ~p", [NextState]),
+    utils:log("STATE TRANSITION -> ~p", [NextState]),
     if NextState =/= dead ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
@@ -299,7 +298,7 @@ next(NextState, Data, From) ->
 
 
 next(NextState, Data, From, Reply) ->
-    log("STATE TRANSITION -> ~p", [NextState]),
+    utils:log("STATE TRANSITION -> ~p", [NextState]),
     if NextState =/= dead ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
@@ -307,10 +306,10 @@ next(NextState, Data, From, Reply) ->
         
 
 keep(Data, From) ->
-    log("KEEP STATE"),
+    utils:log("KEEP STATE"),
     {keep_state, Data, [{reply, From, "keep_state"}]}.
 
 
 keep(Data, From, Reply) ->
-    log("KEEP STATE"),
+    utils:log("KEEP STATE"),
     {keep_state, Data, [{reply, From, Reply}]}.
