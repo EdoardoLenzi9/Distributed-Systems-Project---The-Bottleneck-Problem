@@ -42,13 +42,20 @@ function SaveSettings(){
     }
 
     httpPostAsync('/simulation/init', parameters, function(content){
-        alert(content);
+        console.log(content);
     })
 }
 
 
 function SimulationState(){
     httpGetAsync(window.location.origin, function(content){
+        console.log(content);
+    })
+}
+
+
+function Reset(){
+    httpPostAsync('/simulation/reset', {}, function(content){
         console.log(content);
     })
 }

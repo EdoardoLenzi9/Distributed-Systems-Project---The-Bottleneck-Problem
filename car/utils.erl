@@ -20,6 +20,9 @@
 -endif.
 
 
+binary_to_atom(Item) ->
+    list_to_atom(binary_to_list(Item)).
+
 %%%===================================================================
 %%% list management
 %%         Front        Rear

@@ -17,5 +17,5 @@ for filename in *test.erl; do
     fn=${filename%.*}
     erl -noshell -eval ""$fn":test()" -eval 'init:stop()'
 done
-#cd ..
-#rm -rf ./tmp
+cd ..
+rm -rf ./tmp

@@ -30,6 +30,18 @@
                         timeout  
                     }).
 
+
+-record(carEntity, {
+                        name,
+                        side,
+                        power,
+                        turn, 
+                        bridgeCapacity, 
+                        bridgeCrossingTime, 
+                        timeout  
+                    }).
+
+            
 %%%===================================================================
 %%% Marshalling (Entity -> Dto)
 %%%===================================================================
@@ -57,3 +69,13 @@ settings_marshalling(Settings) ->
     {[  {turn, Settings#settingsEntity.turn}, 
         {bridgeCapacity, Settings#settingsEntity.bridgeCapacity}, 
         {bridgeCrossingTime, Settings#settingsEntity.bridgeCrossingTime} ]}.
+
+
+car_marshalling(Car) ->
+    {[ {name, Car#carEntity.name}, 
+    {side, Car#carEntity.side}, 
+    {power, Car#carEntity.power}, 
+    {turn, Car#carEntity.turn},
+    {bridgeCapacity, Car#carEntity.bridgeCapacity},
+    {bridgeCrossingTime, Car#carEntity.bridgeCrossingTime},
+    {timeout, Car#carEntity.timeout} ]}.
