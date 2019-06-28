@@ -39,7 +39,14 @@ new(Entity) ->
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridgeCapacity])), " ", 
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridgeCrossingTime])), " ", 
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
-                            "'"])).
+                            "'"])),
+        car_marshalling(#carEntity{ name = list_to_atom(Entity#newCarEntity.name), 
+                                    side = list_to_atom(Entity#newCarEntity.side), 
+                                    power = Entity#newCarEntity.power, 
+                                    timeout = Entity#newCarEntity.timeout,
+                                    turn = Settings#settingsEntity.turn,
+                                    bridgeCapacity = Settings#settingsEntity.bridgeCapacity, 
+                                    bridgeCrossingTime = Settings#settingsEntity.bridgeCrossingTime }).
 
 reset() ->
     settings_repository:reset().
