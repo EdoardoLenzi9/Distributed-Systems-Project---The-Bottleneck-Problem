@@ -13,3 +13,7 @@ add(Entity) ->
 
 get_all() ->
     db_manager:get_all(settingsEntity).
+
+
+reset() ->
+    db_manager:start().

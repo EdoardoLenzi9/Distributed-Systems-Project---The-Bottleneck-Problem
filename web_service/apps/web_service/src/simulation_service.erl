@@ -41,6 +41,10 @@ new(Entity) ->
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
                             "'"])).
 
+reset() ->
+    settings_repository:reset().
+                        
+
 %%%===================================================================
 %%% private functions
 %%%===================================================================

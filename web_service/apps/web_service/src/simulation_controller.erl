@@ -81,4 +81,5 @@ new_node_handler(Body) ->
 
 
 reset_handler(Body) ->
-	ok.
+	simulation_service:reset(),
+	jiffy:encode({[{result, success}]}). 
