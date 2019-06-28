@@ -57,20 +57,20 @@ class AnimatedCar extends THREE.Group {
 	computePosition(state){
 		var pos = {
 			x: state.side * this.scaleFactor / 2,
-			y: ((street.bridgeLength + 1) / 2 + state.position - this.crossIndex) * this.scaleFactor * state.side,
+			y: ((street.bridgeCapacity + 1) / 2 + state.position - this.crossIndex) * this.scaleFactor * state.side,
 			z: this.position.z 
 		};
 
-		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridgeLength + 1))){
+		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridgeCapacity + 1))){
 			pos.x = 0;
 		}
 
 		if(state.state == 4){
-			pos.y = ((street.bridgeLength + street.length) / 2) * this.scaleFactor * ( - state.side);
+			pos.y = ((street.bridgeCapacity + street.length) / 2) * this.scaleFactor * ( - state.side);
 		}
 
 		if(state.state == 0){
-			this.position.set(pos.x, ((street.bridgeLength + street.length) / 2) * this.scaleFactor * state.side, pos.z);
+			this.position.set(pos.x, ((street.bridgeCapacity + street.length) / 2) * this.scaleFactor * state.side, pos.z);
 			this.initTween = this.TweenTo( pos ).start();
 		}
 

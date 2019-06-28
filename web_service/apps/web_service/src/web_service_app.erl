@@ -4,20 +4,29 @@
 %%%-------------------------------------------------------------------
 
 -module(web_service_app).
-
+-compile(export_all).
 -behaviour(application).
 
--export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
     {ok, Pid} = 'web_service_sup':start_link(),
-    
     Routes = [ {
         '_', %% Host match https://ninenines.eu/docs/en/cowboy/1.0/guide/routing/
         [
-            {"/", simulation_controller, []},   %% returns the current simulation state
-            {"/car", car_controller, []},        %% creates a new car
-            {"/assets/[...]", cowboy_static, {dir, "../../../../client"}}
+            % Simulation end points
+            {"/simulation", simulation_controller, []},         %% returns the current simulation state
+            {"/simulation/init", simulation_controller, []},    %% init simulation parameters
+            {"/simulation/new", simulation_controller, []},     %% launch new car node
+            {"/simulation/reset", simulation_controller, []},   %% reset simulation, kill every node
+
+            % Car end points
+            {"/car/sync", car_controller, []},                  %% update car sync
+            {"/car/adj", car_controller, []},                   %% update car adj
+            {"/car/state", car_controller, []},                 %% update car state
+
+            % Client 
+            {"/", cowboy_static, {file, "../../../../client/index.html"}},
+            {"/[...]", cowboy_static, {dir, "../../../../client"}}
         ]
     } ],
     Dispatch = cowboy_router:compile(Routes),

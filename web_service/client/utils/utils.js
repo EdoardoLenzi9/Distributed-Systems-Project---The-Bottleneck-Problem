@@ -29,8 +29,8 @@ function Read( filePath, callback ){
 /*
 * Start fullscreen mode
 */
-function OpenFullscreen( id ) {
-    var elem = window.parent.document.getElementById( id );
+function OpenFullscreen( ) {
+    var elem = window.parent.document.getElementById( 'simulation-view' );
     if ( elem.requestFullscreen ) {
         elem.requestFullscreen();
     } else if ( elem.mozRequestFullScreen ) { /* Firefox */
