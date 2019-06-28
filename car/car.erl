@@ -7,7 +7,7 @@
 
 
 %%%===================================================================
-%%% gen_statem callbacks
+%%% gen_statem states
 %%%===================================================================
 
 
@@ -20,7 +20,7 @@ init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout]) ->
                             name = Name, 
                             side = Side, 
                             power = Power, 
-                            adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
+                            adj = #adj{frontCars = http_client:getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = utils:getTimeStamp(), 
                             turn = Turn,
                             bridgeCapacity = BridgeCapacity, 
@@ -34,7 +34,7 @@ init([Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime]) ->
                             name = Name, 
                             side = Side, 
                             power = Power, 
-                            adj = #adj{frontCars = getSyncAdj(Name, Side, Power), rearCars = []}, 
+                            adj = #adj{frontCars = http_client:getSyncAdj(Name, Side, Power), rearCars = []}, 
                             arrivalTime = utils:getTimeStamp(), 
                             turn = Turn,
                             bridgeCapacity = BridgeCapacity, 

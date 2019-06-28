@@ -17,8 +17,13 @@ killer(Name, Timeout) ->
     timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
 
 
+%% Simulate a tow truck fix after a given timeout
+towTruck(Name, Timeout) ->
+    timer:apply_after(Timeout, ?MODULE, sendEvent, [{global, Name}, removed]).
+
+
 callTowTruck(Data) ->
-    Responses = sendToAllAdj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
+    Responses = message:sendToAllAdj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
     callTowTruckWrap(Responses).
 
 callTowTruckWrap([]) ->

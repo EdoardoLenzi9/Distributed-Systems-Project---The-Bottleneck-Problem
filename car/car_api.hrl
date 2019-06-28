@@ -25,7 +25,6 @@ bs() ->
     start_link(car1, right, 1, 1000, 3, 3000).
 
 
-% TODO update api
 start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout) ->
     gen_statem:start_link({global, Name}, ?MODULE, [Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout], []).
 

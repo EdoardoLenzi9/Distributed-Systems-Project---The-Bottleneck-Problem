@@ -88,3 +88,32 @@ sendNearRearCars(Event, Data, Hop) ->
             []
         end
     end.
+
+
+sendEvent(Name, Event) ->
+    {Name, list_to_atom(atom_to_list(Name) ++ "@" ++ atom_to_list(Name))} ! Event,
+    receive
+        Response ->
+            Response        
+        after 500 ->
+            no_response
+    end. 
+
+
+sendToAllAdjWrap([], _Event) -> 
+    [];
+sendToAllAdjWrap([Car], Event) -> 
+    sendEvent(Car#carState.name, Event);
+sendToAllAdjWrap([FirstCar | Rest], Event) -> 
+    Response = sendEvent(FirstCar#carState.name, Event),
+    [sendToAllAdjWrap(Rest, Event) | Response].
+
+
+sendToAllAdj(List, Event) -> 
+    Responses = sendToAllAdjWrap(List, Event),
+    if length(Responses) > 1 -> 
+        [[First] | Rest] = Responses,
+        [First | Rest ];
+    true -> 
+        Responses
+    end.
