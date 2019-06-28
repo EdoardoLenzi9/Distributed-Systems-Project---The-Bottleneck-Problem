@@ -42,16 +42,14 @@ callTowTruckWrap([{Car, Response} | Rest]) ->
 
 %% Launch a given event until success (polling)
 launcher(Name, Event) ->
-    timer:apply_after(500, gen_statem, call, [{global, Name}, Event]).
-    %gen_statem:call({global, Name}, Event).
-    %io:format("aiuttoo"),
-    %try gen_statem:call({global, Name}, Event) of 
-    %    _ -> { } 
-    %catch 
-    %    exit:_ -> {launcher(Name, Event)}; 
-    %    error:_ -> {launcher(Name, Event)};
-    %    throw:_ -> {launcher(Name, Event)} 
-    %end. 
+    io:format("loop detection"),
+    try gen_statem:call({global, Name}, Event) of 
+        _ -> { } 
+    catch 
+        exit:_ -> {launcher(Name, Event)}; 
+        error:_ -> {launcher(Name, Event)};
+        throw:_ -> {launcher(Name, Event)} 
+    end. 
 
 
 next(NextState, Data, From) ->
@@ -61,6 +59,7 @@ next(NextState, Data, From) ->
     if NextState =/= dead ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
+    timer:sleep(Data#carState.turn),
     {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, atom_to_list(NextState)}]}.
 
 
@@ -71,6 +70,7 @@ next(NextState, Data, From, Reply) ->
     if NextState =/= dead ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
+    timer:sleep(Data#carState.turn),
     {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, Reply}]}.
         
 
