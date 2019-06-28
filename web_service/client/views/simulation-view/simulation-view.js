@@ -83,11 +83,20 @@ function LoadState( state ) {
 	for (const [key, car] of Object.entries(cars)) {
 		car.check = false;
 	}
+	middleIndex = state.length;
+	for (let car of state){ 
+		if(car.side == "right"){
+			middleIndex --;
+		}
+	}
 	state.forEach(function(car){ 	//left side
 		if(car.side == "left"){
-			car.position = leftIndex++;
+			car.side = -1;
+			leftIndex ++;
+			car.position = middleIndex - leftIndex;
 		} else {
-			car.position = rightIndex++;				
+			car.side = 1;
+			car.position = rightIndex ++;				
 		}
 		UpdateState(car);
 	});
