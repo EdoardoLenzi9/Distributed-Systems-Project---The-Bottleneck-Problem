@@ -75,9 +75,6 @@ method in order to get the name of the adjacent cars. \\
 The new car $c$ sends a message to the nearest car $n$ in order to get the current time 
 (we assume that $n$ was already syncronized). 
 With this information $c$ is concious of the RTT and its local drift from the global time. 
-Finally $c$ sends to the furthest car 
-reachable in the queue its arrival time (and the message is propagated along the 
-peer chain to the current leader).\\
 
 So basically the global timing is the timing of the first leader (or the average time 
 of the first block of incoming cars).\\
@@ -93,32 +90,44 @@ this decision.
 
 \subsection{Solution}
 
-The leader is concious of the current queue state in terms of arrival time of the cars; 
-so it decides how may cars have to cross the bridge in this turn (accordingly with the 
-bridge capacity c and FIFO ordering).\\
+Before crossing the bridge, the leader propagates a message to 
+the first n cars behind him (where n is the capacity of the bridge) telling them to cross the bridge
+and the identity of the first car B on the other side. Each car, who 
+receives the message, checks if its arrival time is less then B's: if so, the car can 
+cross the bridge too, otherwise waits for its turn.
 
-Finally the leader notifies to the involved cars its decision and, after 
-an acknowledgement (agreement), the block starts crossing. 
+The leader will always be elected by himself. Suppose the car A, that is not leader
+ and that has not the permission to cross, arrives at the last position
+before the bridge. At that point A checks if there are any cars in front of her:
+\begin{itemize}
+\item if there is a car whose arrival time is greater then A's and is on the opposite side
+then A is the new leader;
+\item if there isn't any cars then A is the new leader 
+\end{itemize}
 
-\begin{center}
-    \includegraphics[scale=0.6]{assets/ds2019_3.png}
-\end{center}
+%\begin{center}
+%    \includegraphics[scale=0.2]{assets/ds2019_3.png}
+%\end{center}
 
 
 \section{Failures}
 
-In case of failure another car (or the same car) has to call a \textbf{tow truck} for help.
+In case of failure another car (or the car himself, when hers system is still working)
+ has to call a \textbf{tow truck} for help. 
 
 
 \subsection{Solution}
 
 Each car recursively checks if other reachable cars are safe; if a check message
 hasn't any response before a certain \textbf{timeout} (depends on the RTT) is assumed 
-that the receiver has a failure (and so the tow truck will be call).
+that the receiver has a failure (and so the tow truck will be call).\\Then the car have to wait to be removed 
+and then notify the first car behind that she has been removed after the tow truck timeout.
+The car has also to tell the name of the car in front of her so that the rear one can communicate with the next one. \\
+Every time something like that happens, the remaining cars must update their adjacent lists.
 
-\begin{center}
-    \includegraphics[scale=0.9]{assets/ds2019_4.png}
-\end{center}
+%\begin{center}
+%    \includegraphics[scale=0.9]{assets/ds2019_4.png}
+%\end{center}
 
 
 \section{MIM attack}
@@ -149,9 +158,9 @@ car processes will be spawned.\\
 We will design an embedded load balancer in order to avoid the web services overload 
 (considering the number of calls).
 
-\begin{center}
-    \includegraphics[scale=0.6]{assets/ds2019_2.png}
-\end{center}
+%\begin{center}
+%%    \includegraphics[scale=0.6]{assets/ds2019_2.png}
+%\end{center}
 
 
 \section{SPOF}
@@ -172,15 +181,26 @@ start a message exchange with the adjacent cars.
 A possible solution can be using a \textbf{distributed DBMS} like Mnesia~\cite{1} in order to keep 
 track of the queue state.
 
-\begin{center}
-    \includegraphics[scale=0.8]{assets/ds2019_1.png}
-\end{center}
+%\begin{center}
+%    \includegraphics[scale=0.8]{assets/ds2019_1.png}
+%\end{center}
+%
+%\begin{center}
+%    \includegraphics[scale=0.6]{assets/newCarclient.png}
+%\end{center}
+%
+%\begin{center}
+%    \includegraphics[scale=0.6]{assets/newCarRnd.png}
+%\end{center}
 
 
 \subsection{Algorithms}
 
 We have used the Berkeley algorithm in order to syncronize new spawned car processes.
 
+%\begin{center}
+%    \includegraphics[scale=0.6]{assets/berkeley.png}
+%\end{center}
 
 \section{Physical architecture and deployment}
 

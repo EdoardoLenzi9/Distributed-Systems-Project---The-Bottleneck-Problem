@@ -1,6 +1,103 @@
 \chapter{Implementation}\label{ch:implementation}
 
-Details about the implementation: every choice about platforms, languages, software/hardware, middlewares, which has not been decided in the requirements.
+\subsection{Environment}
 
+To model the environment the following attributes, which are set in environment.js for once, will be used:
+\begin{itemize}
+    \item $host$:\\ Web service IP:PORT
+    \item $maxSpeed$:\\ the maximun speed allowed
+    \item $turn$:\\ time between one turn and the next
+    \item $bridgeCapacity$: number\\ it defines the maximun number of cars that can cross the bridge
+    at the same time
+    \item $bridgeLenght$: number\\ it defines the lenght of the bridge
+    \item $samplingFrequency$: number\\ it defines frequency of polling of the client towards the web service
+    \item $towTruckTime$: number\\ time necessary for the tow truck to arrive and remove the dead car
+\end{itemize}
 
-Important choices about implementation should be described here; e.g., peculiar data structures.
+These attributes will never be modified during the simulation.
+
+\subsection{Car}
+
+Each car A is modelled exploiting the following attributes:
+\begin{itemize}
+    \item $name$: number\\ it identifies univocally the car
+    \item $side$: number\\ if equal to 1 means that the car is on the right side, 
+    if equal to -1 it means that it is on left side
+    \item $power$: number\\ it defines the number of rear and front cars that the car can reach
+    \item $speed$: number\\ it defines the distance that the car goes through in one turn\\
+    it has a maximun value specified in \textbf{environment.js}\\
+    it is initialized with 0 to prevent crashing 
+    \item $position$: number \\it indicates the distance between the car and the bridge or the car and the end of the
+    bridge\\it is initialized as $pos(B)+1*side(B)$, where B is the first front car, if B is on the same side of A, or
+    as $-pos(B)$ if B is on the other side\\ when negative it means that the car is on the left side, otherwise on the right side
+    \item $crossing$: boolean\\ if true it means that the car is on the bridge
+    \item $delta$: number\\ it is the difference between the local time and the global time
+    \item $sendingTime$: number\\ it define the time necessary to send a message to another car
+    \item $currentTime$: number\\ it indicates the local time at each turn
+    \item $arrivalTime$: number\\ it defines the time when the car has arrived in the queue
+    \item $adj$: list of lists
+    \begin{itemize}
+        \item $frontCars$: list of cars\\ it contains all the car ahead that are rechable\\ the first element
+         is the next car
+        \item $rearCars$: list of cars\\ it contains all the car behind that are rechable\\ the last element
+         is the previous car
+    \end{itemize} 
+    \item $state$: string\\ it defines the current state of the car\\ it could be \textbf{init}, \textbf{sync}, \textbf{normal}, \textbf{dead} or \textbf{dead}
+    \item $bridgeCapacity$: number\\ it defines the maximun number of cars that can cross the bridge
+    at the same time
+    \item $bridgeLenght$: number\\ it defines the lenght of the bridge
+    \item $crashTimeout$: number\\ it indicate after how many seconds the car will crash
+\end{itemize}
+
+Note that $bridgeCapacity$ and $bridgeLenght$ are imposed by the environment and cannot change during the
+simulation. Furthermore $name$ and $power$ are defined independently, while $delta$ and $adj$ 
+depend on the other cars.\\
+
+The problem allows to describe the car as a finite state machine. We choose this modality because
+the car can switch between four main different states. The first one is a so called \textbf{init}: the 
+undefined attributes are computed here. It is assumed that in this state the car cannot receive
+any sort of event and that cannot crash. \\
+When the car is syncrhonized it changes its state in \textbf{sync}: the car stays in this state until she recevies
+a response to the check that she sends repeatedly to hers front car. When it is received the car knows the state
+of the current front car and so can define its $speed$ and $position$ and also change its state to \textbf{normal}.\\
+In \textbf{normal} the car still sends repeatedly a check event to the front car in order to regolate hers speed
+(and consequently the new position). It is also usefull to update the $sendingTime$.\\
+In particular, at every iteration, the car computes the following function to determinate the 
+new $speed$: \[\frac{pos(A)-pos(B)}{RTT + turn}\] 
+and the new $position$: \[pos(A) + \frac{|pos(A)-pos(B)|}{RTT + turn}\]
+where $pos(x)$ = $position$ of x. \\
+Obviously this means that if the distance between A and B is zero, the car will change its speed to 
+zero: this avoids crashing during the next turn even if the front car says that its $speed$ is greater
+then zero. In fact, if B crashes immediately after sending its state, the other car assumes that B
+is moving and so she decides to move too ending up colliding with B.\\ When the car finally reach the position
+zero and there is a car B on the opposite side:
+\begin{itemize}
+    \item if hers $crossing$ attribute is true and her arrival time is less than B's,
+     she start crossing the bridge
+    \item if hers $crossing$ attribute is false and her arrival time is less than B's,
+     she become the new leader
+    \item if hers arrival time is greater than B's, she stops and waits her turn
+\end{itemize}
+
+When the car becomes the new leader its state would be the \textbf{dead} state. Here the car is in the $position$ zero
+and has to propagate to the first n cars behind her (n is equal to the bridge capacity) 
+to change $crossing$ value to true. After that she moves and returns to the \textbf{normal} state.\\
+Obviously there is another state called $\textbf{dead}$ that could be reached from every state, except for \textbf{init}, 
+when the car's engine or the car's engine and system crash. In that case the car cannot move anymore 
+and so somebody (the car itself or the first behind her) must call the tow truck to be removed. 
+\\Notice that if there is a car whose $speed$ = 0 it may mean that the car is stationary, waiting the front
+ car to move, or in \textbf{dead} status.\\
+
+\subsubsection{Communication}
+
+It is important to underline how two cars can send message to each other. \\
+First of all, each car has a supervisor and, when a car A want to send something to another car B,
+this happens:
+\begin{itemize}
+   \item{1.} A sends a message to hers supervisor S$_{A}$
+   \item {2.} S$_{A}$ sends it to the supervisor of B S$_{B}$
+   \item {3.} S$_{B}$ sends an event to B which contains the message of A
+   \item {4.} B send a message to S$_{B}$ whit the response
+   \item {5.} S$_{B}$ sends it to S$_{A}$
+   \item {6.} finally S$_{A}$ sends another event to A with the response of B
+\end{itemize}
