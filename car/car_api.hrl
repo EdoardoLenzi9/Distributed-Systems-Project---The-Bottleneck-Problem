@@ -22,7 +22,7 @@ default_behaviour(Name) ->
     
 crash(Name) ->
     utils:log("API Crash"),
-    gen_statem:call({global, Name}, crash).
+    gen_statem:call({global, Name}, dead).
 
 
 check(Name, Check) ->

@@ -40,7 +40,9 @@ normal({call, From}, Event, Data) ->
     utils:log("STATE Normal"),
     case Event of        
         default_behaviour ->
-            flow:keep(Data, From, normal_default_behaviour)
+            flow:keep(Data, From, normal_default_behaviour);
+        dead ->
+            flow:next(dead, Data, From, rip)
     end.
 
 
@@ -56,6 +58,6 @@ dead({call, _From}, Event, Data) ->
     utils:log("STATE Dead"),
     case Event of
         default_behaviour ->
-            utils:log("Event default_behaviour"),
+            utils:log("Event dead_default_behaviour"),
             stop(Data#carState.name)
     end.

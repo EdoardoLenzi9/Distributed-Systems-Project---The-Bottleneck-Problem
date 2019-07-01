@@ -37,20 +37,31 @@ sync_test_() ->
                         tow_truckTime = Env#env.tow_truckTime,
                         maxRTT = Env#env.maxRTT
                     },
+    
 
     car:start_link(State#carState.name, State),
     SyncResponse = car:default_behaviour(State#carState.name),
     ExpectedSyncResponse = sync_default_behaviour,
-    
+
     Assertion2 = receive
-        {check, Name, Target} ->
+       {check, Name, Target} ->
             {Response2, Delta} = car:check(Name, update_current_time(Target)),
             ExpectedResponse2 = sync_response_check,
             assert(Response2, ExpectedResponse2)
     end,
-    utils:log("~p", [Assertion2]),
-    utils:log("Supervisor call response: ~p", [car:default_behaviour(State#carState.name)]),
-
+    utils:log("prima prova ~p", [Assertion2]),
+    car:default_behaviour(State#carState.name),
+    
+    Assertion3 = 
+        if true ->
+            Response3 = car:crash(State#carState.name),
+            ExpectedResponse3 = rip,
+            assert(Response3, ExpectedResponse3)
+        end,
+    
+        utils:log("seconda prova ~p", [Assertion3]), 
+        car:default_behaviour(State#carState.name),
+        
     [ ?_assert(SyncResponse =:= ExpectedSyncResponse) ].
 
 
@@ -60,3 +71,5 @@ assert(CurrentResult, ExpectedResult) ->
     true -> 
         throw("test fail")
     end.
+
+    
