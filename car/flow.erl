@@ -52,33 +52,14 @@ launcher(Name, Event) ->
     end. 
 
 
-next(NextState, Data, From) ->
-    utils:log("STATE TRANSITION -> ~p", [NextState]),
-    NewData = updateState(Data, NextState),
-    Adj = http_client:getAdj(NewData),
-    if NextState =/= dead ->
-        launchEvent(launcher, [Data#carState.name, defaultBehaviour])
-    end,
-    timer:sleep(Data#carState.turn),
-    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, ok}]}.
-
-
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     NewData = updateState(Data, NextState),
-    Adj = http_client:getAdj(NewData),
-    if NextState =/= dead ->
-        launchEvent(launcher, [Data#carState.name, defaultBehaviour])
-    end,
-    timer:sleep(Data#carState.turn),
-    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, ok}]}.
+    %Adj = http_client:getAdj(NewData),
+    %{next_state, NextState, updateAdj(NewData, Adj), [{reply, From, Reply}]}.
+    {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
-
-keep(Data, From) ->
-    utils:log("KEEP STATE"),
-    {keep_state, Data, [{reply, From, reply}]}.
-
 
 keep(Data, From, Reply) ->
     utils:log("KEEP STATE"),
-    {keep_state, Data, [{reply, From, ok}]}.
+    {keep_state, Data, [{reply, From, Reply}]}.

@@ -23,12 +23,8 @@ sync({call, From}, Event, Data) ->
         utils:log("Event defaultBehaviour"),
         FrontCars = Data#carState.adj#adj.frontCars,
         [Pivot] = FrontCars,
-        utils:log("Call supervisor"),
-        %Target = updateSendingTime(Pivot),
-        %{supervisor, car1@car1} ! {check, Data#carState.name, updateSendingTime(Pivot)},
         car_supervisor_api:check(Data, Pivot),
-        %utils:log("After call"),
-        {keep_state, Data, [{reply, From, syncdefbehaviour}]};
+        flow:keep(Data, From, sync_default_behaviour);
     {response_check, Check} ->
         utils:log("Event response_check"),
         % berkeley
@@ -36,7 +32,7 @@ sync({call, From}, Event, Data) ->
         RTT = CurrentTime - Check#carState.sendingTime,
         PivotTime = Check#carState.currentTime,
         Delta = CurrentTime - (PivotTime + RTT / 2),
-        {next_state, normal, Data, [{reply, From, syncresponsebehaviour}]}
+        flow:next(normal, updateDelta(Data, Delta), From, {sync_response_check, Delta})
     end.
 
 
@@ -44,7 +40,7 @@ normal({call, From}, Event, Data) ->
     utils:log("STATE Normal"),
     case Event of        
         defaultBehaviour ->
-            {keep_state, Data, [{reply, From, normaldefBehaviour}]}
+            flow:keep(Data, From, normaldefBehaviour)
     end.
 
 

@@ -27,19 +27,30 @@ sync_test_() ->
                         turn = 1000,
                         bridgeCapacity = 5, 
                         bridgeLength = 3,
-                        maxSpeed = 2,
-                        towTruckTime = 1500
+                        maxSpeed = Env#env.maxSpeed,
+                        towTruckTime = Env#env.towTruckTime,
+                        maxRTT = Env#env.maxRTT
                     },
 
     car:start_link(State#carState.name, State),
+    SyncResponse = car:defaultBehaviour(State#carState.name),
+    ExpectedSyncResponse = sync_default_behaviour,
+    
+    Assertion2 = receive
+        {check, Name, Target} ->
+            {Response2, Delta} = car:check(Name, updateCurrentTime(Target)),
+            ExpectedResponse2 = sync_response_check,
+            assert(Response2, ExpectedResponse2)
+    end,
+    utils:log("~p", [Assertion2]),
     utils:log("Supervisor call response: ~p", [car:defaultBehaviour(State#carState.name)]),
 
-    
-    receive
-        {check, Name, Target} ->
-            utils:log("Supervisor: check request"),
-            utils:log("Supervisor call response: ~p", [car:check(Name, updateCurrentTime(Target))])
-    end,
-    utils:log("Supervisor call response: ~p", [car:defaultBehaviour(State#carState.name)]).
+    [ ?_assert(SyncResponse =:= ExpectedSyncResponse) ].
 
-    %[   ?_assert() ].
+
+assert(CurrentResult, ExpectedResult) ->
+    if CurrentResult == ExpectedResult ->
+        ok;
+    true -> 
+        throw("test fail")
+    end.

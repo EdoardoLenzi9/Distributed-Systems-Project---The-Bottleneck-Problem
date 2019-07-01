@@ -32,14 +32,16 @@ load_environment() ->
     {<<"bridgeCapacity">>,BridgeCapacity},
     {<<"bridgeLength">>,BridgeLength},
     {<<"samplingFrequency">>,SamplingFrequency},
-    {<<"towTruckTime">>,TowTruckTime}]} = jiffy:decode(Content),
+    {<<"towTruckTime">>,TowTruckTime},
+    {<<"maxRTT">>,MaxRTT}]} = jiffy:decode(Content),
     #env{
         host = binary_to_list(Host), 
         maxSpeed = MaxSpeed, 
         turn = Turn, 
         bridgeCapacity = BridgeCapacity, 
         bridgeLength = BridgeLength, 
-        towTruckTime = TowTruckTime
+        towTruckTime = TowTruckTime,
+        maxRTT = MaxRTT
     }.
 
 %%%===================================================================

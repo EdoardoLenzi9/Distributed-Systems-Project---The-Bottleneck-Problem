@@ -21,7 +21,8 @@
                         bridgeCapacity,
                         bridgeLength,
                         maxSpeed,
-                        towTruckTime
+                        towTruckTime,
+                        maxRTT
                     }).
 
 
@@ -47,7 +48,8 @@
                 turn,
                 bridgeCapacity,
                 bridgeLength,
-                towTruckTime
+                towTruckTime,
+                maxRTT
             }).
 
 %%%===================================================================
@@ -72,7 +74,8 @@ updateAdj(Data, Adj) ->
                 bridgeCapacity = Data#carState.bridgeCapacity,
                 bridgeLength = Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime
+                towTruckTime = Data#carState.towTruckTime,
+                maxRTT = Data#carState.maxRTT
             }.
 
 
@@ -94,7 +97,8 @@ updateDelta(Data, Delta) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength = Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime
+                towTruckTime = Data#carState.towTruckTime,
+                maxRTT = Data#carState.maxRTT
             }.
 
 updateState(Data, State) ->
@@ -115,7 +119,8 @@ updateState(Data, State) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength =  Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime
+                towTruckTime = Data#carState.towTruckTime,
+                maxRTT = Data#carState.maxRTT
             }.
 
 
@@ -138,7 +143,8 @@ updateSendingTime(Data) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength =  Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime
+                towTruckTime = Data#carState.towTruckTime,
+                maxRTT = Data#carState.maxRTT
             }.
 
 
@@ -160,7 +166,8 @@ updateCurrentTime(Data) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength =  Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime
+                towTruckTime = Data#carState.towTruckTime,
+                maxRTT = Data#carState.maxRTT
             }.
 %%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)

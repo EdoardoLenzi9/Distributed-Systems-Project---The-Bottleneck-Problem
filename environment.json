@@ -5,6 +5,7 @@
     "bridgeCapacity": 2,				
     "bridgeLength": 4,
     "samplingFrequency": 500,		
-    "towTruckTime": 1500			
+    "towTruckTime": 1500,
+    "maxRTT": 1200			
 }
  
