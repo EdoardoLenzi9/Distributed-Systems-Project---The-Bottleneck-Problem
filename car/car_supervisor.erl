@@ -4,25 +4,41 @@
 
 -module(car_supervisor).
 -compile(export_all).
-
+-include("car.hrl").
 
 start(Args) -> 
-    [PName, PSide, PPower, PTurn, PBridgeCapacity, PBridgeCrossingTime, PTimeout] = Args,
-    Name = list_to_atom(PName),
-    Side = list_to_atom(PSide),
+    
+    [PName, PSide, PPower, PTurn, PBridgeCapacity, PBridgeLength, PTimeout] = Args,
+    {Name, _} = string:to_integer(PName),
+    {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
     {Turn, _ } = string:to_integer(PTurn),
     {BridgeCapacity, _ } = string:to_integer(PBridgeCapacity),
-    {BridgeCrossingTime, _ } = string:to_integer(PBridgeCrossingTime),
+    {BridgeLength, _ } = string:to_integer(PBridgeLength),
     {Timeout, _ } = string:to_integer(PTimeout),
-
+    
     register(Name, self()),    
+    Env = utils:load_environment(),
+
+    State = #carState{
+                        name = Name, 
+                        side = Side, 
+                        power = Power, 
+                        adj = #adj{frontCars = http_client:getSyncAdj(Name, Side, Power), rearCars = []}, 
+                        arrivalTime = utils:getTimeStamp(), 
+                        state = init,
+                        turn = Turn,
+                        bridgeCapacity = BridgeCapacity, 
+                        bridgeLength = BridgeLength,
+                        maxSpeed = Env#env.maxSpeed,
+                        towTruckTime = Env#env.towTruckTime
+                    },
 
 	if Timeout > 0 ->
-		car:start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime, Timeout);
-	true ->
-		car:start_link(Name, Side, Power, Turn, BridgeCapacity, BridgeCrossingTime)
+        utils:log("Launch killer process with timeout")
+        %launch killer
     end,
+    car:start_link(State),
     loop().
 
 
@@ -33,8 +49,6 @@ loop() ->
         sync ->
             car:sync(); 
         crash ->
-            car:crash(); 
-        newleader ->
-            car:newleader()
+            car:crash()
     end,
     loop().

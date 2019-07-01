@@ -60,7 +60,7 @@ next(NextState, Data, From) ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
     timer:sleep(Data#carState.turn),
-    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, atom_to_list(NextState)}]}.
+    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, ok}]}.
 
 
 next(NextState, Data, From, Reply) ->
@@ -71,14 +71,14 @@ next(NextState, Data, From, Reply) ->
         launchEvent(launcher, [Data#carState.name, defaultBehaviour])
     end,
     timer:sleep(Data#carState.turn),
-    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, Reply}]}.
+    {next_state, NextState, updateAdj(NewData, Adj), [{reply, From, ok}]}.
         
 
 keep(Data, From) ->
     utils:log("KEEP STATE"),
-    {keep_state, Data, [{reply, From, "keep_state"}]}.
+    {keep_state, Data, [{reply, From, reply}]}.
 
 
 keep(Data, From, Reply) ->
     utils:log("KEEP STATE"),
-    {keep_state, Data, [{reply, From, Reply}]}.
+    {keep_state, Data, [{reply, From, ok}]}.

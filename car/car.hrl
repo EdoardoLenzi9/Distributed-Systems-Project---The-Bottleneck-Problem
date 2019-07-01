@@ -7,14 +7,21 @@
                         name,
                         side,
                         power,
+                        speed,
+                        position,
+                        crossing,
                         delta,
+                        sendingTime,
                         arrivalTime, 
+                        currentTime,
                         adj,
                         state,
                         % settings and bridge metadata 
                         turn,
                         bridgeCapacity,
-                        bridgeCrossingTime
+                        bridgeLength,
+                        maxSpeed,
+                        towTruckTime
                     }).
 
 
@@ -34,6 +41,15 @@
                     }).
 
 
+-record (env, {    
+                host,
+                maxSpeed,
+                turn,
+                bridgeCapacity,
+                bridgeLength,
+                towTruckTime
+            }).
+
 %%%===================================================================
 %%% update records
 %%%===================================================================
@@ -43,13 +59,20 @@ updateAdj(Data, Adj) ->
                 name = Data#carState.name,
                 side = Data#carState.side,
                 power = Data#carState.power,
+                speed = Data#carState.speed,
+                position = Data#carState.position,
+                crossing = Data#carState.crossing,
                 delta = Data#carState.delta,
+                sendingTime = Data#carState.sendingTime, 
                 arrivalTime = Data#carState.arrivalTime, 
+                currentTime = Data#carState.currentTime, 
                 adj = Adj,
                 state = Data#carState.state,
                 turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
+                bridgeCapacity = Data#carState.bridgeCapacity,
+                bridgeLength = Data#carState.bridgeLength,
+                maxSpeed = Data#carState.maxSpeed,
+                towTruckTime = Data#carState.towTruckTime
             }.
 
 
@@ -58,13 +81,20 @@ updateDelta(Data, Delta) ->
                 name = Data#carState.name,
                 side = Data#carState.side,
                 power = Data#carState.power,
+                speed = Data#carState.speed,
+                position = Data#carState.position,
+                crossing = Data#carState.crossing,
                 delta = Delta,
+                sendingTime = Data#carState.sendingTime, 
                 arrivalTime = Data#carState.arrivalTime, 
+                currentTime = Data#carState.currentTime, 
                 adj = Data#carState.adj,
                 state = Data#carState.state,
                 turn = Data#carState.turn,
                 bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
+                bridgeLength = Data#carState.bridgeLength,
+                maxSpeed = Data#carState.maxSpeed,
+                towTruckTime = Data#carState.towTruckTime
             }.
 
 updateState(Data, State) ->
@@ -72,13 +102,64 @@ updateState(Data, State) ->
                 name = Data#carState.name,
                 side = Data#carState.side,
                 power = Data#carState.power,
+                speed = Data#carState.speed,
+                position = Data#carState.position,
+                crossing = Data#carState.crossing,
                 delta =  Data#carState.delta,
+                sendingTime = Data#carState.sendingTime, 
                 arrivalTime = Data#carState.arrivalTime, 
+                currentTime = Data#carState.currentTime, 
                 adj = Data#carState.adj,
                 state = State,
                 turn = Data#carState.turn,
                 bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
+                bridgeLength =  Data#carState.bridgeLength,
+                maxSpeed = Data#carState.maxSpeed,
+                towTruckTime = Data#carState.towTruckTime
+            }.
+
+
+
+updateSendingTime(Data) ->
+    #carState{  
+                name = Data#carState.name,
+                side = Data#carState.side,
+                power = Data#carState.power,
+                speed = Data#carState.speed,
+                position = Data#carState.position,
+                crossing = Data#carState.crossing,
+                delta =  Data#carState.delta,
+                sendingTime = utils:getTimestamp(), 
+                arrivalTime = Data#carState.arrivalTime, 
+                currentTime = Data#carState.currentTime, 
+                adj = Data#carState.adj,
+                state = Data#carState.state,
+                turn = Data#carState.turn,
+                bridgeCapacity =  Data#carState.bridgeCapacity,
+                bridgeLength =  Data#carState.bridgeLength,
+                maxSpeed = Data#carState.maxSpeed,
+                towTruckTime = Data#carState.towTruckTime
+            }.
+
+updateCurrentTime(Data) ->
+    #carState{  
+                name = Data#carState.name,
+                side = Data#carState.side,
+                power = Data#carState.power,
+                speed = Data#carState.speed,
+                position = Data#carState.position,
+                crossing = Data#carState.crossing,
+                delta =  Data#carState.delta,
+                sendingTime = Data#carState.sendingTime, 
+                arrivalTime = Data#carState.arrivalTime, 
+                currentTime = utils:getTimestamp(), 
+                adj = Data#carState.adj,
+                state = Data#carState.state,
+                turn = Data#carState.turn,
+                bridgeCapacity =  Data#carState.bridgeCapacity,
+                bridgeLength =  Data#carState.bridgeLength,
+                maxSpeed = Data#carState.maxSpeed,
+                towTruckTime = Data#carState.towTruckTime
             }.
 %%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)

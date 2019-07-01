@@ -4,7 +4,7 @@
 -module(utils).
 -compile(export_all).
 -define(LOG, true).
-
+-include("car.hrl").
 
 %% Logger
 -ifdef(LOG).
@@ -22,6 +22,25 @@
 
 binary_to_atom(Item) ->
     list_to_atom(binary_to_list(Item)).
+
+
+load_environment() ->
+    {ok, Content} = file:read_file("environment.json"),
+    {[{<<"host">>,Host},
+    {<<"maxSpeed">>,MaxSpeed},
+    {<<"turn">>,Turn},
+    {<<"bridgeCapacity">>,BridgeCapacity},
+    {<<"bridgeLength">>,BridgeLength},
+    {<<"samplingFrequency">>,SamplingFrequency},
+    {<<"towTruckTime">>,TowTruckTime}]} = jiffy:decode(Content),
+    #env{
+        host = binary_to_list(Host), 
+        maxSpeed = MaxSpeed, 
+        turn = Turn, 
+        bridgeCapacity = BridgeCapacity, 
+        bridgeLength = BridgeLength, 
+        towTruckTime = TowTruckTime
+    }.
 
 %%%===================================================================
 %%% list management
@@ -74,19 +93,25 @@ getTimeStamp() ->
     (Mega*1000000 + Seconds)*1000 + erlang:round(Ms/1000).                                                                                                                                              
 
 
-berkeley(Pivot) ->
-    {CurrentTime, PivotTime} = getPivotTime(Pivot),
-    CurrentTime2 = getTimeStamp(),
-    RTT = CurrentTime2 - CurrentTime,
-    CurrentTime2 - (PivotTime + RTT / 2).
+berkeley(State, FrontCars) ->
+    [Pivot] = FrontCars,
+    getPivotTime(State, Pivot),
+    1.
+    %{CurrentTime, PivotTime} = getPivotTime(State, Pivot),
+    %CurrentTime2 = getTimeStamp(),
+    %RTT = CurrentTime2 - CurrentTime,
+    %CurrentTime2 - (PivotTime + RTT / 2).
 
 
-getPivotTime(Pivot) -> 
+getPivotTime(State, Pivot) -> 
     CurrentTime = getTimeStamp(), 
-    Res = gen_statem:call(Pivot, sync),
-    if Res == no_sync -> 
-        {CurrentTime, getPivotTime(Pivot)};
-    true ->
-        {CurrentTime, Res}
+    register(car, self()),
+    case car_supervisor_api:check(State, Pivot) of
+        no_response -> 
+            io:format("no respoooonse~n~n", []);
+            %{CurrentTime, CurrentTime};
+        Check ->
+            io:format("monazzooo~n~n", [])
+            %Check
     end.
 
