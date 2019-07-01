@@ -1,0 +1,9 @@
+*.beam
+*.lock
+*.dump
+jiffy.app
+priv/
+tmp/
+package-lock.json
+_build/
+node_modules/
