@@ -21,7 +21,7 @@
                         bridgeCapacity,
                         bridgeLength,
                         maxSpeed,
-                        towTruckTime,
+                        tow_truckTime,
                         maxRTT
                     }).
 
@@ -48,15 +48,16 @@
                 turn,
                 bridgeCapacity,
                 bridgeLength,
-                towTruckTime,
+                tow_truckTime,
                 maxRTT
             }).
+
 
 %%%===================================================================
 %%% update records
 %%%===================================================================
 
-updateAdj(Data, Adj) ->
+update_adj(Data, Adj) ->
     #carState{  
                 name = Data#carState.name,
                 side = Data#carState.side,
@@ -74,12 +75,12 @@ updateAdj(Data, Adj) ->
                 bridgeCapacity = Data#carState.bridgeCapacity,
                 bridgeLength = Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime,
+                tow_truckTime = Data#carState.tow_truckTime,
                 maxRTT = Data#carState.maxRTT
             }.
 
 
-updateDelta(Data, Delta) ->
+update_delta(Data, Delta) ->
     #carState{  
                 name = Data#carState.name,
                 side = Data#carState.side,
@@ -97,11 +98,12 @@ updateDelta(Data, Delta) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength = Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime,
+                tow_truckTime = Data#carState.tow_truckTime,
                 maxRTT = Data#carState.maxRTT
             }.
 
-updateState(Data, State) ->
+
+update_state(Data, State) ->
     #carState{  
                 name = Data#carState.name,
                 side = Data#carState.side,
@@ -119,13 +121,12 @@ updateState(Data, State) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength =  Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime,
+                tow_truckTime = Data#carState.tow_truckTime,
                 maxRTT = Data#carState.maxRTT
             }.
 
 
-
-updateSendingTime(Data) ->
+update_sending_time(Data) ->
     #carState{  
                 name = Data#carState.name,
                 side = Data#carState.side,
@@ -134,7 +135,7 @@ updateSendingTime(Data) ->
                 position = Data#carState.position,
                 crossing = Data#carState.crossing,
                 delta =  Data#carState.delta,
-                sendingTime = utils:getTimeStamp(), 
+                sendingTime = utils:get_timestamp(), 
                 arrivalTime = Data#carState.arrivalTime, 
                 currentTime = Data#carState.currentTime, 
                 adj = Data#carState.adj,
@@ -143,12 +144,12 @@ updateSendingTime(Data) ->
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength =  Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime,
+                tow_truckTime = Data#carState.tow_truckTime,
                 maxRTT = Data#carState.maxRTT
             }.
 
 
-updateCurrentTime(Data) ->
+update_current_time(Data) ->
     #carState{  
                 name = Data#carState.name,
                 side = Data#carState.side,
@@ -159,16 +160,18 @@ updateCurrentTime(Data) ->
                 delta =  Data#carState.delta,
                 sendingTime = Data#carState.sendingTime, 
                 arrivalTime = Data#carState.arrivalTime, 
-                currentTime = utils:getTimeStamp(), 
+                currentTime = utils:get_timestamp(), 
                 adj = Data#carState.adj,
                 state = Data#carState.state,
                 turn = Data#carState.turn,
                 bridgeCapacity =  Data#carState.bridgeCapacity,
                 bridgeLength =  Data#carState.bridgeLength,
                 maxSpeed = Data#carState.maxSpeed,
-                towTruckTime = Data#carState.towTruckTime,
+                tow_truckTime = Data#carState.tow_truckTime,
                 maxRTT = Data#carState.maxRTT
             }.
+
+
 %%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)
 %%%===================================================================
@@ -181,10 +184,12 @@ unmarshalling_sync([First| Rest]) ->
                 side = utils:binary_to_atom(Side), 
                 power = Power } | unmarshalling_sync(Rest)].
 
+
 unmarshalling_adj([ [], [] ]) ->
     #adj{ frontCars = [], rearCars = [] };
 unmarshalling_adj([ [Front], [Back] ]) ->
     #adj{ frontCars = unmarshalling_adj_wrapper(Front), rearCars = unmarshalling_adj_wrapper(Back) }.
+
 
 unmarshalling_adj_wrapper([]) ->
     [];

@@ -14,22 +14,21 @@ stop(Name) ->
     utils:log("API Stop"),
     gen_statem:stop({global, Name}).
 
+    
+default_behaviour(Name) ->
+    utils:log("API default_behaviour"),
+    gen_statem:call({global, Name}, default_behaviour).
+
+    
+crash(Name) ->
+    utils:log("API Crash"),
+    gen_statem:call({global, Name}, crash).
+
 
 check(Name, Check) ->
     utils:log("API Check"),
     gen_statem:call({global, Name}, {response_check, Check}).
 
 
-defaultBehaviour(Name) ->
-    utils:log("API defaultBehaviour"),
-    gen_statem:call({global, Name}, defaultBehaviour).
-% 
-%
-%crash(Name) ->
-%    utils:log("API Crash"),
-%    gen_statem:call({global, Name}, crash).
-%
-%
-%newleader(Name) ->
-%    utils:log("API New Leader"),
-%    gen_statem:call({global, Name}, newleader).
+% TODO update adiacenze
+% TODO propagazione all'indietro del messaggio del leader

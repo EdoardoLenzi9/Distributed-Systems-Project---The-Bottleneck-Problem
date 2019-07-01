@@ -9,12 +9,12 @@
 %%% web service calls
 %%%===================================================================
 
-getSyncAdj(Name, Side, Power) -> 
+get_sync(Name, Side, Power) -> 
     Content = {[{name, Name}, {side, Side}, {power, Power}]},
     http_client:call(post, "/car/sync", Content, car, unmarshalling_sync).
 
 
-getAdj(Data) -> 
+get_adj(Data) -> 
     Content = {[    {name, Data#carState.name}, 
                     {side, Data#carState.side}, 
                     {power, Data#carState.power},

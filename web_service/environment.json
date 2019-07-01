@@ -1,6 +1,11 @@
 {
     "host": "http://192.168.130.37:8090",
-    "turn": 1000,
-    "bridgeCapacity": 2,
-    "bridgeCrossingTime": 2000
+    "maxSpeed": 2,				
+    "turn": 1000,					
+    "bridgeCapacity": 2,				
+    "bridgeLength": 4,
+    "samplingFrequency": 500,		
+    "towTruckTime": 1500,
+    "maxRTT": 1200			
 }
+ 

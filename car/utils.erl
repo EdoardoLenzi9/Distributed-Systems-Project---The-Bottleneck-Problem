@@ -31,7 +31,7 @@ load_environment() ->
     {<<"turn">>,Turn},
     {<<"bridgeCapacity">>,BridgeCapacity},
     {<<"bridgeLength">>,BridgeLength},
-    {<<"samplingFrequency">>,SamplingFrequency},
+    {<<"samplingFrequency">>,_SamplingFrequency},
     {<<"towTruckTime">>,TowTruckTime},
     {<<"maxRTT">>,MaxRTT}]} = jiffy:decode(Content),
     #env{
@@ -40,7 +40,7 @@ load_environment() ->
         turn = Turn, 
         bridgeCapacity = BridgeCapacity, 
         bridgeLength = BridgeLength, 
-        towTruckTime = TowTruckTime,
+        tow_truckTime = TowTruckTime,
         maxRTT = MaxRTT
     }.
 
@@ -51,15 +51,15 @@ load_environment() ->
 %%%===================================================================
 
 % [1,2,3] -> 3
-lastElement([ ]) ->
+last_element([ ]) ->
         -1;
-lastElement(List) ->
+last_element(List) ->
     [Pivot] = lists:nthtail(length(List)-1, List),
     Pivot.
 
-lastElement([ ], _) ->
+last_element([ ], _) ->
         -1;
-lastElement(List, Hop) ->
+last_element(List, Hop) ->
     if Hop < length(List) ->
         [Pivot] = lists:nthtail(length(List) - Hop, List),
         Pivot;
@@ -69,18 +69,18 @@ lastElement(List, Hop) ->
 
 
 % [1,2,3] -> 1    
-firstElement([ ]) ->
+first_element([ ]) ->
     -1;
-firstElement([First | _ ]) ->
+first_element([First | _ ]) ->
     First.
 
-firstElement([ ], _) ->
+first_element([ ], _) ->
     -1;
-firstElement([First | _Rest], 1) ->
+first_element([First | _Rest], 1) ->
     First;
-firstElement([_First | Rest], Hop) ->
+first_element([_First | Rest], Hop) ->
     if Hop < length(Rest) + 1 ->
-        firstElement(Rest, Hop - 1);
+        first_element(Rest, Hop - 1);
     true ->
         -1
     end.
@@ -90,30 +90,6 @@ firstElement([_First | Rest], Hop) ->
 %%% time management
 %%%===================================================================
 
-getTimeStamp() ->
+get_timestamp() ->
     {Mega, Seconds, Ms} = os:timestamp(),
     (Mega*1000000 + Seconds)*1000 + erlang:round(Ms/1000).                                                                                                                                              
-
-
-berkeley(State, FrontCars) ->
-    [Pivot] = FrontCars,
-    getPivotTime(State, Pivot),
-    1.
-    %{CurrentTime, PivotTime} = getPivotTime(State, Pivot),
-    %CurrentTime2 = getTimeStamp(),
-    %RTT = CurrentTime2 - CurrentTime,
-    %CurrentTime2 - (PivotTime + RTT / 2).
-
-
-getPivotTime(State, Pivot) -> 
-    CurrentTime = getTimeStamp(), 
-    register(car, self()),
-    case car_supervisor_api:check(State, Pivot) of
-        no_response -> 
-            io:format("no respoooonse~n~n", []);
-            %{CurrentTime, CurrentTime};
-        Check ->
-            io:format("monazzooo~n~n", [])
-            %Check
-    end.
-

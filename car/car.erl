@@ -19,8 +19,8 @@ init([State]) ->
 sync({call, From}, Event, Data) ->
     utils:log("STATE Sync"),
     case Event of     
-    defaultBehaviour ->
-        utils:log("Event defaultBehaviour"),
+    default_behaviour ->
+        utils:log("Event default_behaviour"),
         FrontCars = Data#carState.adj#adj.frontCars,
         [Pivot] = FrontCars,
         car_supervisor_api:check(Data, Pivot),
@@ -28,26 +28,26 @@ sync({call, From}, Event, Data) ->
     {response_check, Check} ->
         utils:log("Event response_check"),
         % berkeley
-        CurrentTime = utils:getTimeStamp(), 
+        CurrentTime = utils:get_timestamp(), 
         RTT = CurrentTime - Check#carState.sendingTime,
         PivotTime = Check#carState.currentTime,
         Delta = CurrentTime - (PivotTime + RTT / 2),
-        flow:next(normal, updateDelta(Data, Delta), From, {sync_response_check, Delta})
+        flow:next(normal, update_delta(Data, Delta), From, {sync_response_check, Delta})
     end.
 
 
 normal({call, From}, Event, Data) ->
     utils:log("STATE Normal"),
     case Event of        
-        defaultBehaviour ->
-            flow:keep(Data, From, normaldefBehaviour)
+        default_behaviour ->
+            flow:keep(Data, From, normal_default_behaviour)
     end.
 
 
 leader({call, From}, Event, Data) ->
     utils:log("STATE Queue"),
     case Event of
-        defaultBehaviour ->
+        default_behaviour ->
             flow:keep(From, Data)
         end.
 
@@ -55,7 +55,7 @@ leader({call, From}, Event, Data) ->
 dead({call, _From}, Event, Data) -> 
     utils:log("STATE Dead"),
     case Event of
-        defaultBehaviour ->
-            utils:log("Event defaultBehaviour"),
+        default_behaviour ->
+            utils:log("Event default_behaviour"),
             stop(Data#carState.name)
     end.

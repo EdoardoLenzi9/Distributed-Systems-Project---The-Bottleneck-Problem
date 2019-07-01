@@ -24,14 +24,14 @@ start(Args) ->
                         name = Name, 
                         side = Side, 
                         power = Power, 
-                        adj = #adj{frontCars = http_client:getSyncAdj(Name, Side, Power), rearCars = []}, 
-                        arrivalTime = utils:getTimeStamp(), 
+                        adj = #adj{frontCars = http_client:get_sync(Name, Side, Power), rearCars = []}, 
+                        arrivalTime = utils:get_timestamp(), 
                         state = init,
                         turn = Turn,
                         bridgeCapacity = BridgeCapacity, 
                         bridgeLength = BridgeLength,
                         maxSpeed = Env#env.maxSpeed,
-                        towTruckTime = Env#env.towTruckTime
+                        tow_truckTime = Env#env.tow_truckTime
                     },
 
 	if Timeout > 0 ->
