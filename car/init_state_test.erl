@@ -32,16 +32,14 @@ sync_test_() ->
                     },
 
     car:start_link(State#carState.name, State),
-    Response = car:defaultBehaviour(State#carState.name),
-    Response1 = car:defaultBehaviour(State#carState.name),
+    utils:log("Supervisor call response: ~p", [car:defaultBehaviour(State#carState.name)]),
 
-    io:format("asdf ~n ~p ~n", [Response]),
-    io:format("asdf ~n ~p ~n", [Response1]),
-
+    
     receive
         {check, Name, Target} ->
             utils:log("Supervisor: check request"),
-            car:check(Name, updateCurrentTime(Target))
-    end.
+            utils:log("Supervisor call response: ~p", [car:check(Name, updateCurrentTime(Target))])
+    end,
+    utils:log("Supervisor call response: ~p", [car:defaultBehaviour(State#carState.name)]).
 
     %[   ?_assert() ].

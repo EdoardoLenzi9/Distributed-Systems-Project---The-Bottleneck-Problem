@@ -7,12 +7,12 @@
 
 start_link(Name, State) ->
     utils:log("API Start link"),
-    gen_statem:start({local,Name}, ?MODULE, [State], []).
+    gen_statem:start({global, Name}, ?MODULE, [State], []).
  
 
 stop(Name) ->
     utils:log("API Stop"),
-    gen_statem:stop({local, Name}).
+    gen_statem:stop({global, Name}).
 
 
 check(Name, Check) ->
@@ -22,7 +22,7 @@ check(Name, Check) ->
 
 defaultBehaviour(Name) ->
     utils:log("API defaultBehaviour"),
-    gen_statem:call(Name, default).
+    gen_statem:call({global, Name}, defaultBehaviour).
 % 
 %
 %crash(Name) ->

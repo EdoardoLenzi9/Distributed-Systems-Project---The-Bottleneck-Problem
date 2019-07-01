@@ -129,7 +129,7 @@ updateSendingTime(Data) ->
                 position = Data#carState.position,
                 crossing = Data#carState.crossing,
                 delta =  Data#carState.delta,
-                sendingTime = utils:getTimestamp(), 
+                sendingTime = utils:getTimeStamp(), 
                 arrivalTime = Data#carState.arrivalTime, 
                 currentTime = Data#carState.currentTime, 
                 adj = Data#carState.adj,
@@ -140,6 +140,7 @@ updateSendingTime(Data) ->
                 maxSpeed = Data#carState.maxSpeed,
                 towTruckTime = Data#carState.towTruckTime
             }.
+
 
 updateCurrentTime(Data) ->
     #carState{  
@@ -152,7 +153,7 @@ updateCurrentTime(Data) ->
                 delta =  Data#carState.delta,
                 sendingTime = Data#carState.sendingTime, 
                 arrivalTime = Data#carState.arrivalTime, 
-                currentTime = utils:getTimestamp(), 
+                currentTime = utils:getTimeStamp(), 
                 adj = Data#carState.adj,
                 state = Data#carState.state,
                 turn = Data#carState.turn,

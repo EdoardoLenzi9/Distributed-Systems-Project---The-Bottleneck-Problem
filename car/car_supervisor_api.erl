@@ -10,4 +10,10 @@ check(State, Target) ->
 
 sendEvent(Name, Event) ->
     utils:log("send event"),
-    {supervisor, list_to_atom(atom_to_list(Name) ++ "@" ++ atom_to_list(Name))} ! Event.
+    {supervisor, list_to_atom(atom_to_list(Name) ++ "@" ++ atom_to_list(Name))} ! Event,
+    receive
+        _ ->
+            ok
+        after 500 ->
+            ok
+    end.
