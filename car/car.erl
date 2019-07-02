@@ -43,8 +43,7 @@ sync({call, From}, Event, Data) ->
             flow:keep(Data, From, {sync_default_behaviour, Data});
         true ->
             flow:next(normal, Data, From, {normal, Data})
-        end,
-        flow:keep(Data, From, {sync_default_behaviour, Data})
+        end
     end.
 
 
