@@ -52,3 +52,9 @@ loop() ->
             car:crash()
     end,
     loop().
+
+killer(Name) ->
+    receive
+        after 5000 ->
+            car:crash(Name)
+    end.

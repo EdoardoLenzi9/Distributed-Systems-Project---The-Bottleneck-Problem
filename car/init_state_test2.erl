@@ -3,7 +3,7 @@
 %%%===================================================================
 
 
--module(init_state_test).
+-module(init_state_test2).
 -compile(export_all).
 -include_lib("eunit/include/eunit.hrl").
 -include("car.hrl"). 
@@ -12,7 +12,7 @@
 % erl -sname car1@car1 -run init_state_test sync_test_
 % init_state_test:sync_test_().
 
-sync_test_() ->
+crash_test_() ->
 
     register(supervisor, self()),    
     Env = utils:load_environment(),
@@ -51,15 +51,12 @@ sync_test_() ->
     end,
     utils:log("Prova Sync: ~p", [Assertion2]),
     car:default_behaviour(State#carState.name),
-    
-    Assertion3 = 
-        if true ->
-            Response3 = car:crash(State#carState.name),
-            ExpectedResponse3 = rip,
-            assert(Response3, ExpectedResponse3)
-        end,
-    
-    utils:log("Prova Crash (no timeout): ~p", [Assertion3]), 
+
+    Resp = car_supervisor:killer(State#carState.name),
+    ExpectedResponse = rip,
+    Assertion3 = assert(Resp, ExpectedResponse),
+
+    utils:log("Prova Crash: ~p", [Assertion3]), 
     car:default_behaviour(State#carState.name),
 
     [ ?_assert(SyncResponse =:= ExpectedSyncResponse) ].
