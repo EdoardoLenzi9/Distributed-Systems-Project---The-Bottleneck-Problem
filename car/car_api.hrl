@@ -27,13 +27,13 @@ crash(Name) ->
 
 check(Req) ->
     utils:log("API Check Request"),
-    {Label, Sender, Target, SendingTime, Body} = Req,
+    {_Label, _Sender, Target, _SendingTime, _Body} = Req,
     gen_statem:call({global, Target}, {check, Req}).
 
 
 check_response(Response) ->
     utils:log("API Check Response"),
-    {Label, Sender, Target, SendingTime, RTT, Body} = Response,
+    {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
     gen_statem:call({global, Target}, {response_check, Response}).
 
 % TODO update adiacenze

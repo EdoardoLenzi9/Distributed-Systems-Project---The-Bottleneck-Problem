@@ -13,20 +13,23 @@
 % init_state_test:sync_test_().
 
 
-
-
 sync_alone_test_() ->
     % Arrange
+    
     test_fixture:register(),
     State = test_fixture:default_state(),
-    
     car:start_link(State#car_state.name, State),
     
+    % Act    
+
     % if there isn't any car in front, sync transit in the normal state
     Result1 = car:default_behaviour(State#car_state.name),
     ExpectedResult1 = {normal, State},
-
     car:stop(State#car_state.name),
+
+    % Assert
+    
+    assert(Result1, ExpectedResult1),
     [ ?_assert(Result1 =:= ExpectedResult1) ].
 
 

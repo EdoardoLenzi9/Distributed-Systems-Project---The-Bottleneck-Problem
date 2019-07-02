@@ -27,7 +27,7 @@ sync({call, From}, Event, Data) ->
     {response_check, Response} ->
         utils:log("Event response_check"),
         % berkeley
-        {Label, Sender, Target, SendingTime, RTT, Body} = Response,
+        {_Label, _Sender, _Target, SendingTime, RTT, Body} = Response,
         CurrentTime = SendingTime, 
         PivotTime = Body#car_state.current_time,
         Delta = CurrentTime - (PivotTime + RTT / 2),
