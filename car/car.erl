@@ -31,8 +31,12 @@ sync({call, From}, Event, Data) ->
         CurrentTime = SendingTime, 
         PivotTime = Body#car_state.current_time,
         Delta = CurrentTime - (PivotTime + RTT / 2),
-        %Adj = 
-        flow:next(normal, Data#car_state{delta = Delta}, From, {normal, Data#car_state{delta = Delta}});
+        NewData = Data#car_state{delta = Delta, arrivalTime = Data#car_state.arrivalTime + Delta},
+        car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, {NewData}}),
+        flow:keep(NewData, From, {sync_response_check, NewData});
+    {response_adj, Response} ->
+        {_Label, _Sender, _Target, SendingTime, RTT, Body} = Response,
+        flow:next(normal, Data#car_state{adj = Body}, From, {normal, Data#car_state{adj = Body}});
     default_behaviour ->
         utils:log("Event default_behaviour"),
         FrontCars = Data#car_state.adj#adj.front_cars,
@@ -42,8 +46,9 @@ sync({call, From}, Event, Data) ->
             car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}}),
             flow:keep(Data, From, {sync_default_behaviour, Data});
         true ->
-            flow:next(normal, Data, From, {normal, Data})
-        end
+            car_call_supervisor_api:car_call({adj, Data#car_state.name, none, {Data}})
+        end,
+        flow:keep(Data, From, {sync_default_behaviour, Data});
     end.
 
 

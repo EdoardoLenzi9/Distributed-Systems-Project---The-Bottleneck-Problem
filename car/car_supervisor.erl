@@ -47,10 +47,15 @@ loop() ->
         % Car -> Supervisor call API
         {car_call, Req} ->
             utils:log("Car call supervisor - receive"),
-            {Label, Sender, Target, Body} = Req,
             CurrentTime = utils:get_timestamp(),
             % start timer
-            supervisor_call_supervisor_api:sup_call({Label, Sender, Target, CurrentTime, Body});
+            {Label, Sender, Target, Body} = Req,
+            case Label of 
+                adj ->
+                    http_client:get_adj(Body);
+                _ ->
+                    supervisor_call_supervisor_api:sup_call({Label, Sender, Target, CurrentTime, Body})
+            end;
 
 
         % Supervisor -> Supervisor call API
