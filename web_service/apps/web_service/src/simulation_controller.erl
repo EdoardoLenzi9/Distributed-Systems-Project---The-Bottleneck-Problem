@@ -59,10 +59,10 @@ state_handler() ->
 init_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
 	{[	{<<"turn">>, Turn},
-		{<<"bridgeCapacity">>, BridgeCapacity},
+		{<<"bridge_capacity">>, BridgeCapacity},
 		{<<"bridgeCrossingTime">>, BridgeCrossingTime} ]} = DecodedTuple, 
 	simulation_service:init(#settingsEntity{ 	turn = Turn, 
-												bridgeCapacity = BridgeCapacity, 
+												bridge_capacity = BridgeCapacity, 
 												bridgeCrossingTime = BridgeCrossingTime }),
 	jiffy:encode({[{result, success}]}). 
 

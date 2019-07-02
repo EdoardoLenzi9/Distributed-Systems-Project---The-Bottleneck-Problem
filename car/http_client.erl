@@ -15,12 +15,12 @@ get_sync(Name, Side, Power) ->
 
 
 get_adj(Data) -> 
-    Content = {[    {name, Data#carState.name}, 
-                    {side, Data#carState.side}, 
-                    {power, Data#carState.power},
-                    {arrivalTime, Data#carState.arrivalTime},
-                    {delta, Data#carState.delta},
-                    {state, Data#carState.state}    
+    Content = {[    {name, Data#car_state.name}, 
+                    {side, Data#car_state.side}, 
+                    {power, Data#car_state.power},
+                    {arrival_time, Data#car_state.arrival_time},
+                    {delta, Data#car_state.delta},
+                    {state, Data#car_state.state}    
             ]},
     http_client:call(post, "/car/adj", Content, car, unmarshalling_adj).
 

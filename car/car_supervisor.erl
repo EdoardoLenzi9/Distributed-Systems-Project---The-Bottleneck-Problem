@@ -20,18 +20,18 @@ start(Args) ->
     register(Name, self()),    
     Env = utils:load_environment(),
 
-    State = #carState{
+    State = #car_state{
                         name = Name, 
                         side = Side, 
                         power = Power, 
-                        adj = #adj{frontCars = http_client:get_sync(Name, Side, Power), rearCars = []}, 
-                        arrivalTime = utils:get_timestamp(), 
+                        adj = #adj{front_cars = http_client:get_sync(Name, Side, Power), rear_cars = []}, 
+                        arrival_time = utils:get_timestamp(), 
                         state = init,
                         turn = Turn,
-                        bridgeCapacity = BridgeCapacity, 
-                        bridgeLength = BridgeLength,
-                        maxSpeed = Env#env.maxSpeed,
-                        tow_truckTime = Env#env.tow_truckTime
+                        bridge_capacity = BridgeCapacity, 
+                        bridge_length = BridgeLength,
+                        max_speed = Env#env.max_speed,
+                        tow_truck_time = Env#env.tow_truck_time
                     },
 
 	if Timeout > 0 ->
@@ -44,11 +44,36 @@ start(Args) ->
 
 loop() ->
     receive
-        stop ->
-            car:stop(); 
-        sync ->
-            car:sync(); 
-        crash ->
-            car:crash()
+        % Car -> Supervisor call API
+        {car_call, Req} ->
+            utils:log("Car call supervisor - receive"),
+            {Label, Sender, Target, Body} = Req,
+            CurrentTime = utils:get_timestamp(),
+            % start timer
+            supervisor_call_supervisor_api:sup_call({Label, Sender, Target, CurrentTime, Body});
+
+
+        % Supervisor -> Supervisor call API
+        {sup_call, Req} ->
+            {Label, _Sender, _Target, _SendingTime, _Body} = Req,
+            case Label of 
+                check ->
+                    utils:log("Supervisor call car"),
+                    car:check(Req)
+            end;
+
+
+        % Car -> Supervisor response API
+        {car_response, Response} ->
+            utils:log("Car response - receive"),
+            supervisor_call_supervisor_api:sup_response(Response);
+
+
+        % Supervisor -> Supervisor response API
+        {sup_response, Response} ->
+            utils:log("Sepervisor response - receive"),
+            {Label, Sender, Target, SendingTime, Body} = Response,
+            RTT = utils:get_timestamp() - SendingTime,
+            car:check_response({Label, Sender, Target, SendingTime, RTT, Body})
     end,
     loop().

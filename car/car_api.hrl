@@ -25,10 +25,16 @@ crash(Name) ->
     gen_statem:call({global, Name}, crash).
 
 
-check(Name, Check) ->
-    utils:log("API Check"),
-    gen_statem:call({global, Name}, {response_check, Check}).
+check(Req) ->
+    utils:log("API Check Request"),
+    {Label, Sender, Target, SendingTime, Body} = Req,
+    gen_statem:call({global, Target}, {check, Req}).
 
+
+check_response(Response) ->
+    utils:log("API Check Response"),
+    {Label, Sender, Target, SendingTime, RTT, Body} = Response,
+    gen_statem:call({global, Target}, {response_check, Response}).
 
 % TODO update adiacenze
 % TODO propagazione all'indietro del messaggio del leader

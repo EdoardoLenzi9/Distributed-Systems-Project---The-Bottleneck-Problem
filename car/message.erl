@@ -12,46 +12,46 @@
 % ordine non serve 
 %propagate_front_handler(Event, Counter, Data) ->
 %    if Counter > 1 ->
-%        Hop = erlang:min(Counter, Data#carState.power),
-%        Target = (utils:last_element(Data#carState.adj#adj.frontCars, Hop))#carState.name,
+%        Hop = erlang:min(Counter, Data#car_state.power),
+%        Target = (utils:last_element(Data#car_state.adj#adj.front_cars, Hop))#car_state.name,
 %        send_event(Target, {propagateFront, Event, Counter - Hop});
 %    Counter == 1 -> 
-%        flow:launch_event(launcher, [Data#carState.name, Event])
+%        flow:launch_event(launcher, [Data#car_state.name, Event])
 %    end.
 %
 %
 %propagate_rear_handler(Event, Counter, Data) ->
 %    if Counter > 1 ->
-%        Hop = erlang:min(Counter, Data#carState.power),
-%        Target = (utils:first_element(Data#carState.adj#adj.rearCars, Hop))#carState.name,
+%        Hop = erlang:min(Counter, Data#car_state.power),
+%        Target = (utils:first_element(Data#car_state.adj#adj.rear_cars, Hop))#car_state.name,
 %        send_event(Target, {propagateRear, Event, Counter - Hop});
 %    Counter == 1 -> 
-%        flow:launch_event(launcher, [Data#carState.name, Event])
+%        flow:launch_event(launcher, [Data#car_state.name, Event])
 %    end.
 %
 %
 %read_and_propagate_front_handler(Event, Counter, Data) -> 
 %    if Counter > 1 ->
-%        flow:launch_event(launcher, [Data#carState.name, Event]),
-%        Hop = erlang:min(Counter, Data#carState.power),
+%        flow:launch_event(launcher, [Data#car_state.name, Event]),
+%        Hop = erlang:min(Counter, Data#car_state.power),
 %        send_near_front_cars(Event, Data, Hop - 1),
-%        Target = utils:last_element(Data#carState.adj#adj.frontCars, Hop),
+%        Target = utils:last_element(Data#car_state.adj#adj.front_cars, Hop),
 %        if Target =/= [] ->
-%            TargetName = Target#carState.name,
+%            TargetName = Target#car_state.name,
 %            send_event(TargetName, {readAndPropagateFront, Event, Counter - Hop});
 %        true ->
 %            []
 %        end;
 %    Counter == 1 ->
-%        flow:launch_event(launcher, [Data#carState.name, Event])
+%        flow:launch_event(launcher, [Data#car_state.name, Event])
 %    end.
 %
 %
 %send_near_front_cars(Event, Data, Hop) ->
 %    if Hop > 0 ->
-%        Target = utils:last_element(Data#carState.adj#adj.frontCars, Hop),
+%        Target = utils:last_element(Data#car_state.adj#adj.front_cars, Hop),
 %        if Target =/= [] ->
-%            TargetName = Target#carState.name,
+%            TargetName = Target#car_state.name,
 %            send_event(TargetName, Event),
 %            send_near_front_cars(Event, Data, Hop - 1);
 %        true ->
@@ -64,26 +64,26 @@
 %
 %read_and_propagate_rear_handler(Event, Counter, Data) -> 
 %    if Counter > 1 ->
-%        flow:launch_event(launcher, [Data#carState.name, Event]),
-%        Hop = erlang:min(Counter, Data#carState.power),
+%        flow:launch_event(launcher, [Data#car_state.name, Event]),
+%        Hop = erlang:min(Counter, Data#car_state.power),
 %        send_near_rear_cars(Event, Data, Hop - 1),
-%        Target = utils:first_element(Data#carState.adj#adj.rearCars, Hop),
+%        Target = utils:first_element(Data#car_state.adj#adj.rear_cars, Hop),
 %        if Target =/= -1 ->
-%            TargetName = Target#carState.name,
+%            TargetName = Target#car_state.name,
 %            send_event(TargetName, {readAndPropagateRear, Event, Counter - Hop});
 %        true ->
 %            []
 %        end;
 %    Counter == 1 ->
-%        flow:launch_event(launcher, [Data#carState.name, Event])
+%        flow:launch_event(launcher, [Data#car_state.name, Event])
 %    end.
 %    
 %    
 %send_near_rear_cars(Event, Data, Hop) ->
 %    if Hop > 0 ->
-%        Target = utils:first_element(Data#carState.adj#adj.rearCars, Hop),
+%        Target = utils:first_element(Data#car_state.adj#adj.rear_cars, Hop),
 %        if Target =/= [] ->
-%            TargetName = Target#carState.name,
+%            TargetName = Target#car_state.name,
 %            send_event(TargetName, Event),
 %            send_near_rear_cars(Event, Data, Hop - 1);
 %        true ->
@@ -97,9 +97,9 @@
 %send_to_all_adjWrap([], _Event) -> 
 %    [];
 %send_to_all_adjWrap([Car], Event) -> 
-%    send_event(Car#carState.name, Event);
+%    send_event(Car#car_state.name, Event);
 %send_to_all_adjWrap([FirstCar | Rest], Event) -> 
-%    Response = send_event(FirstCar#carState.name, Event),
+%    Response = send_event(FirstCar#car_state.name, Event),
 %    [send_to_all_adjWrap(Rest, Event) | Response].
 %
 %

@@ -22,13 +22,13 @@ get_all() ->
 order(List) ->
     F = fun(X, Y) -> 
         if X#adjEntity.side == right, Y#adjEntity.side == right -> 
-            X#adjEntity.arrivalTime + X#adjEntity.delta < Y#adjEntity.arrivalTime + Y#adjEntity.delta;
+            X#adjEntity.arrival_time + X#adjEntity.delta < Y#adjEntity.arrival_time + Y#adjEntity.delta;
         X#adjEntity.side == right, Y#adjEntity.side == left ->
             false;
         X#adjEntity.side == left, Y#adjEntity.side == right ->
             true; 
         X#adjEntity.side == left, Y#adjEntity.side == left -> 
-            X#adjEntity.arrivalTime + X#adjEntity.delta > Y#adjEntity.arrivalTime + Y#adjEntity.delta
+            X#adjEntity.arrival_time + X#adjEntity.delta > Y#adjEntity.arrival_time + Y#adjEntity.delta
             end
         end,
     lists:sort(F, List).

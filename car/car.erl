@@ -18,21 +18,33 @@ init([State]) ->
 
 sync({call, From}, Event, Data) ->
     utils:log("STATE Sync"),
-    case Event of     
-    default_behaviour ->
-        utils:log("Event default_behaviour"),
-        FrontCars = Data#carState.adj#adj.frontCars,
-        [Pivot] = FrontCars,
-        car_supervisor_api:check(Data, Pivot),
-        flow:keep(Data, From, sync_default_behaviour);
-    {response_check, Check} ->
+    case Event of  
+    {check, Req} ->     
+        utils:log("Event check"),
+        {_Label, Sender, _Target, SendingTime, _Body} = Req,
+        car_response_supervisor_api:car_response({check_response, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+        flow:keep(Data, From, {sync_check, Data});
+    {response_check, Response} ->
         utils:log("Event response_check"),
         % berkeley
-        CurrentTime = utils:get_timestamp(), 
-        RTT = CurrentTime - Check#carState.sendingTime,
-        PivotTime = Check#carState.currentTime,
+        {Label, Sender, Target, SendingTime, RTT, Body} = Response,
+        CurrentTime = SendingTime, 
+        PivotTime = Body#car_state.current_time,
         Delta = CurrentTime - (PivotTime + RTT / 2),
-        flow:next(normal, update_delta(Data, Delta), From, {sync_response_check, Delta})
+        %Adj = 
+        flow:next(normal, Data#car_state{delta = Delta}, From, {normal, Data#car_state{delta = Delta}});
+    default_behaviour ->
+        utils:log("Event default_behaviour"),
+        FrontCars = Data#car_state.adj#adj.front_cars,
+        if length(FrontCars) > 0 ->
+            [Pivot] = FrontCars,
+            utils:log("Start call"),
+            car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}}),
+            flow:keep(Data, From, {sync_default_behaviour, Data});
+        true ->
+            flow:next(normal, Data, From, {normal, Data})
+        end,
+        flow:keep(Data, From, {sync_default_behaviour, Data})
     end.
 
 
@@ -40,7 +52,7 @@ normal({call, From}, Event, Data) ->
     utils:log("STATE Normal"),
     case Event of        
         default_behaviour ->
-            flow:keep(Data, From, normal_default_behaviour)
+            flow:keep(Data, From, {normal_default_behaviour, Data})
     end.
 
 
@@ -57,5 +69,5 @@ dead({call, _From}, Event, Data) ->
     case Event of
         default_behaviour ->
             utils:log("Event default_behaviour"),
-            stop(Data#carState.name)
+            stop(Data#car_state.name)
     end.

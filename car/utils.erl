@@ -27,21 +27,21 @@ binary_to_atom(Item) ->
 load_environment() ->
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,Host},
-    {<<"maxSpeed">>,MaxSpeed},
+    {<<"max_speed">>,MaxSpeed},
     {<<"turn">>,Turn},
-    {<<"bridgeCapacity">>,BridgeCapacity},
-    {<<"bridgeLength">>,BridgeLength},
-    {<<"samplingFrequency">>,_SamplingFrequency},
-    {<<"towTruckTime">>,TowTruckTime},
-    {<<"maxRTT">>,MaxRTT}]} = jiffy:decode(Content),
+    {<<"bridge_capacity">>,BridgeCapacity},
+    {<<"bridge_length">>,BridgeLength},
+    {<<"sampling_frequency">>,_SamplingFrequency},
+    {<<"tow_truck_time">>,TowTruckTime},
+    {<<"max_RTT">>,MaxRTT}]} = jiffy:decode(Content),
     #env{
         host = binary_to_list(Host), 
-        maxSpeed = MaxSpeed, 
+        max_speed = MaxSpeed, 
         turn = Turn, 
-        bridgeCapacity = BridgeCapacity, 
-        bridgeLength = BridgeLength, 
-        tow_truckTime = TowTruckTime,
-        maxRTT = MaxRTT
+        bridge_capacity = BridgeCapacity, 
+        bridge_length = BridgeLength, 
+        tow_truck_time = TowTruckTime,
+        max_RTT = MaxRTT
     }.
 
 %%%===================================================================

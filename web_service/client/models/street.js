@@ -11,15 +11,15 @@
 class Street extends THREE.Group{
     
 
-    constructor( initialLegth = 15, bridgeCapacity = 2, scaleFactor = 10 ){
+    constructor( initialLegth = 15, bridge_capacity = 2, scaleFactor = 10 ){
 		super();
 		this.length = initialLegth;
-		this.bridgeCapacity = bridgeCapacity;
+		this.bridge_capacity = bridge_capacity;
 		this.scaleFactor = scaleFactor;
 		
 		// Street
 		var streetGeometry = new THREE.PlaneGeometry( 4 * scaleFactor, 								// width
-													  (initialLegth + bridgeCapacity) * scaleFactor, 	// height
+													  (initialLegth + bridge_capacity) * scaleFactor, 	// height
 													  1, 1											// widthSegments, heightSegments
 											  		);
 		var streetMaterial = new THREE.MeshBasicMaterial( { color: 0x000, side: THREE.DoubleSide } );
@@ -45,7 +45,7 @@ class Street extends THREE.Group{
 
 
 	drawSideLines(){
-		var leftSideLine = this.newLine(0.1, (this.length + this.bridgeCapacity), {x: 0, y: 0});
+		var leftSideLine = this.newLine(0.1, (this.length + this.bridge_capacity), {x: 0, y: 0});
 		var rightSideLine = leftSideLine.clone();
 		leftSideLine.position.x += 1 * this.scaleFactor;
 		rightSideLine.position.x -= 1 * this.scaleFactor;
@@ -55,8 +55,8 @@ class Street extends THREE.Group{
 
 	drawBottleneck(){
 		// straight lines
-		//var leftBottleneckLine = this.newLine(0.1, this.bridgeCapacity, {x: 0, y: 0});
-		var leftBottleneckLine = this.newLine(0.1, this.bridgeCapacity - 1, {x: 0, y: 0});
+		//var leftBottleneckLine = this.newLine(0.1, this.bridge_capacity, {x: 0, y: 0});
+		var leftBottleneckLine = this.newLine(0.1, this.bridge_capacity - 1, {x: 0, y: 0});
 		var rightBottleneckLine = leftBottleneckLine.clone();
 		leftBottleneckLine.position.x += 0.5 * this.scaleFactor;
 		rightBottleneckLine.position.x -= 0.5 * this.scaleFactor;
@@ -64,10 +64,10 @@ class Street extends THREE.Group{
 		this.add(rightBottleneckLine);
 
 		// crooked lines
-		var rightBottomCL = this.newCrookedLine(0.38, (this.bridgeCapacity / 2 - 0.3), -1);
-		var rightTopCL =  this.newCrookedLine(1, (this.bridgeCapacity/2 - 0.3), 1);
-		var leftBottomCL = this.newCrookedLine(- 0.42, -(this.bridgeCapacity/2 - 0.3), 1);
-		var leftTopCL = this.newCrookedLine(- 1.12, -(this.bridgeCapacity/2 - 0.3), -1);
+		var rightBottomCL = this.newCrookedLine(0.38, (this.bridge_capacity / 2 - 0.3), -1);
+		var rightTopCL =  this.newCrookedLine(1, (this.bridge_capacity/2 - 0.3), 1);
+		var leftBottomCL = this.newCrookedLine(- 0.42, -(this.bridge_capacity/2 - 0.3), 1);
+		var leftTopCL = this.newCrookedLine(- 1.12, -(this.bridge_capacity/2 - 0.3), -1);
 
 		this.add(leftBottomCL);
 		this.add(leftTopCL);

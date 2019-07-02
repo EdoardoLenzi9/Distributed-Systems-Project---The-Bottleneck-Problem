@@ -28,14 +28,14 @@
 %
 %
 %call_tow_truck(Data) ->
-%    Responses = message:send_to_all_adj(Data#carState.adj#adj.frontCars ++ Data#carState.adj#adj.rearCars, check),
+%    Responses = message:send_to_all_adj(Data#car_state.adj#adj.front_cars ++ Data#car_state.adj#adj.rear_cars, check),
 %    call_tow_truck_wrap(Responses).
 %
 %call_tow_truck_wrap([]) ->
 %    [];
 %call_tow_truck_wrap([{Car, Response} | Rest]) ->
 %    if Response =/= ok ->
-%        launch_event(tow_truck, [Car#carState.name, 3000])
+%        launch_event(tow_truck, [Car#car_state.name, 3000])
 %    end,
 %    call_tow_truck_wrap(Rest).
 %
@@ -54,9 +54,9 @@
 
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
-    NewData = update_state(Data, NextState),
+    NewData = Data#car_state{state = NextState},
     %Adj = http_client:get_adj(NewData),
-    %{next_state, NextState, update_adj(NewData, Adj), [{reply, From, Reply}]}.
+    %{next_state, NextState, Data#car_state{adj = Adj}, [{reply, From, Reply}]}.
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
 

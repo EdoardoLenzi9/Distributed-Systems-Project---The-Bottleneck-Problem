@@ -2,7 +2,7 @@
 %%% macros and record definitions
 %%%===================================================================
 
--record (carState, {    
+-record (car_state, {    
                         % car metadata
                         name,
                         side,
@@ -11,23 +11,23 @@
                         position,
                         crossing,
                         delta,
-                        sendingTime,
-                        arrivalTime, 
-                        currentTime,
+                        sending_time,
+                        arrival_time, 
+                        current_time,
                         adj,
                         state,
                         % settings and bridge metadata 
                         turn,
-                        bridgeCapacity,
-                        bridgeLength,
-                        maxSpeed,
-                        tow_truckTime,
-                        maxRTT
+                        bridge_capacity,
+                        bridge_length,
+                        max_speed,
+                        tow_truck_time,
+                        max_RTT
                     }).
 
 
--record (adj, { frontCars, 
-                rearCars 
+-record (adj, { front_cars, 
+                rear_cars 
               }).
 
 
@@ -44,132 +44,13 @@
 
 -record (env, {    
                 host,
-                maxSpeed,
+                max_speed,
                 turn,
-                bridgeCapacity,
-                bridgeLength,
-                tow_truckTime,
-                maxRTT
+                bridge_capacity,
+                bridge_length,
+                tow_truck_time,
+                max_RTT
             }).
-
-
-%%%===================================================================
-%%% update records
-%%%===================================================================
-
-update_adj(Data, Adj) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                speed = Data#carState.speed,
-                position = Data#carState.position,
-                crossing = Data#carState.crossing,
-                delta = Data#carState.delta,
-                sendingTime = Data#carState.sendingTime, 
-                arrivalTime = Data#carState.arrivalTime, 
-                currentTime = Data#carState.currentTime, 
-                adj = Adj,
-                state = Data#carState.state,
-                turn = Data#carState.turn,
-                bridgeCapacity = Data#carState.bridgeCapacity,
-                bridgeLength = Data#carState.bridgeLength,
-                maxSpeed = Data#carState.maxSpeed,
-                tow_truckTime = Data#carState.tow_truckTime,
-                maxRTT = Data#carState.maxRTT
-            }.
-
-
-update_delta(Data, Delta) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                speed = Data#carState.speed,
-                position = Data#carState.position,
-                crossing = Data#carState.crossing,
-                delta = Delta,
-                sendingTime = Data#carState.sendingTime, 
-                arrivalTime = Data#carState.arrivalTime, 
-                currentTime = Data#carState.currentTime, 
-                adj = Data#carState.adj,
-                state = Data#carState.state,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeLength = Data#carState.bridgeLength,
-                maxSpeed = Data#carState.maxSpeed,
-                tow_truckTime = Data#carState.tow_truckTime,
-                maxRTT = Data#carState.maxRTT
-            }.
-
-
-update_state(Data, State) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                speed = Data#carState.speed,
-                position = Data#carState.position,
-                crossing = Data#carState.crossing,
-                delta =  Data#carState.delta,
-                sendingTime = Data#carState.sendingTime, 
-                arrivalTime = Data#carState.arrivalTime, 
-                currentTime = Data#carState.currentTime, 
-                adj = Data#carState.adj,
-                state = State,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeLength =  Data#carState.bridgeLength,
-                maxSpeed = Data#carState.maxSpeed,
-                tow_truckTime = Data#carState.tow_truckTime,
-                maxRTT = Data#carState.maxRTT
-            }.
-
-
-update_sending_time(Data) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                speed = Data#carState.speed,
-                position = Data#carState.position,
-                crossing = Data#carState.crossing,
-                delta =  Data#carState.delta,
-                sendingTime = utils:get_timestamp(), 
-                arrivalTime = Data#carState.arrivalTime, 
-                currentTime = Data#carState.currentTime, 
-                adj = Data#carState.adj,
-                state = Data#carState.state,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeLength =  Data#carState.bridgeLength,
-                maxSpeed = Data#carState.maxSpeed,
-                tow_truckTime = Data#carState.tow_truckTime,
-                maxRTT = Data#carState.maxRTT
-            }.
-
-
-update_current_time(Data) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                speed = Data#carState.speed,
-                position = Data#carState.position,
-                crossing = Data#carState.crossing,
-                delta =  Data#carState.delta,
-                sendingTime = Data#carState.sendingTime, 
-                arrivalTime = Data#carState.arrivalTime, 
-                currentTime = utils:get_timestamp(), 
-                adj = Data#carState.adj,
-                state = Data#carState.state,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeLength =  Data#carState.bridgeLength,
-                maxSpeed = Data#carState.maxSpeed,
-                tow_truckTime = Data#carState.tow_truckTime,
-                maxRTT = Data#carState.maxRTT
-            }.
 
 
 %%%===================================================================
@@ -180,15 +61,15 @@ unmarshalling_sync([]) ->
     [];
 unmarshalling_sync([First| Rest]) ->
     { [ {<<"name">>, Name},{<<"side">>,Side},{<<"power">>,Power} ] } = First,
-    [#carState{ name = utils:binary_to_atom(Name), 
+    [#car_state{ name = utils:binary_to_atom(Name), 
                 side = utils:binary_to_atom(Side), 
                 power = Power } | unmarshalling_sync(Rest)].
 
 
 unmarshalling_adj([ [], [] ]) ->
-    #adj{ frontCars = [], rearCars = [] };
+    #adj{ front_cars = [], rear_cars = [] };
 unmarshalling_adj([ [Front], [Back] ]) ->
-    #adj{ frontCars = unmarshalling_adj_wrapper(Front), rearCars = unmarshalling_adj_wrapper(Back) }.
+    #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
 
 
 unmarshalling_adj_wrapper([]) ->
@@ -197,12 +78,12 @@ unmarshalling_adj_wrapper([First| Rest]) ->
     { [ {<<"name">>, Name}, 
         {<<"side">>,Side},
         {<<"power">>,Power},
-        {<<"arrivalTime">>,ArrivalTime},
+        {<<"arrival_time">>,ArrivalTime},
         {<<"delta">>,Delta},
         {<<"state">>,State} ] } = First,
-    [#carState{ name = utils:binary_to_atom(Name), 
-                side = utils:binary_to_atom(Side), 
-                power = Power,
-                arrivalTime = ArrivalTime,
-                delta = Delta,
-                state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    
+    [#car_state{    name = utils:binary_to_atom(Name), 
+                    side = utils:binary_to_atom(Side), 
+                    power = Power,
+                    arrival_time = ArrivalTime,
+                    delta = Delta,
+                    state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    
