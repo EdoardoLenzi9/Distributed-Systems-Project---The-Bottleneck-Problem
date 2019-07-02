@@ -13,53 +13,34 @@
 % init_state_test:sync_test_().
 
 
-default_state() ->
-    Env = utils:load_environment(),
-    #car_state{
-        name = car1, 
-        side = -1, 
-        power = 2, 
-        speed = 0,
-        crossing = false,
-        adj = #adj{front_cars = [], rear_cars = []}, 
-        arrival_time = utils:get_timestamp(), 
-        state = init,
-        turn = 1000,
-        bridge_capacity = 5, 
-        bridge_length = 3,
-        max_speed = Env#env.max_speed,
-        tow_truck_time = Env#env.tow_truck_time,
-        max_RTT = Env#env.max_RTT
-    }.
 
 
-%sync_alone_test_() ->
-%
-%    register(supervisor, self()),    
-%       
-%    State = default_state(),
-%    car:start_link(State#car_state.name, State),
-%    
-%    % if there isn't any car in front, sync transit in the normal state
-%    Result1 = car:default_behaviour(State#car_state.name),
-%    ExpectedResult1 = {normal, State},
-%
-%    car:stop(State#car_state.name),
-%    [ ?_assert(Result1 =:= ExpectedResult1) ].
+sync_alone_test_() ->
+    % Arrange
+    test_fixture:register(),
+    State = test_fixture:default_state(),
+    
+    car:start_link(State#car_state.name, State),
+    
+    % if there isn't any car in front, sync transit in the normal state
+    Result1 = car:default_behaviour(State#car_state.name),
+    ExpectedResult1 = {normal, State},
+
+    car:stop(State#car_state.name),
+    [ ?_assert(Result1 =:= ExpectedResult1) ].
 
 
 % erl -sname car1@car1 -run init_state_test sync_test_
 sync_test_() ->
-    case whereis(supervisor) of
-        undefined ->
-            register(supervisor, self());
-        _ ->
-            ok
-    end,
+    % Arrange
 
-    State = default_state(),
+    test_fixture:register(),
+    State = test_fixture:default_state(),
     % there is another car called car2 in front of car1
     car:start_link(State#car_state.name, State#car_state{ adj = #adj{ front_cars = [ #car_state{ name = car2 } ] }}),
+
+    % Act and Assert
+
 
     % car1 remains in the default state waiting for a check from car2
     {Result1, _Data1} = car:default_behaviour(State#car_state.name),
@@ -90,6 +71,9 @@ sync_test_() ->
     RTT = utils:get_timestamp() - TimeStamp3,
     {Result5, _Delta} = car:check_response({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
     ExpectedResult5 = normal,
+    car:stop(State#car_state.name),
+
+    % Assert
 
     assert(Result1, ExpectedResult1),
     assert(Result3, ExpectedResult3),
