@@ -15,7 +15,6 @@ default_state() ->
         adj = #adj{front_cars = [], rear_cars = []}, 
         arrival_time = utils:get_timestamp(), 
         state = init,
-        turn = 1000,
         bridge_capacity = 5, 
         bridge_length = 3,
         max_speed = Env#env.max_speed,

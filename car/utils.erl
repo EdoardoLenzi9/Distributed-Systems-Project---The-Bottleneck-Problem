@@ -28,7 +28,6 @@ load_environment() ->
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,Host},
     {<<"max_speed">>,MaxSpeed},
-    {<<"turn">>,Turn},
     {<<"bridge_capacity">>,BridgeCapacity},
     {<<"bridge_length">>,BridgeLength},
     {<<"sampling_frequency">>,_SamplingFrequency},
@@ -37,7 +36,6 @@ load_environment() ->
     #env{
         host = binary_to_list(Host), 
         max_speed = MaxSpeed, 
-        turn = Turn, 
         bridge_capacity = BridgeCapacity, 
         bridge_length = BridgeLength, 
         tow_truck_time = TowTruckTime,

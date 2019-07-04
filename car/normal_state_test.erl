@@ -23,7 +23,7 @@ normal_test_() ->
 
     receive
         {car_call, Req1} ->
-            {Label1, Sender1, Target1, Body1} = Req1,
+            {Label1, Sender1, _Target1, _Body1} = Req1,
             case Label1 of 
                 % launch normal defaultBehaviour
                 next ->
@@ -34,7 +34,7 @@ normal_test_() ->
     end,
     receive
         {car_call, Req2} ->
-            {Label2, Sender2, Target2, Body2} = Req2,
+            {Label2, _Sender2, _Target2, _Body2} = Req2,
             case Label2 of 
                 % launch timer
                 wait ->
@@ -44,7 +44,7 @@ normal_test_() ->
     end,
     receive
         {car_call, Req3} ->
-            {Label3, Sender3, Target3, Body3} = Req3,
+            {Label3, Sender3, _Target3, _Body3} = Req3,
             case Label3 of 
                 % receive turn timeout
                 wait_response ->
@@ -55,8 +55,8 @@ normal_test_() ->
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
 
 
-%erl -sname car1@car1 -run normal_state_test normal_test_
-normal_test1_() ->
+%erl -sname car1@car1 -run normal_state_test normal_test2_
+normal_test2_() ->
 
     test_fixture:register(),
     State = test_fixture:default_state2(),
@@ -65,7 +65,7 @@ normal_test1_() ->
 
     receive
         {car_call, Req1} ->
-            {Label1, Sender1, Target1, Body1} = Req1,
+            {Label1, Sender1, _Target1, _Body1} = Req1,
             case Label1 of 
                 % launch normal defaultBehaviour
                 next ->
@@ -76,32 +76,86 @@ normal_test1_() ->
     end,
     receive
         {car_call, Req2} ->
-            {Label2, Sender2, Target2, Body2} = Req2,
+            {Label2, _Sender2, _Target2, _Body2} = Req2,
             case Label2 of 
-                % launch timer
                 check ->
                     utils:log("Supervisor receive check call"),
-                    {Result2, Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    utils:log("Car2 remains in the same position -1"),
+                    {_Result2, _Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
-                                                                        position = 0,
+                                                                        crossing = false,
+                                                                        % remains in the same position -1
+                                                                        position = -1,
                                                                         current_time = utils:get_timestamp()}})
             end
     end,
     receive
         {car_call, Req3} ->
-            {Label3, Sender3, Target3, Body3} = Req3,
+            {Label3, _Sender3, _Target3, _Body3} = Req3,
             case Label3 of 
-                % launch timer
                 check ->
                     utils:log("Supervisor receive check call"),
-                    {Result2, Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    utils:log("Car2 moves to position 0"),
+                    {_Result3, _Data3} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                                                           #car_state{  name = car2, 
+                                                                        side = State#car_state.side,
+                                                                        speed = State#car_state.max_speed,
+                                                                        crossing = false,
+                                                                        % moves to position 0
+                                                                        position = 0,
+                                                                        current_time = utils:get_timestamp()}})
+            end
+    end,
+    receive
+        {car_call, Req4} ->
+            {Label4, _Sender4, _Target4, _Body4} = Req4,
+            case Label4 of 
+                check ->
+                    utils:log("Supervisor receive check call"),
+                    utils:log("Car2 crossing to position -3"),
+                    {_Result4, _Data4} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = State#car_state.max_speed,
                                                                         crossing = true,
-                                                                        position = 1,
+                                                                        % crossing to position -3
+                                                                        position = - State#car_state.bridge_length,
+                                                                        current_time = utils:get_timestamp()}})
+            end
+    end,
+    receive
+        {car_call, Req5} ->
+            {Label5, _Sender5, _Target5, _Body5} = Req5,
+            case Label5 of 
+                check ->
+                    utils:log("Supervisor receive check call"),
+                    utils:log("Car2 crossing to position -1"),
+                    {_Result5, _Data5} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                                                           #car_state{  name = car2, 
+                                                                        side = State#car_state.side,
+                                                                        speed = State#car_state.max_speed,
+                                                                        crossing = true,
+                                                                        % crossing to position -1
+                                                                        position = -1,
+                                                                        current_time = utils:get_timestamp()}})
+            end
+    end,
+    receive
+        {car_call, Req6} ->
+            {Label6, _Sender6, _Target6, _Body6} = Req6,
+            case Label6 of 
+                check ->
+                    utils:log("Supervisor receive check call"),
+                    utils:log("Car2 crossing to position 0"),
+                    {_Result6, _Data6} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                                                           #car_state{  name = car2, 
+                                                                        side = State#car_state.side,
+                                                                        speed = State#car_state.max_speed,
+                                                                        crossing = true,
+                                                                        % crossing to position 0
+                                                                        position = 0,
                                                                         current_time = utils:get_timestamp()}})
             end
     end.

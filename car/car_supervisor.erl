@@ -27,7 +27,6 @@ start(Args) ->
                         adj = #adj{front_cars = http_client:get_sync(Name, Side, Power), rear_cars = []}, 
                         arrival_time = utils:get_timestamp(), 
                         state = init,
-                        turn = Turn,
                         bridge_capacity = BridgeCapacity, 
                         bridge_length = BridgeLength,
                         max_speed = Env#env.max_speed,

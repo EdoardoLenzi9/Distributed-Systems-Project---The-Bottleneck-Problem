@@ -16,7 +16,6 @@
                         adj,
                         state,
                         % settings and bridge metadata 
-                        turn,
                         bridge_capacity,
                         bridge_length,
                         max_speed,
@@ -44,7 +43,6 @@
 -record (env, {    
                 host,
                 max_speed,
-                turn,
                 bridge_capacity,
                 bridge_length,
                 tow_truck_time,
