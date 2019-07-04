@@ -1,5 +1,5 @@
 %%%===================================================================
-%%% Test for the init state
+%%% Test for the normal state
 %%%===================================================================
 
 
@@ -13,8 +13,8 @@
 % normal_state_test:normal_test_().
   
 
-%erl -sname car1@car1 -run normal_state_test normal_alone_test_
-normal_alone_test_() ->
+%erl -sname car1@car1 -run normal_state_test normal_test_
+normal_test_() ->
 
     test_fixture:register(),
     State = test_fixture:default_state(),
@@ -56,7 +56,7 @@ normal_alone_test_() ->
 
 
 %erl -sname car1@car1 -run normal_state_test normal_test_
-normal_test_() ->
+normal_test1_() ->
 
     test_fixture:register(),
     State = test_fixture:default_state2(),
@@ -81,20 +81,28 @@ normal_test_() ->
                 % launch timer
                 check ->
                     utils:log("Supervisor receive check call"),
-                    {Result2, Data2} = car:check_response({check, car2, car1, utile:get_timestamp(), 0, 
+                    {Result2, Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
                                                                         position = 0,
                                                                         current_time = utils:get_timestamp()}})
             end
+    end,
+    receive
+        {car_call, Req3} ->
+            {Label3, Sender3, Target3, Body3} = Req3,
+            case Label3 of 
+                % launch timer
+                check ->
+                    utils:log("Supervisor receive check call"),
+                    {Result2, Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                                                           #car_state{  name = car2, 
+                                                                        side = State#car_state.side,
+                                                                        speed = State#car_state.max_speed,
+                                                                        crossing = true,
+                                                                        position = 1,
+                                                                        current_time = utils:get_timestamp()}})
+            end
     end.
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
-
-
-assert(CurrentResult, ExpectedResult) ->
-    if CurrentResult == ExpectedResult ->
-        ok;
-    true -> 
-        throw("test fail")
-    end.

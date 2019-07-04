@@ -39,6 +39,7 @@ start(Args) ->
         %launch killer
     end,
     car:start_link(State),
+    car:default_behaviour(State#car_state.name),
     loop().
 
 
