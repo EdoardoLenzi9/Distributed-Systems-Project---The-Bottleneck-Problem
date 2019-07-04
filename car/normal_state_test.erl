@@ -13,43 +13,83 @@
 % normal_state_test:normal_test_().
   
 
+%erl -sname car1@car1 -run normal_state_test normal_alone_test_
 normal_alone_test_() ->
 
-    register(supervisor, self()),    
-    Env = utils:load_environment(),
-    
-    State = #car_state{
-                        name = car1, 
-                        side = -1, 
-                        power = 2, 
-                        speed = 0,
-                        crossing = false,
-                        adj = #adj{front_cars = [], rear_cars = []}, 
-                        arrival_time = utils:get_timestamp(), 
-                        delta = 40,
-                        state = normal,
-                        turn = 1000,
-                        bridge_capacity = 5, 
-                        bridge_length = 3,
-                        max_speed = Env#env.max_speed,
-                        tow_truck_time = Env#env.tow_truck_time,
-                        max_RTT = Env#env.max_RTT
-                    },
+    test_fixture:register(),
+    State = test_fixture:default_state(),
+    car:start_link(State#car_state.name, State#car_state{ delta = 0 }),
+    test_fixture:skip_sync(State),
 
-    car:start_link(State#car_state.name, State),
-    SyncResponse = car:default_behaviour(State#car_state.name),
-    ExpectedSyncResponse = sync_default_behaviour,
-    
-    Assertion2 = receive
-        {check, Name, Target} ->
-            {Response2, _Delta} = car:check(Name, Target#car_state{current_time = utils:get_timestamp()}),
-            ExpectedResponse2 = sync_response_check,
-            assert(Response2, ExpectedResponse2)
+    receive
+        {car_call, Req1} ->
+            {Label1, Sender1, Target1, Body1} = Req1,
+            case Label1 of 
+                % launch normal defaultBehaviour
+                next ->
+                    utils:log("Supervisor receive next call"),
+                    car:default_behaviour(Sender1)
+                    %assert(Result1, normal_default_behaviour)
+            end
     end,
-    utils:log("~p", [Assertion2]),
-    utils:log("Supervisor call response: ~p", [car:default_behaviour(State#car_state.name)]),
+    receive
+        {car_call, Req2} ->
+            {Label2, Sender2, Target2, Body2} = Req2,
+            case Label2 of 
+                % launch timer
+                wait ->
+                    utils:log("Supervisor receive wait call"),
+                    flow:launch_event(timer, [Req2])
+            end
+    end,
+    receive
+        {car_call, Req3} ->
+            {Label3, Sender3, Target3, Body3} = Req3,
+            case Label3 of 
+                % receive turn timeout
+                wait_response ->
+                    utils:log("Supervisor receive wait_response call"),
+                    car:default_behaviour(Sender3)
+            end
+    end.
+    %[ ?_assert(Response1 =:= ExpectedResponse1) ].
 
-    [ ?_assert(SyncResponse =:= ExpectedSyncResponse) ].
+
+%erl -sname car1@car1 -run normal_state_test normal_test_
+normal_test_() ->
+
+    test_fixture:register(),
+    State = test_fixture:default_state2(),
+    car:start_link(State#car_state.name, State),
+    test_fixture:skip_sync2(State),
+
+    receive
+        {car_call, Req1} ->
+            {Label1, Sender1, Target1, Body1} = Req1,
+            case Label1 of 
+                % launch normal defaultBehaviour
+                next ->
+                    utils:log("Supervisor receive next call"),
+                    car:default_behaviour(Sender1)
+                    %assert(Result1, normal_default_behaviour)
+            end
+    end,
+    receive
+        {car_call, Req2} ->
+            {Label2, Sender2, Target2, Body2} = Req2,
+            case Label2 of 
+                % launch timer
+                check ->
+                    utils:log("Supervisor receive check call"),
+                    {Result2, Data2} = car:check_response({check, car2, car1, utile:get_timestamp(), 0, 
+                                                           #car_state{  name = car2, 
+                                                                        side = State#car_state.side,
+                                                                        speed = 0,
+                                                                        position = 0,
+                                                                        current_time = utils:get_timestamp()}})
+            end
+    end.
+    %[ ?_assert(Response1 =:= ExpectedResponse1) ].
 
 
 assert(CurrentResult, ExpectedResult) ->

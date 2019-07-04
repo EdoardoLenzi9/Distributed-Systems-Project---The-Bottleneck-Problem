@@ -36,5 +36,11 @@ check_response(Response) ->
     {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
     gen_statem:call({global, Target}, {response_check, Response}).
 
+
+adj_response(Response) ->
+    utils:log("API Adj Response"),
+    {_Label, Sender, _Target, _SendingTime, _RTT, _Body} = Response,
+    gen_statem:call({global, Sender}, {response_adj, Response}).
+    
 % TODO update adiacenze
 % TODO propagazione all'indietro del messaggio del leader

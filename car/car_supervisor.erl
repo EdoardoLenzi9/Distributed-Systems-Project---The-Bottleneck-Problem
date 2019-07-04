@@ -52,7 +52,8 @@ loop() ->
             {Label, Sender, Target, Body} = Req,
             case Label of 
                 adj ->
-                    http_client:get_adj(Body);
+                    Adj = http_client:get_adj(Body),
+                    car:adj_response({Label, Sender, Target, CurrentTime, 0, Adj});
                 _ ->
                     supervisor_call_supervisor_api:sup_call({Label, Sender, Target, CurrentTime, Body})
             end;

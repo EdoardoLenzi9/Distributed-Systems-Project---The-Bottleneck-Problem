@@ -3,6 +3,7 @@
 -include("car.hrl").
 
 
+% car alone
 default_state() ->
     Env = utils:load_environment(),
     #car_state{
@@ -23,10 +24,51 @@ default_state() ->
     }.
 
 
+% car with car2 on the same side
+default_state2() ->
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car2, side = -1 } ]}}.
+
+
+% car with car2 on the opposite side
+default_state3() ->
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car2, side = 1 } ]}}.
+
+
 register() ->
     case whereis(supervisor) of
         undefined ->
             register(supervisor, self());
         _ ->
             ok
+    end.
+
+
+skip_sync(State) ->
+    car:default_behaviour(State#car_state.name),
+
+    receive
+        {car_call, Req} ->
+            {Label, Sender, Target, Body} = Req,
+            case Label of 
+                adj ->
+                    Adj = #adj{front_cars = [], rear_cars = []},
+                    car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+            end
+    end.
+
+
+skip_sync2(State) ->
+    car:default_behaviour(State#car_state.name),
+    receive
+        {car_call, Request2} ->
+            car:check_response({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+    end,
+    receive
+        {car_call, Req} ->
+            {Label, Sender, Target, Body} = Req,
+            case Label of 
+                adj ->
+                    Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
+                    car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+            end
     end.

@@ -7,11 +7,17 @@
 
 
 %%% Spawn a process that launches an event
-%launch_event(Handler, Args) -> 
-%    utils:log("launch_event: ~p~p~n", [Handler, Args]),
-%    spawn(?MODULE, Handler, Args).
-%
-%
+launch_event(Handler, Args) -> 
+    utils:log("launch_event: ~p~p~n", [Handler, Args]),
+    spawn(?MODULE, Handler, Args).
+
+
+%%% Simulate a car crash after a given timeout
+timer(Req) ->
+    {_Label, Sender, Target, Body} = Req,
+    timer:apply_after(Body, car_call_supervisor_api, car_call, [{wait_response, Sender, Target, Body}]).
+
+
 %%% Simulate a car crash after a given timeout
 %killer(Name, Timeout) ->
 %    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
@@ -54,9 +60,9 @@
 
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
+    utils:log("State: ~p", [Data]),
     NewData = Data#car_state{state = NextState},
-    %Adj = http_client:get_adj(NewData),
-    %{next_state, NextState, Data#car_state{adj = Adj}, [{reply, From, Reply}]}.
+    car_call_supervisor_api:car_call({next, Data#car_state.name, none, {Data}}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
 

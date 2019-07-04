@@ -11,7 +11,6 @@
                         position,
                         crossing,
                         delta,
-                        sending_time,
                         arrival_time, 
                         current_time,
                         adj,
