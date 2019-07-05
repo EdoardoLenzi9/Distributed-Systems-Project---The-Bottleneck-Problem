@@ -1,5 +1,5 @@
 %%%===================================================================
-%%% API
+%%% API for supervisor to call its car
 %%%===================================================================
 
 -compile(export_all).
@@ -41,6 +41,3 @@ adj_response(Response) ->
     utils:log("API Adj Response"),
     {_Label, Sender, _Target, _SendingTime, _RTT, _Body} = Response,
     gen_statem:call({global, Sender}, {response_adj, Response}).
-    
-% TODO update adiacenze
-% TODO propagazione all'indietro del messaggio del leader

@@ -24,6 +24,7 @@ binary_to_atom(Item) ->
     list_to_atom(binary_to_list(Item)).
 
 
+% Load environment.json
 load_environment() ->
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,Host},

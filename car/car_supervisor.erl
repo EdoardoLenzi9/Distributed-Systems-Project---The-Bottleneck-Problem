@@ -6,15 +6,16 @@
 -compile(export_all).
 -include("car.hrl").
 
+
 start(Args) -> 
-    
-    [PName, PSide, PPower, PTurn, PBridgeCapacity, PBridgeLength, PTimeout] = Args,
-    {Name, _} = string:to_integer(PName),
+    [Name, PSide, PPower, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
     {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
-    {Turn, _ } = string:to_integer(PTurn),
     {BridgeCapacity, _ } = string:to_integer(PBridgeCapacity),
     {BridgeLength, _ } = string:to_integer(PBridgeLength),
+    {MaxSpeed, _ } = string:to_integer(PMaxSpeed),
+    {TowTruckTime, _ } = string:to_integer(PTowTruckTime),
+    {MaxRTT, _ } = string:to_integer(PMaxRTT),
     {Timeout, _ } = string:to_integer(PTimeout),
     
     register(Name, self()),    
@@ -24,13 +25,17 @@ start(Args) ->
                         name = Name, 
                         side = Side, 
                         power = Power, 
+                        speed = 0,
+                        crossing = false,
+                        delta = 0,
                         adj = #adj{front_cars = http_client:get_sync(Name, Side, Power), rear_cars = []}, 
-                        arrival_time = utils:get_timestamp(), 
                         state = init,
+                        host = Env#env.host,
                         bridge_capacity = BridgeCapacity, 
                         bridge_length = BridgeLength,
-                        max_speed = Env#env.max_speed,
-                        tow_truck_time = Env#env.tow_truck_time
+                        max_speed = MaxSpeed,
+                        tow_truck_time = TowTruckTime,
+                        max_RTT = MaxRTT 
                     },
 
 	if Timeout > 0 ->

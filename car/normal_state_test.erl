@@ -8,11 +8,11 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("car.hrl"). 
 
-% erl -sname car1@car1 -run normal_state_test test
-% erl -sname car1@car1 -run normal_state_test normal_test_
-% normal_state_test:normal_test_().
-  
 
+% Launch every test with
+% erl -sname car1@car1 -run normal_state_test test
+
+  
 %erl -sname car1@car1 -run normal_state_test normal_test_
 normal_test_() ->
 

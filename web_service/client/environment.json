@@ -1,10 +1,10 @@
 {
     "host": "http://192.168.130.37:8090",
-    "maxSpeed": 2,				
-    "bridgeCapacity": 2,				
-    "bridgeLength": 4,
-    "samplingFrequency": 500,		
-    "towTruckTime": 1500,
-    "maxRTT": 1200			
+    "max_speed": 2,				
+    "bridge_capacity": 2,				
+    "bridge_length": 4,
+    "sampling_frequency": 500,		
+    "tow_truck_time": 1500,
+    "max_RTT": 1200			
 }
  

@@ -16,6 +16,7 @@
                         adj,
                         state,
                         % settings and bridge metadata 
+                        host,
                         bridge_capacity,
                         bridge_length,
                         max_speed,

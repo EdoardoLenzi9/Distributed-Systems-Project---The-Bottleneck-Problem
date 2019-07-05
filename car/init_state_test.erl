@@ -8,9 +8,9 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("car.hrl"). 
 
+
+% Launch every test with
 % erl -sname car1@car1 -run init_state_test test
-% erl -sname car1@car1 -run init_state_test sync_test_
-% init_state_test:sync_test_().
 
 
 % erl -sname car1@car1 -run init_state_test sync_test_

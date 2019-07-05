@@ -18,6 +18,21 @@ timer(Req) ->
     timer:apply_after(Body, car_call_supervisor_api, car_call, [{wait_response, Sender, Target, Body}]).
 
 
+%%% Change state to NextState, send a Reply to the event sender
+next(NextState, Data, From, Reply) ->
+    utils:log("STATE TRANSITION -> ~p", [NextState]),
+    utils:log("State: ~p", [Data]),
+    NewData = Data#car_state{state = NextState},
+    car_call_supervisor_api:car_call({next, Data#car_state.name, none, {Data}}),
+    {next_state, NextState, NewData, [{reply, From, Reply}]}.
+        
+
+%%% Keep the current state, send a Reply to the event sender
+keep(Data, From, Reply) ->
+    utils:log("KEEP STATE"),
+    {keep_state, Data, [{reply, From, Reply}]}.
+
+
 %%% Simulate a car crash after a given timeout
 %killer(Name, Timeout) ->
 %    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
@@ -56,16 +71,3 @@ timer(Req) ->
 %        error:_ -> {launcher(Name, Event)};
 %        throw:_ -> {launcher(Name, Event)} 
 %    end. 
-
-
-next(NextState, Data, From, Reply) ->
-    utils:log("STATE TRANSITION -> ~p", [NextState]),
-    utils:log("State: ~p", [Data]),
-    NewData = Data#car_state{state = NextState},
-    car_call_supervisor_api:car_call({next, Data#car_state.name, none, {Data}}),
-    {next_state, NextState, NewData, [{reply, From, Reply}]}.
-        
-
-keep(Data, From, Reply) ->
-    utils:log("KEEP STATE"),
-    {keep_state, Data, [{reply, From, Reply}]}.

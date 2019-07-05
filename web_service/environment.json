@@ -1,7 +1,6 @@
 {
     "host": "http://192.168.130.37:8090",
     "maxSpeed": 2,				
-    "turn": 1000,					
     "bridgeCapacity": 2,				
     "bridgeLength": 4,
     "samplingFrequency": 500,		

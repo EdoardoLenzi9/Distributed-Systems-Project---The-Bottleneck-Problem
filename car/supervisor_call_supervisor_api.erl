@@ -1,16 +1,11 @@
 %%%===================================================================
-%%% API for fsm to call its supervisor
+%%% API for a supervisor to call/respond another supervisor
 %%%===================================================================
 
 
 -module(supervisor_call_supervisor_api).
 -compile(export_all).
 -include("car.hrl").
-
-
-%check(Sender, Target) ->
-%    utils:log("send check"),
-%    call_supervisor(Target#car_state.name, {sup_call_check, Sender, Target#car_state.name}).
 
 
 sup_call(Req) ->
