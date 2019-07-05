@@ -4,7 +4,7 @@
 -module(utils).
 -compile(export_all).
 -define(LOG, true).
-
+-include("car.hrl").
 
 %% Logger
 -ifdef(LOG).
@@ -23,6 +23,26 @@
 binary_to_atom(Item) ->
     list_to_atom(binary_to_list(Item)).
 
+
+% Load environment.json
+load_environment() ->
+    {ok, Content} = file:read_file("environment.json"),
+    {[{<<"host">>,Host},
+    {<<"max_speed">>,MaxSpeed},
+    {<<"bridge_capacity">>,BridgeCapacity},
+    {<<"bridge_length">>,BridgeLength},
+    {<<"sampling_frequency">>,_SamplingFrequency},
+    {<<"tow_truck_time">>,TowTruckTime},
+    {<<"max_RTT">>,MaxRTT}]} = jiffy:decode(Content),
+    #env{
+        host = binary_to_list(Host), 
+        max_speed = MaxSpeed, 
+        bridge_capacity = BridgeCapacity, 
+        bridge_length = BridgeLength, 
+        tow_truck_time = TowTruckTime,
+        max_RTT = MaxRTT
+    }.
+
 %%%===================================================================
 %%% list management
 %%         Front        Rear
@@ -30,15 +50,15 @@ binary_to_atom(Item) ->
 %%%===================================================================
 
 % [1,2,3] -> 3
-lastElement([ ]) ->
+last_element([ ]) ->
         -1;
-lastElement(List) ->
+last_element(List) ->
     [Pivot] = lists:nthtail(length(List)-1, List),
     Pivot.
 
-lastElement([ ], _) ->
+last_element([ ], _) ->
         -1;
-lastElement(List, Hop) ->
+last_element(List, Hop) ->
     if Hop < length(List) ->
         [Pivot] = lists:nthtail(length(List) - Hop, List),
         Pivot;
@@ -48,18 +68,18 @@ lastElement(List, Hop) ->
 
 
 % [1,2,3] -> 1    
-firstElement([ ]) ->
+first_element([ ]) ->
     -1;
-firstElement([First | _ ]) ->
+first_element([First | _ ]) ->
     First.
 
-firstElement([ ], _) ->
+first_element([ ], _) ->
     -1;
-firstElement([First | _Rest], 1) ->
+first_element([First | _Rest], 1) ->
     First;
-firstElement([_First | Rest], Hop) ->
+first_element([_First | Rest], Hop) ->
     if Hop < length(Rest) + 1 ->
-        firstElement(Rest, Hop - 1);
+        first_element(Rest, Hop - 1);
     true ->
         -1
     end.
@@ -69,24 +89,6 @@ firstElement([_First | Rest], Hop) ->
 %%% time management
 %%%===================================================================
 
-getTimeStamp() ->
+get_timestamp() ->
     {Mega, Seconds, Ms} = os:timestamp(),
     (Mega*1000000 + Seconds)*1000 + erlang:round(Ms/1000).                                                                                                                                              
-
-
-berkeley(Pivot) ->
-    {CurrentTime, PivotTime} = getPivotTime(Pivot),
-    CurrentTime2 = getTimeStamp(),
-    RTT = CurrentTime2 - CurrentTime,
-    CurrentTime2 - (PivotTime + RTT / 2).
-
-
-getPivotTime(Pivot) -> 
-    CurrentTime = getTimeStamp(), 
-    Res = gen_statem:call(Pivot, sync),
-    if Res == no_sync -> 
-        {CurrentTime, getPivotTime(Pivot)};
-    true ->
-        {CurrentTime, Res}
-    end.
-

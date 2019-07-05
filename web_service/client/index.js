@@ -24,7 +24,7 @@ function CreateCar(side){
 function SaveSettings(){
     var parameters = {
         turn:               $('#turn')[0].value,
-        bridgeCapacity:     $('#bridge-capacity')[0].value,
+        bridge_capacity:     $('#bridge-capacity')[0].value,
         bridgeCrossingTime: $('#bridge-crossing-time')[0].value
     }
 

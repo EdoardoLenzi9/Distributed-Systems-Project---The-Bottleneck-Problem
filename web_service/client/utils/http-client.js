@@ -7,7 +7,7 @@ Read("environment.json", function(env){
     host = environment.host; 
     settings = {
         turn:               env.turn,
-        bridgeCapacity:     env.bridgeCapacity,
+        bridge_capacity:     env.bridge_capacity,
         bridgeCrossingTime: env.bridgeCrossingTime
     }
 })
