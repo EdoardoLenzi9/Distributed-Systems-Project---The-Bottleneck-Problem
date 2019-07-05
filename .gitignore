@@ -1,0 +1,18 @@
+# Folders
+_build/
+rebar3_run/
+node_modules/
+
+# Extensions
+*.lock
+*.crashdump
+*.beam
+*.dump
+
+# Files
+package-lock.json
+environment.json
+car/priv/
+car/jiffy.app
+car/environment.json
+web_service/test/tmp

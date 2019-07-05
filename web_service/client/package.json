@@ -1,0 +1,20 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "description": "simulation control pannel",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "edoardo lenzi, talissa dreossi",
+  "license": "ISC",
+  "dependencies": {
+    "@tweenjs/tween.js": "^17.4.0",
+    "bootstrap": "^4.3.1",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.4.1",
+    "slicknav": "^1.0.8",
+    "three": "^0.105.2",
+    "threejs-utils": "^0.1.3"
+  }
+}

@@ -1,0 +1,17 @@
+[    
+    [],
+    [
+        {
+            "name": "D",
+            "arrivalTime": 1,
+            "state": 4,
+            "power": 1
+        },
+        {
+            "name": "E",
+            "arrivalTime": 2,
+            "state": 3,
+            "power": 1
+        }
+    ]
+]

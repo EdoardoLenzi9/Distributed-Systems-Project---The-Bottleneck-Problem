@@ -1,13 +1,51 @@
 \chapter{Analysis}\label{ch:analysis}
 
-In this chapter, we describe in detail functional and non-functional requirements of a solution for the problem.
+In this section we will discuss the requirements which our system must satisfy 
+discriminating them between functional and non functional.
 
 \section{Functional requirements}
-Which functions must be offered to users / other programs?  Which are the input data and the output data? Which is the expected effect? 
+
+The system will be able to:
+\begin{itemize}
+    \item \textbf{Coordinate the traffic} among the bridge following the rule 
+        that it can be crossed only in one way per turn. 
+        So it never happens that two cars crossing the bridge at the same time, 
+        in opposite ways.
+    \item \textbf{Avoid} any kind of \textbf{accident}.
+    \item The maximum amount of cars that can cross the bridge at the same time, 
+        in the same direction (a \textbf{block}), is equivalent at its capacity $c$.
+    \item The decision of who can cross the bridge will be taken by the cars 
+        themselves through a communication (\textbf{agreement}) that they 
+        instaurate without any human help.
+    \item If a car is broken (it can’t communicate and/or move any more) 
+        it will be removed by a tow truck.
+    \item provide a \textbf{UI} in order to monitoring the \textbf{simulation}.
+    \item generate new cars.
+\end{itemize}
+
 
 \section{Non functional requirements}
-Everything about mode and transparencies: availability, mobility, security, fault tolerance, etc.
 
-Are there execution time bounds? Minimum data rates?
-
-If requested, specific platforms/languages/middlewares requirements for the implementation can be decided here. (E.g.: if the project is on a SOA, we may request that functions are offered via SOAP or RESTful services). 
+We can distinguish the non functional requirements in the following macro areas:
+\begin{itemize}
+    \item \textbf{Safety}: the system guarantees a correct use of the bridge, avoiding 
+        any sort of accident between two or more cars. 
+        In fact it ensures that the bridge can be crossed only by cars that are moving 
+        in the same direction. 
+        Notice that we are not excluding the possibility of a car to break down 
+        (the cause of crashing is something that doesn’t belong to the task of the system).
+    \item \textbf{Security}: (bonus requirement, not necessary) 
+        the system avoids man in the middle attacks using HTTPS.
+    \item \textbf{Strength}: the system can work also in particular cases that is when a 
+        car breaks down and so it needs to be removed. 
+        This situation does not lead to an accident because the other cars can find out 
+        if a car is broken.
+    \item \textbf{Scalability}: cars, clients and web services.
+    \item \textbf{Consistency}: due to the relative point of view of each process this 
+    requirement is not guarantee at all.
+    \item \textbf{Starvation}: if a car requires to cross the bridge, 
+        its request will be satisfied eventually; 
+    it will never happen that a car waits for its turn forever.
+    \item \textbf{Fairness}: if a car $A$ has arrived before car $B$, 
+        then car $A$ will be the first one who cross the bridge (\textbf{FIFO ordering}).
+\end{itemize}
