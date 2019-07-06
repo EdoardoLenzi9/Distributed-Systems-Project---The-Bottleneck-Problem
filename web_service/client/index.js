@@ -1,18 +1,5 @@
-var host = window.location.origin;
-var settings;
 var manualGeneration = false;
 var carIndex = 0;
-
-
-Read("environment.json", function(env){
-    var environment = JSON.parse(env);
-    host = environment.host; 
-    settings = {
-        turn:               env.turn,
-        bridgeCapacity:     env.bridgeCapacity,
-        bridgeCrossingTime: env.bridgeCrossingTime
-    }
-})
 
 
 function CreateCar(side){
@@ -37,7 +24,7 @@ function CreateCar(side){
 function SaveSettings(){
     var parameters = {
         turn:               $('#turn')[0].value,
-        bridgeCapacity:     $('#bridge-capacity')[0].value,
+        bridge_capacity:     $('#bridge-capacity')[0].value,
         bridgeCrossingTime: $('#bridge-crossing-time')[0].value
     }
 
@@ -58,36 +45,6 @@ function Reset(){
     httpPostAsync('/simulation/reset', {}, function(content){
         console.log(content);
     })
-}
-
-
-function httpGetAsync( uri, callback ){
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-            callback(xmlHttp.responseText);
-        }    
-    }
-    xmlHttp.open('GET', uri, true); // true for asynchronous 
-    xmlHttp.send(null);
-}
-
-
-function httpPostAsync( uri, params, callback ){
-    var http = new XMLHttpRequest();
-    var url = host + "" + uri
-    console.log(url)
-    http.open('POST', url, true);
-
-    //Send the proper header information along with the request
-    http.setRequestHeader('Content-Type', 'application/json');
-
-    http.onreadystatechange = function() {//Call a function when the state changes.
-        if(http.readyState == 4 && http.status == 200) {
-            callback(http.responseText);
-        }
-    }
-    http.send(JSON.stringify(params));
 }
 
 

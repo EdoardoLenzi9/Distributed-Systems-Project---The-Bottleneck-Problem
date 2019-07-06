@@ -40,7 +40,8 @@ cd ..
 
 cp environment.json car/
 cp environment.json web_service/
-cp environment.json web_service/client
+cp environment.json web_service/client/
+cp environment.json web_service/client/views/simulation-view/
 
 
 # Setup test

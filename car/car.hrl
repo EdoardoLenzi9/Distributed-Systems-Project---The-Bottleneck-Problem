@@ -2,24 +2,31 @@
 %%% macros and record definitions
 %%%===================================================================
 
--record (carState, {    
+-record (car_state, {    
                         % car metadata
                         name,
                         side,
                         power,
+                        speed,
+                        position,
+                        crossing,
                         delta,
-                        arrivalTime, 
+                        arrival_time, 
+                        current_time,
                         adj,
                         state,
                         % settings and bridge metadata 
-                        turn,
-                        bridgeCapacity,
-                        bridgeCrossingTime
+                        host,
+                        bridge_capacity,
+                        bridge_length,
+                        max_speed,
+                        tow_truck_time,
+                        max_RTT
                     }).
 
 
--record (adj, { frontCars, 
-                rearCars 
+-record (adj, { front_cars, 
+                rear_cars 
               }).
 
 
@@ -34,52 +41,16 @@
                     }).
 
 
-%%%===================================================================
-%%% update records
-%%%===================================================================
-
-updateAdj(Data, Adj) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                delta = Data#carState.delta,
-                arrivalTime = Data#carState.arrivalTime, 
-                adj = Adj,
-                state = Data#carState.state,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
-            }.
+-record (env, {    
+                host,
+                max_speed,
+                bridge_capacity,
+                bridge_length,
+                tow_truck_time,
+                max_RTT
+            }).
 
 
-updateDelta(Data, Delta) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                delta = Delta,
-                arrivalTime = Data#carState.arrivalTime, 
-                adj = Data#carState.adj,
-                state = Data#carState.state,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
-            }.
-
-updateState(Data, State) ->
-    #carState{  
-                name = Data#carState.name,
-                side = Data#carState.side,
-                power = Data#carState.power,
-                delta =  Data#carState.delta,
-                arrivalTime = Data#carState.arrivalTime, 
-                adj = Data#carState.adj,
-                state = State,
-                turn = Data#carState.turn,
-                bridgeCapacity =  Data#carState.bridgeCapacity,
-                bridgeCrossingTime =  Data#carState.bridgeCrossingTime
-            }.
 %%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)
 %%%===================================================================
@@ -88,14 +59,16 @@ unmarshalling_sync([]) ->
     [];
 unmarshalling_sync([First| Rest]) ->
     { [ {<<"name">>, Name},{<<"side">>,Side},{<<"power">>,Power} ] } = First,
-    [#carState{ name = utils:binary_to_atom(Name), 
+    [#car_state{ name = utils:binary_to_atom(Name), 
                 side = utils:binary_to_atom(Side), 
                 power = Power } | unmarshalling_sync(Rest)].
 
+
 unmarshalling_adj([ [], [] ]) ->
-    #adj{ frontCars = [], rearCars = [] };
+    #adj{ front_cars = [], rear_cars = [] };
 unmarshalling_adj([ [Front], [Back] ]) ->
-    #adj{ frontCars = unmarshalling_adj_wrapper(Front), rearCars = unmarshalling_adj_wrapper(Back) }.
+    #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
+
 
 unmarshalling_adj_wrapper([]) ->
     [];
@@ -103,12 +76,12 @@ unmarshalling_adj_wrapper([First| Rest]) ->
     { [ {<<"name">>, Name}, 
         {<<"side">>,Side},
         {<<"power">>,Power},
-        {<<"arrivalTime">>,ArrivalTime},
+        {<<"arrival_time">>,ArrivalTime},
         {<<"delta">>,Delta},
         {<<"state">>,State} ] } = First,
-    [#carState{ name = utils:binary_to_atom(Name), 
-                side = utils:binary_to_atom(Side), 
-                power = Power,
-                arrivalTime = ArrivalTime,
-                delta = Delta,
-                state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    
+    [#car_state{    name = utils:binary_to_atom(Name), 
+                    side = utils:binary_to_atom(Side), 
+                    power = Power,
+                    arrival_time = ArrivalTime,
+                    delta = Delta,
+                    state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    

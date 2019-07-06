@@ -14,6 +14,7 @@ class AnimatedCar extends THREE.Group {
 
     constructor( state ){
 		super( );
+		debugger;
 		// car
 		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
@@ -57,20 +58,20 @@ class AnimatedCar extends THREE.Group {
 	computePosition(state){
 		var pos = {
 			x: state.side * this.scaleFactor / 2,
-			y: ((street.bridgeCapacity + 1) / 2 + state.position - this.crossIndex) * this.scaleFactor * state.side,
+			y: ((street.bridge_capacity + 1) / 2 + state.position - this.crossIndex) * this.scaleFactor * state.side,
 			z: this.position.z 
 		};
 
-		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridgeCapacity + 1))){
+		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridge_capacity + 1))){
 			pos.x = 0;
 		}
 
-		if(state.state == 4){
-			pos.y = ((street.bridgeCapacity + street.length) / 2) * this.scaleFactor * ( - state.side);
+		if(state.state == 'dead'){
+			pos.y = ((street.bridge_capacity + street.length) / 2) * this.scaleFactor * ( - state.side);
 		}
 
-		if(state.state == 0){
-			this.position.set(pos.x, ((street.bridgeCapacity + street.length) / 2) * this.scaleFactor * state.side, pos.z);
+		if(state.state == 'create'){
+			this.position.set(pos.x, ((street.bridge_capacity + street.length) / 2) * this.scaleFactor * state.side, pos.z);
 			this.initTween = this.TweenTo( pos ).start();
 		}
 
@@ -93,22 +94,22 @@ class AnimatedCar extends THREE.Group {
 		// update position
 		if(this.state.position != state.position && this.crossIndex >= 0){
 			this.TweenTo( this.computePosition(state) ).start();
-		} else if(state.state >= 3){
+		} else if(state.state == 'crossing' || state.state == 'dead'){
 			this.crossIndex++;
 			this.TweenTo( this.computePosition(state) ).start();
 		}
 		switch (state.state) {
-			case -1: case -2: 	
+			case 'dead': 	
 				this.car.material.color.setHex(0xff0000);
 				this.car.material.opacity = 0.5;
 				break;
-			case 0:	case 1:		
+			case 'create': case 'queue':		
 				this.setColor();
 				break;
-			case 2:
+			case 'leader':
 				this.setColor(0.8);
 				break;
-			case 3: case 4:
+			case 'crossing': case 'crossed':
 				this.setColor(1);
 				break;
 		  }

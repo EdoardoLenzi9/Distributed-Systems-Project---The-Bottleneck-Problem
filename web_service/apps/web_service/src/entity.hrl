@@ -2,7 +2,7 @@
                         name,
                         side,
                         power,
-                        arrivalTime,
+                        arrival_time,
                         delta,
                         state
                     }).
@@ -18,7 +18,7 @@
 
 -record(settingsEntity, {
                             turn,
-                            bridgeCapacity,
+                            bridge_capacity,
                             bridgeCrossingTime
                         }).
 
@@ -36,7 +36,7 @@
                         side,
                         power,
                         turn, 
-                        bridgeCapacity, 
+                        bridge_capacity, 
                         bridgeCrossingTime, 
                         timeout  
                     }).
@@ -60,14 +60,14 @@ adj_marshalling([First|Rest]) ->
     [{[ {name, First#adjEntity.name}, 
         {side, First#adjEntity.side}, 
         {power, First#adjEntity.power}, 
-        {arrivalTime, First#adjEntity.arrivalTime},
+        {arrival_time, First#adjEntity.arrival_time},
         {delta, First#adjEntity.delta},
         {state, First#adjEntity.state} ]} | adj_marshalling(Rest)].
 
 
 settings_marshalling(Settings) ->
     {[  {turn, Settings#settingsEntity.turn}, 
-        {bridgeCapacity, Settings#settingsEntity.bridgeCapacity}, 
+        {bridge_capacity, Settings#settingsEntity.bridge_capacity}, 
         {bridgeCrossingTime, Settings#settingsEntity.bridgeCrossingTime} ]}.
 
 
@@ -76,6 +76,6 @@ car_marshalling(Car) ->
     {side, Car#carEntity.side}, 
     {power, Car#carEntity.power}, 
     {turn, Car#carEntity.turn},
-    {bridgeCapacity, Car#carEntity.bridgeCapacity},
+    {bridge_capacity, Car#carEntity.bridge_capacity},
     {bridgeCrossingTime, Car#carEntity.bridgeCrossingTime},
     {timeout, Car#carEntity.timeout} ]}.
