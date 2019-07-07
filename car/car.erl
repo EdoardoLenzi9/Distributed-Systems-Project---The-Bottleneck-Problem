@@ -111,39 +111,51 @@ normal({call, From}, Event, Data) ->
 
             Position = compute_position(Data),
 
-            % if car reaches the bridge go to leader state
             if (Position * Data#car_state.side) =< 0 ->
-                utils:log("Car reaches the bridge"),
-                NewData = Data#car_state{position = 0, speed = 0},
-                flow:next(leader, NewData, From, {leader, NewData});
-            true ->
-                utils:log("Car away from the bridge"),
-                FrontCars = Data#car_state.adj#adj.front_cars,
-                NewData = if length(FrontCars) > 0 ->
-                    [Pivot | _Rest] = FrontCars,
-                    % if there is another car on the same side
-                    if Pivot#car_state.side == Data#car_state.side ->
-                        utils:log("there is another car on the same side"),
-                        % launch a check
-                        car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}}),
-                        Data;
-                    % if there is only a car on the opposite side of the bridge
-                    true ->
-                        utils:log("there is only a car on the opposite side of the bridge"),
-                        Speed = erlang:min(((Data#car_state.position * Data#car_state.side) / Data#car_state.max_RTT), Data#car_state.max_speed),
-                        car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT}),
-                        Data#car_state{speed = Speed}
-                    end;
-                % if there isn't any other car 
+                if Data#car_state.crossing ->
+                    utils:log("Car reaches the end of the bridge"),
+                    flow:next(dead, Data, From, {dead, Data});
                 true ->
-                    utils:log("there isn't any other car in the front queue"),
-                    Speed = erlang:min(((Data#car_state.position * Data#car_state.side) / Data#car_state.max_RTT), Data#car_state.max_speed),
-                    car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT}),
-                    Data#car_state{speed = Speed}
-                end,
-                flow:keep(NewData, From, {normal_default_behaviour, Data})
-            end
-    end.
+                    % if car reaches the bridge go to leader state
+                    utils:log("Car reaches the bridge"),
+                    NewData = Data#car_state{position = 0, crossing = true, speed = 0},
+                    flow:next(leader, NewData, From, {leader, NewData})
+                end;
+            true ->
+                if Data#car_state.crossing ->
+                    utils:log("Car crossing the bridge"),
+                    CarCross = Data#car_state{position = Position},    
+                    flow:keep(CarCross, From, {normal_response_check, CarCross});
+                true->
+                    utils:log("Car away from the bridge"),
+                    FrontCars = Data#car_state.adj#adj.front_cars,
+                    NewData = if length(FrontCars) > 0 ->
+                                    [Pivot | _Rest] = FrontCars,
+                                    % if there is another car on the same side
+                                    if Pivot#car_state.side == Data#car_state.side ->
+                                        utils:log("~p", [Pivot]),
+                                        utils:log("there is another car on the same side"),
+                                        % launch a check
+                                        car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}}),
+                                        Data;
+                                    % if there is only a car on the opposite side of the bridge
+                                    true ->
+                                        utils:log("there is only a car on the opposite side of the bridge"),
+                                        Speed = erlang:min(((Data#car_state.position * Data#car_state.side) / Data#car_state.max_RTT), Data#car_state.max_speed),
+                                        car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT}),
+                                        Data#car_state{speed = Speed}
+                                    end;
+                              % if there isn't any other car 
+                              true ->
+                                  utils:log("there isn't any other car in the front queue"),
+                                  Speed = erlang:min(((Data#car_state.position * Data#car_state.side) / Data#car_state.max_RTT), Data#car_state.max_speed),
+                                  car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT}),
+                                  Data#car_state{speed = Speed}
+                              end,
+                    flow:keep(NewData, From, {normal_default_behaviour, Data})
+                end
+    end
+end.
 
 
 compute_position(Data) ->
@@ -157,8 +169,70 @@ compute_position(Data) ->
 leader({call, From}, Event, Data) ->
     utils:log("STATE Queue"),
     case Event of
+        {check, Req} ->     
+               utils:log("Event check"),
+               {_Label, Sender, _Target, SendingTime, _Body} = Req,
+               car_response_supervisor_api:car_response({check_response, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+               flow:keep(Data, From, {leader_check, Data});
+        {response_check, Response} ->
+            utils:log("Event response_check"),
+            {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response, 
+
+            if Body#car_state.arrival_time > Data#car_state.arrival_time ->
+                %the car can start crossing the bridge
+                Position = Data#car_state.bridge_length, 
+                Bridge_capacity = (Data#car_state.bridge_capacity - 1),
+                Speed = Data#car_state.max_speed,
+                NewData = Data#car_state{
+                                        position = Position, 
+                                        bridge_capacity = Bridge_capacity,
+                                        crossing = true, 
+                                        speed = Speed
+                                    },
+                if length(Data#car_state.adj#adj.rear_cars) > 0 ->
+                    RearCars = Data#car_state.adj#adj.rear_cars,
+                    [Pivot | _Rest] = RearCars,
+                    utils:log("Start call"),
+                    car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, _SendingTime, {cross,NewData, Body}});
+                true ->
+                    utils:log("Nobody behind, nothing to propagate")
+                end,
+                flow:next(normal, NewData, From, {normal, NewData});
+            true->
+                %the car must wait (has arrived after)
+                flow:keep(Data, From, default_behaviour)
+            end,
+
+            flow:keep(Data, From, {leader_response_check, Data});
+        
         default_behaviour ->
-            flow:keep(From, Data)
+            FrontCars = Data#car_state.adj#adj.front_cars,
+            RearCars = Data#car_state.adj#adj.rear_cars,
+            if length(FrontCars) > 0 ->
+                [Pivot|_Rest] = FrontCars,
+                car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}});
+            true ->
+                %the car can start crossing the bridge
+                Position = Data#car_state.bridge_length, 
+                Bridge_capacity = (Data#car_state.bridge_capacity - 1),
+                Speed = Data#car_state.max_speed,
+                RearCars = Data#car_state.adj#adj.rear_cars,
+                NewData = Data#car_state{
+                                        position = Position, 
+                                        bridge_capacity = Bridge_capacity,
+                                        crossing = true, 
+                                        speed = Speed
+                                    },
+                if length(RearCars) > 0 ->
+                    [Pivot | _Rest] = RearCars,
+                    utils:log("Start caaaaaaaaaaaaaaaaaaaaaaall"),
+                    car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}});
+                true ->
+                    utils:log("Nothing to propagate")
+                end,
+                flow:next(normal, NewData, From, {normal, NewData})
+            end,
+            flow:keep(Data, From, {leader_default_behaviour, Data})
         end.
 
 
