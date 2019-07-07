@@ -54,7 +54,7 @@ leader_test2_() ->
         {car_call, Req1} ->
             {Label1, Sender1, _Target1, _Body1} = Req1,
             case Label1 of 
-                % launch normal defaultBehaviour
+                % launch leader defaultBehaviour
                 next ->
                     utils:log("Supervisor receive next call"),
                     car:default_behaviour(Sender1)
@@ -63,7 +63,7 @@ leader_test2_() ->
     end,
     receive
         {car_call, Req2} ->
-            {Label2, Sender2, _Target2, _Body2} = Req2,
+            {Label2, _Sender2, _Target2, _Body2} = Req2,
             case Label2 of 
                 check ->
                     utils:log("Supervisor receive check call"),
@@ -72,11 +72,11 @@ leader_test2_() ->
                     {_Result2, _Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = 1,
-                                                                        position = 1,
                                                                         crossing = false,
+                                                                        position = 1,
                                                                         arrival_time = State#car_state.arrival_time +10
-                                                                        % remains in the same position -1
-                                                                        }})
+                                                                        }})                            
+                                                        
             end
     end,
     receive
@@ -85,16 +85,19 @@ leader_test2_() ->
             case Label3 of 
                 next ->
                     utils:log("Supervisor receive next call"),
-                    PositionB = Sender3#car_state.bridge_length,
-                    CapacityB = Sender3#car_state.bridge_capacity -1,
-                    SpeedB = Sender3#car_state.max_speed,
-                    NewState = Sender3#car_state{position = PositionB, speed = SpeedB, bridge_capacity =CapacityB, crossing = true},    
-                    utils:log("ABABABBA: ~p", [NewState]),                    
-                    car:default_behaviour(NewState#car_state.name)
+                    car:default_behaviour(Sender3)
             end
     end,
-    utils:log("State f: ~p", [NewState#car_state.name]),
-    utils:log("State fffff: ~p", [NewState]),
+    receive
+        {car_call, Req4} ->
+            {Label4, Sender4, _Target4, _Body4} = Req4,
+            case Label4 of 
+                next ->
+                    utils:log("Supervisor receive next call"),
+                    car:default_behaviour(Sender4)
+            end
+    end,
+
     % Act 
     car:stop(State#car_state.name).
     

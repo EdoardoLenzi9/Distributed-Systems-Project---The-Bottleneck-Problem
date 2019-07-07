@@ -29,7 +29,7 @@ next(NextState, Data, From, Reply) ->
 
 %%% Keep the current state, send a Reply to the event sender
 keep(Data, From, Reply) ->
-    utils:log("KEEP STATE"),
+    utils:log("KEEP STATE ~p", [Data#car_state.state]),
     {keep_state, Data, [{reply, From, Reply}]}.
 
 

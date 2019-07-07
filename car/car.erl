@@ -201,9 +201,7 @@ leader({call, From}, Event, Data) ->
             true->
                 %the car must wait (has arrived after)
                 flow:keep(Data, From, default_behaviour)
-            end,
-
-            flow:keep(Data, From, {leader_response_check, Data});
+            end;
         
         default_behaviour ->
             FrontCars = Data#car_state.adj#adj.front_cars,
@@ -225,7 +223,7 @@ leader({call, From}, Event, Data) ->
                                     },
                 if length(RearCars) > 0 ->
                     [Pivot | _Rest] = RearCars,
-                    utils:log("Start caaaaaaaaaaaaaaaaaaaaaaall"),
+                    utils:log("Start call"),
                     car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}});
                 true ->
                     utils:log("Nothing to propagate")
