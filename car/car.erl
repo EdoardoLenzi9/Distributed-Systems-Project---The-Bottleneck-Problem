@@ -107,6 +107,8 @@ normal({call, From}, Event, Data) ->
                 flow:keep(NewData, From, {normal_response_check, NewData})
             end;
         crash ->
+            %%if only engine
+            flow:tow_truck(Data#car_state.name, Data#car_state.tow_truck_time),
             flow:next(dead, Data, From, {dead, Data});
         default_behaviour ->
             utils:log("Event default_behaviour"),
@@ -243,7 +245,7 @@ dead({call, _From}, Event, Data) ->
         default_behaviour ->
             utils:log("Event default_behaviour"),
             if (Data#car_state.position * Data#car_state.side) =< 0 , Data#car_state.crossing ->
-                utils:log("The car complited the crossing."),
+                utils:log("The car completed the crossing."),
                 stop(Data#car_state.name);
             true ->
                 utils:log("The car crashed."),

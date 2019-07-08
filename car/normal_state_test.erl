@@ -20,7 +20,6 @@ normal_test_() ->
     State = test_fixture:default_state(),
     car:start_link(State#car_state.name, State#car_state{ delta = 0 }),
     test_fixture:skip_sync(State),
-
     receive
         {car_call, Req1} ->
             {Label1, Sender1, _Target1, _Body1} = Req1,

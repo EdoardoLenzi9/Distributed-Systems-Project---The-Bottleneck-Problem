@@ -36,17 +36,11 @@ keep(Data, From, Reply) ->
 %%% Simulate a car crash after a given timeout
 killer(Name, Timeout) ->
     timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
-%
-%
-%%% Simulate a car crash after a given timeout
-%crossing_timer(Name, Timeout) ->
-%    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crossed]).
-%
-%
+    
 %%% Simulate a tow truck fix after a given timeout
-%tow_truck(Name, Timeout) ->
-%    timer:apply_after(Timeout, ?MODULE, send_event, [{global, Name}, default_behaviour]).
-%
+tow_truck(Name, Timeout) ->
+    timer:apply_after(Timeout, ?MODULE, send_event, [{global, Name}, default_behaviour]).
+
 %
 %call_tow_truck(Data) ->
 %    Responses = message:send_to_all_adj(Data#car_state.adj#adj.front_cars ++ Data#car_state.adj#adj.rear_cars, check),
