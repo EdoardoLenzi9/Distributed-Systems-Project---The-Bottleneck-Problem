@@ -106,6 +106,8 @@ normal({call, From}, Event, Data) ->
                 NewData = Data#car_state{position = Position, speed = Speed, current_time = utils:get_timestamp() },
                 flow:keep(NewData, From, {normal_response_check, NewData})
             end;
+        crash ->
+            flow:next(dead, Data, From, {dead, Data});
         default_behaviour ->
             utils:log("Event default_behaviour"),
 
@@ -202,7 +204,8 @@ leader({call, From}, Event, Data) ->
                 %the car must wait (has arrived after)
                 flow:keep(Data, From, default_behaviour)
             end;
-        
+        crash ->
+            flow:next(dead, Data, From, {dead, Data});
         default_behaviour ->
             FrontCars = Data#car_state.adj#adj.front_cars,
             RearCars = Data#car_state.adj#adj.rear_cars,
@@ -236,8 +239,16 @@ leader({call, From}, Event, Data) ->
 
 dead({call, _From}, Event, Data) -> 
     utils:log("STATE Dead"),
-    case Event of
+    case Event of    
         default_behaviour ->
             utils:log("Event default_behaviour"),
-            stop(Data#car_state.name)
+            if (Data#car_state.position * Data#car_state.side) =< 0 , Data#car_state.crossing ->
+                utils:log("The car complited the crossing."),
+                stop(Data#car_state.name);
+            true ->
+                utils:log("The car crashed."),
+                car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.tow_truck_time}),
+                utils:log("Tow truck has removed the car"),
+                stop(Data#car_state.name)
+            end
     end.

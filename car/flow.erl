@@ -34,8 +34,8 @@ keep(Data, From, Reply) ->
 
 
 %%% Simulate a car crash after a given timeout
-%killer(Name, Timeout) ->
-%    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
+killer(Name, Timeout) ->
+    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
 %
 %
 %%% Simulate a car crash after a given timeout
