@@ -1,8 +1,5 @@
 .PHONY: start run test clean help 
 
-Targets := $(wildcard *.erl)
-TargetsTest := $(wildcard *test.erl)
-
 
 # public rules
 
