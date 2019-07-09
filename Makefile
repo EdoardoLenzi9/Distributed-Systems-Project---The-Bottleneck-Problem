@@ -54,7 +54,9 @@ clean:
 	@find . -type f -name '*.aux' -delete
 	@find . -type f -name '*.log' -delete
 	@find . -type f -name '*.out' -delete
-	
+	@rm -rf web_service/_build
+	@rm -rf web_service/client/node_modules
+
 	@echo "delete jiffy"
 	@rm -rf ./jiffy
 	@rm -rf ./car/priv
