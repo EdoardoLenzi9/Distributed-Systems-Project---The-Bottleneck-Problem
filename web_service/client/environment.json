@@ -1,5 +1,5 @@
 {
-    "host": "http://192.168.130.37:8090",
+    "host": "http://localhost:8090",
     "max_speed": 2,				
     "bridge_capacity": 2,				
     "bridge_length": 4,

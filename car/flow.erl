@@ -23,30 +23,24 @@ next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     utils:log("State: ~p", [Data]),
     NewData = Data#car_state{state = NextState},
-    car_call_supervisor_api:car_call({next, Data#car_state.name, none, {Data}}),
+    car_call_supervisor_api:car_call({next, Data#car_state.name, none, {NewData}}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
 
 %%% Keep the current state, send a Reply to the event sender
 keep(Data, From, Reply) ->
-    utils:log("KEEP STATE"),
+    utils:log("KEEP STATE ~p", [Data#car_state.state]),
     {keep_state, Data, [{reply, From, Reply}]}.
 
 
 %%% Simulate a car crash after a given timeout
-%killer(Name, Timeout) ->
-%    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
-%
-%
-%%% Simulate a car crash after a given timeout
-%crossing_timer(Name, Timeout) ->
-%    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crossed]).
-%
-%
+killer(Name, Timeout) ->
+    timer:apply_after(Timeout, gen_statem, call, [{global, Name}, crash]).
+    
 %%% Simulate a tow truck fix after a given timeout
-%tow_truck(Name, Timeout) ->
-%    timer:apply_after(Timeout, ?MODULE, send_event, [{global, Name}, default_behaviour]).
-%
+tow_truck(Name, Timeout) ->
+    timer:apply_after(Timeout, ?MODULE, send_event, [{global, Name}, default_behaviour]).
+
 %
 %call_tow_truck(Data) ->
 %    Responses = message:send_to_all_adj(Data#car_state.adj#adj.front_cars ++ Data#car_state.adj#adj.rear_cars, check),

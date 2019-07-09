@@ -94,7 +94,20 @@ skip_sync2(State) ->
 
 % car with car2 on the opposite side
 skip_sync3(State) ->
-    skip_sync2(State).
+    car:default_behaviour(State#car_state.name),
+    receive
+        {car_call, _Request2} ->
+            car:check_response({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+    end,
+    receive
+        {car_call, Req} ->
+            {Label, Sender, Target, _Body} = Req,
+            case Label of 
+                adj ->
+                    Adj = #adj{front_cars = [#car_state{ name = car2, side = 1, position = 0 }], rear_cars = []},
+                    car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+            end
+    end.
 
 
 %%%===================================================================
@@ -132,9 +145,31 @@ skip_normal2(_State) ->
     todo.     
 
 
-skip_normal3(_State) ->
-    todo. 
-
+skip_normal3(State) ->
+    receive
+        {car_call, Req1} ->
+            {Label1, Sender1, _Target1, _Body1} = Req1,
+            case Label1 of 
+                next ->
+                    car:default_behaviour(Sender1)
+            end
+    end,
+    receive
+        {car_call, Req2} ->
+            {Label2, _Sender2, _Target2, _Body2} = Req2,
+            case Label2 of 
+                wait ->
+                    flow:launch_event(timer, [Req2])
+            end
+    end,
+    receive
+        {car_call, Req3} ->
+            {Label3, Sender3, _Target3, _Body3} = Req3,
+            case Label3 of 
+                wait_response ->
+                    car:default_behaviour(Sender3)
+            end
+    end.
 
 %%%===================================================================
 %%% Skip leader state

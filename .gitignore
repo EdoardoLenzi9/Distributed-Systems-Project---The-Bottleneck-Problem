@@ -16,3 +16,4 @@ car/priv/
 car/jiffy.app
 car/environment.json
 web_service/test/tmp
+jiffy/

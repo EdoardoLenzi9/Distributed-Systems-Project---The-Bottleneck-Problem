@@ -39,8 +39,9 @@ start(Args) ->
                     },
 
 	if Timeout > 0 ->
-        utils:log("Launch killer process with timeout")
-        %launch killer
+        utils:log("Launch killer process with timeout"),
+        flow:killer(State#car_state.name, Timeout)
+       
     end,
     car:start_link(State),
     car:default_behaviour(State#car_state.name),

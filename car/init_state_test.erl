@@ -12,7 +12,6 @@
 % Launch every test with
 % erl -sname car1@car1 -run init_state_test test
 
-
 % erl -sname car1@car1 -run init_state_test sync_test_
 sync_test_() ->
     % Arrange
