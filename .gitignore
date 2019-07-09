@@ -11,8 +11,11 @@ node_modules/
 
 # Files
 package-lock.json
-environment.json
 car/priv/
 car/jiffy.app
 car/environment.json
+web_service/environment.json
+web_service/client/environment.json 
+web_service/client/views/simulation-view/environment.json 
 web_service/test/tmp
+jiffy/

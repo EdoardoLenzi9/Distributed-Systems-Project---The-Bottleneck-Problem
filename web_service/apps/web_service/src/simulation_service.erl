@@ -26,7 +26,7 @@ new(Entity) ->
                             Entity#newCarEntity.side, " ", 
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.power])), " ",
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.turn])), " ", 
-                            lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridgeCapacity])), " ", 
+                            lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridge_capacity])), " ", 
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridgeCrossingTime])), " ", 
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
                             "'"])),
@@ -35,7 +35,7 @@ new(Entity) ->
                                     power = Entity#newCarEntity.power, 
                                     timeout = Entity#newCarEntity.timeout,
                                     turn = Settings#settingsEntity.turn,
-                                    bridgeCapacity = Settings#settingsEntity.bridgeCapacity, 
+                                    bridge_capacity = Settings#settingsEntity.bridge_capacity, 
                                     bridgeCrossingTime = Settings#settingsEntity.bridgeCrossingTime }).
 
 reset() ->
