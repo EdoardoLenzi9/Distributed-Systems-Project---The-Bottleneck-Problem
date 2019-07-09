@@ -11,21 +11,25 @@ start: clean dependencies env build
 
 run:
 	@echo "make rule run"
-	make dependencies
+	@cat environment.json
+	@cd web_service ; \
+	rebar3 run
 
 
 test:
 	@echo "make rule test"
-	@cd web_service/test 
-	@pwd
-	@cp -r ../apps/web_service/src .
-	@mv src tmp 
-	@cp *.erl ./tmp/ 
-	@cp ../apps/web_service/src/*.erl ./tmp/ 
-	@cp ../apps/web_service/src/*.hrl ./tmp/ 
-	@cp ../../car/jiffy.app ./tmp/ 
-	@cp ../../car/jiffy.beam ./tmp/ 
-	@cp -r ../../car/priv ./tmp/ 
+	@echo "clean tests"
+	@rm ./car/test/tmp/* || true
+	@rm -rf ./web_service/test/tmp/src || true
+	@rm ./web_service/test/tmp/* || true
+	@cd web_service/test ; \
+	cp -r ../apps/web_service/src . ; \
+	mv src tmp ; \
+	cp *.erl ./tmp/src ; \
+	cd tmp/src ; \
+	sh ../../../../scripts/run_test.sh
+	@echo "car test"
+	@echo "TODO"
 
 
 help:
@@ -39,7 +43,7 @@ help:
 	@echo " start \t\t sets up dependencies and compile."
 	@echo " run \t\t starts the simulation."
 	@echo " test \t\t starts test."
-	@echo Requirements: git, npm, erlang, docker-ce 
+	@echo Requirements: git, npm, erlang, rebar3, docker-ce 
 
 
 clean:
@@ -77,6 +81,7 @@ dependencies:
 	make ; \
 	cp -r ./priv ./ebin ; \
 	cp -r ./ebin/* ../car ; \
+	cp -r ./ebin/* ../web_service/apps/web_service/src ; \
 	cd ..
 
 
@@ -88,8 +93,11 @@ env:
 	@cp environment.json web_service/client/views/simulation-view/ 
 
 
-
 build: 
 	@echo "make rule build"
+	@echo "build car"
 	@cd car/ ; \
 	sh ../scripts/compile-all.sh
+	@echo "build web service"
+	@cd web_service ; \
+	rebar3 compile
