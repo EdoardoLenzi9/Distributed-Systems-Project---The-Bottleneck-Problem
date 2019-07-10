@@ -33,8 +33,8 @@ sync({call, From}, Event, Data) ->
         flow:keep(Data, From, {sync_check, Data});
     {check, Req} ->  
         utils:log("Event check"), 
-        {_Label, Sender, _Target, SendingTime, _Body} = Req,
-        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+        {_Label, Sender, _Target, Nickname, SendingTime, _Body} = Req,
+        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, Nickname, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
         flow:keep(Data, From, {sync_check, Data});
     {crossing, _Req} ->   
         utils:log("Event crossing"), 
@@ -45,12 +45,12 @@ sync({call, From}, Event, Data) ->
     {check_reply, Reply} ->
         utils:log("Event check_reply"),
         % berkeley
-        {_Label, _Sender, _Target, SendingTime, RTT, Body} = Reply,
+        {_Sender, _Target, SendingTime, RTT, Body} = Reply,
         CurrentTime = SendingTime, 
         PivotTime = Body#car_state.current_time,
         Delta = CurrentTime - (PivotTime + RTT / 2),
         NewData = Data#car_state{delta = Delta, arrival_time = Data#car_state.arrival_time + Delta},
-        car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData}),
+        car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
         flow:keep(NewData, From, {sync_check_reply, NewData});
     {adj_reply, Adj} ->
         utils:log("Event adj_reply"),

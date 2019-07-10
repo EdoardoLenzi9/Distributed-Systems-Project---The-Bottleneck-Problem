@@ -36,13 +36,13 @@ adj_reply(Name, Adj) ->
 
 check(Req) ->
     utils:log("API Check Request"),
-    {_Label, _Sender, Target, _SendingTime, _Body} = Req,
+    {_Label, _Sender, Target, _Nickname, _SendingTime, _Body} = Req,
     gen_statem:call({global, Target}, {check, Req}).
 
 
 check_reply(Response) ->
     utils:log("API Check Response"),
-    {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
+    {_Sender, Target, _SendingTime, _RTT, _Body} = Response,
     gen_statem:call({global, Target}, {check_reply, Response}).
 
 

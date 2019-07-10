@@ -52,7 +52,7 @@ next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     utils:log("State: ~p", [Data]),
     NewData = Data#car_state{state = NextState},
-    car_call_supervisor_api:car_call({next, Data#car_state.name, none, {NewData}}),
+    car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, {NewData}}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
 
