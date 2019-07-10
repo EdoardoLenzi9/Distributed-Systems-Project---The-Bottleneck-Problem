@@ -14,6 +14,8 @@ stop(Name) ->
     utils:log("API Stop"),
     gen_statem:stop({global, Name}).
 
+
+% Simple events
     
 default_behaviour(Name) ->
     utils:log("API default_behaviour"),
@@ -24,6 +26,13 @@ crash(Name) ->
     utils:log("API Crash"),
     gen_statem:call({global, Name}, crash).
 
+
+adj_reply(Name, Adj) ->
+    utils:log("API Adj Response"),
+    gen_statem:call({global, Name}, {adj_reply, Adj}).
+
+
+% Req/reply events
 
 check(Req) ->
     utils:log("API Check Request"),
@@ -47,9 +56,3 @@ crossing_reply(Response) ->
     utils:log("API Crossing Response"),
     {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
     gen_statem:call({global, Target}, {crossing_reply, Response}).
-
-
-adj_reply(Response) ->
-    utils:log("API Adj Response"),
-    {_Label, Sender, _Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Sender}, {reply_adj, Response}).

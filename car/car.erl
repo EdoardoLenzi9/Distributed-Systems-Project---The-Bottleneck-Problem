@@ -22,7 +22,14 @@ sync({call, From}, Event, Data) ->
     {update, Req} ->  
         utils:log("Event update"), 
         {_Label, Sender, _Target, SendingTime, _Body} = Req,
-        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+        car_reply_supervisor_api:car_reply({    check_reply, 
+                                                Data#car_state.name, 
+                                                Sender, 
+                                                SendingTime, 
+                                                Data#car_state{
+                                                    current_time = utils:get_timestamp()
+                                                }
+                                            }),
         flow:keep(Data, From, {sync_check, Data});
     {check, Req} ->  
         utils:log("Event check"), 
@@ -35,20 +42,19 @@ sync({call, From}, Event, Data) ->
     crash ->   
         utils:log("Event crash"), 
         {keep_state, Data, [postpone]};  
-    {check_reply, Response} ->
+    {check_reply, Reply} ->
         utils:log("Event check_reply"),
         % berkeley
-        {_Label, _Sender, _Target, SendingTime, RTT, Body} = Response,
+        {_Label, _Sender, _Target, SendingTime, RTT, Body} = Reply,
         CurrentTime = SendingTime, 
         PivotTime = Body#car_state.current_time,
         Delta = CurrentTime - (PivotTime + RTT / 2),
         NewData = Data#car_state{delta = Delta, arrival_time = Data#car_state.arrival_time + Delta},
         car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData}),
         flow:keep(NewData, From, {sync_check_reply, NewData});
-    {reply_adj, Response} ->
-        utils:log("Event reply_adj"),
-        {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response,
-        NewData = Data#car_state{adj = Body},
+    {adj_reply, Adj} ->
+        utils:log("Event adj_reply"),
+        NewData = Data#car_state{adj = Adj},
         utils:log("~p", [NewData]),
         Position = if length(NewData#car_state.adj#adj.front_cars) > 0 ->
             [First | _Rest] = NewData#car_state.adj#adj.front_cars,
@@ -71,7 +77,12 @@ sync({call, From}, Event, Data) ->
         if length(FrontCars) > 0 ->
             [Pivot | _Rest] = FrontCars,
             utils:log("Start call"),
-            car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}}),
+            car_call_supervisor_api:car_call({  check, 
+                                                Data#car_state.name, 
+                                                Pivot#car_state.name, 
+                                                Data#car_state.max_RTT, 
+                                                {}
+                                            }),
             flow:keep(Data, From, {sync_default_behaviour, Data});
         true ->
             car_call_supervisor_api:car_call({adj, Data#car_state.name, none, Data})
@@ -91,9 +102,9 @@ normal({call, From}, Event, Data) ->
             {_Label, Sender, _Target, SendingTime, _Body} = Req,
             car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
             flow:keep(Data, From, {normal_check, Data});
-        {check_reply, Response} ->
+        {check_reply, Reply} ->
             utils:log("Event check_reply"),
-            {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response,
+            {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Reply,
 
             Position = compute_position(Data),
 
@@ -193,9 +204,9 @@ leader({call, From}, Event, Data) ->
             {_Label, Sender, _Target, SendingTime, _Body} = Req,
             car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
             flow:keep(Data, From, {leader_check, Data});
-        {check_reply, Response} ->
+        {check_reply, Reply} ->
             utils:log("Event check_reply"),
-            {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response, 
+            {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Reply, 
 
             if Body#car_state.arrival_time > Data#car_state.arrival_time ->
                 %the car can start crossing the bridge

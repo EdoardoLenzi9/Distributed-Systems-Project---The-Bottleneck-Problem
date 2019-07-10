@@ -73,7 +73,7 @@ Superare le macchine non e' FIFO
 {crossing_reply, Response}
 {update, Req} 
 
-{reply_adj, Response}
+{adj_reply, Response}
 
 crash
 default_behaviour

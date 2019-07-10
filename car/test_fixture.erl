@@ -15,14 +15,20 @@ default_state() ->
         name = car1, 
         side = -1, 
         power = 2, 
+        size = 1,
         speed = 0,
+        % position undefined
         crossing = false,
         synchronized = false,
+        delta = 0,
+        arrival_time = utils:get_timestamp(),
+        current_time = utils:get_timestamp(), 
         adj = #adj{front_cars = [], rear_cars = []}, 
-        arrival_time = utils:get_timestamp(), 
-        state = init,
-        bridge_capacity = 5, 
-        bridge_length = 3,
+        state = sync,
+        % settings
+        host = Env#env.host,
+        bridge_capacity = Env#env.bridge_capacity, 
+        bridge_length = Env#env.bridge_length,
         max_speed = Env#env.max_speed,
         tow_truck_time = Env#env.tow_truck_time,
         max_RTT = Env#env.max_RTT
@@ -31,12 +37,12 @@ default_state() ->
 
 % car with car2 on the same side in position - 1
 default_state2() ->
-    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car2, side = -1, position = -1 } ]}}.
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = -1, position = -1 } ]}}.
 
 
 % car with car2 on the opposite side
 default_state3() ->
-    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car2, side = 1, position = 1 } ]}}.
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = 1, position = 1 } ]}}.
 
 
 register() ->

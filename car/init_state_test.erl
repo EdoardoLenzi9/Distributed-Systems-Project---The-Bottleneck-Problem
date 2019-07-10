@@ -22,10 +22,9 @@ sync_test_() ->
     
     % Act    
 
-    % if there isn't any car in front, sync transit in the normal state
-    utils:log("Supervisor call defaultBehaviour"),
-    Result1 = car:default_behaviour(State#car_state.name),
-    ExpectedResult1 = {sync_default_behaviour, State#car_state{ delta = 0 }},
+    utils:log("Test: there isn't any car in front"),
+    utils:log("Test: call defaultBehaviour"),
+    {Result1, Data1} = car:default_behaviour(State#car_state.name),
 
     receive
         {car_call, Req} ->
@@ -33,10 +32,9 @@ sync_test_() ->
             test_fixture:assert(Body, State),
             case Label of 
                 adj ->
-                    utils:log("Supervisor receive adj call"),
-                    % respond with no adj
+                    utils:log("Test: receive adj call, reply with {[], []}"),
                     Adj = #adj{front_cars = [], rear_cars = []},
-                    {Result2, Data2} = car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj}),
+                    {Result2, Data2} = car:adj_reply(Sender, Adj),
                     ExpectedData2 = State#car_state{    speed = 0, 
                                                         position = State#car_state.side, 
                                                         current_time = Data2#car_state.current_time, 
@@ -52,9 +50,10 @@ sync_test_() ->
     car:stop(State#car_state.name),
 
     % Assert
-    
-    test_fixture:assert(Result1, ExpectedResult1),
-    [ ?_assert(Result1 =:= ExpectedResult1) ].
+    test_fixture:assert(Result1, sync_default_behaviour),
+    test_fixture:assert(Data1, State),
+    [ ?_assert(Result1 =:= sync_default_behaviour),
+      ?_assert(Data1 =:= State) ].
 
 
 % cerl ; erl -sname car1@car1 -run init_state_test sync2_test_
@@ -63,22 +62,43 @@ sync2_test_() ->
 
     test_fixture:register(),
     State = test_fixture:default_state2(),
-    % there is another car called car2 in front of car1
+    
+    utils:log("Test: there is another car called car2 in front of car1"),
     car:start_link(State#car_state.name, State),
 
     % Act and Assert
 
-    % car1 remains in the default state waiting for a check from car2
+    utils:log("Test: car1 remains in the default state waiting for a check from car2"),
     {Result1, _Data1} = car:default_behaviour(State#car_state.name),
     ExpectedResult1 = sync_default_behaviour,
 
-    % car1 calls its supervisor in order to propagate the check
     receive
         {car_call, Request2} ->
-            ExpectedRequest2 = {check, car1, car2, {}},
-            test_fixture:assert(Request2, ExpectedRequest2)
-    end,
+            utils:log("Test: car1 calls its supervisor in order to propagate the check"),
+            {Label, Sender, Target, RTT, Body} = Request2,
 
+            %ExpectedRequest2 = {check, car1, car1, 1000, {}},
+            %test_fixture:assert(Request2, ExpectedRequest2),
+            
+            utils:log("Test: supervisor starts a request_timer"),
+            flow:launch_event(request_timer, [{Label, Sender, Target, utils:get_timestamp(), RTT, Body}])
+    end,
+    receive
+        {timer_call, Request3} ->
+            utils:log("Test: timer call car2 supervisor"),
+            {Label, Sender, Target, Nickname, SendingTime, Body} = Request3,
+
+            %ExpectedRequest3 = {check, car1, car1, 1000, {}},
+            %test_fixture:assert(Request2, ExpectedRequest2),
+
+            utils:log("Test: car2 supervisor calls check"),
+            {Result4, Data4} = car:check(Request3),
+            supervisor_reply_supervisor_api:sup_reply({check_reply, Target, Sender, Nickname, SendingTime, Data4})
+    end,
+    receive
+        {timer_reply, _Reply} ->
+            utils:log("Test: receive timer reply")
+    end,
     TimeStamp3 = utils:get_timestamp(),
     RTT = utils:get_timestamp() - TimeStamp3,
     {Result5, _Delta} = car:check_reply({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
@@ -143,8 +163,8 @@ sync3_test_() ->
 
     % receive car reply with current state
     receive
-        {car_reply, Response4} ->
-            {Label4, Sender4, Target4, Time4, _Body4} = Response4,
+        {car_reply, Reply4} ->
+            {Label4, Sender4, Target4, Time4, _Body4} = Reply4,
             test_fixture:assert({Label4, Sender4, Target4, Time4}, {check_reply, car1, car1, TimeStamp3})
     end,
 
@@ -191,42 +211,17 @@ sync_check_timeout_test_() ->
     % Act and Assert
     receive
         {car_call, Request1} ->
-            ExpectedRequest2 = {check, car1, car2, {}}
-            %test_fixture:assert(Request2, ExpectedRequest2)
+            {Label, Sender, Target, RTT, Body} = Request1,
+            flow:launch_event(request_timer, [{Label, Sender, Target, utils:get_timestamp(), RTT, Body}])
     end,
-
-    TimeStamp3 = utils:get_timestamp(),
-    RTT = utils:get_timestamp() - TimeStamp3,
-    {Result5, _Delta} = car:check_reply({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
-    ExpectedResult5 = sync_check_reply,
-
     receive
-        {car_call, Req} ->
-            {Label, Sender, Target, _Body} = Req,
-            case Label of 
-                adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    {Result6, Data6} = car:adj_reply({Label, Sender, Target, TimeStamp3, 0, Adj}),
-                    ExpectedData6 = State#car_state{speed = 0, position = State#car_state.side, arrival_time = Data6#car_state.arrival_time, current_time = Data6#car_state.current_time, delta = Data6#car_state.delta, adj = Adj, synchronized = true},
-                    utils:log("~p", [Data6]),
-                    utils:log("~p", [ExpectedData6]),
-                    test_fixture:assert(Result6, normal),
-                    test_fixture:assert(Data6, ExpectedData6)
-            end
+        {timer_call, Reply} ->
+            utils:log("Test: receive timer call and wait until timeout")
     end,
-        
-    car:stop(State#car_state.name),
-
-    % Assert
-
-    %test_fixture:assert(Result1, ExpectedResult1),
-    %test_fixture:assert(Result3, ExpectedResult3),
-    test_fixture:assert(Result5, ExpectedResult5),
-
-    [   %?_assert(Result1 =:= ExpectedResult1),
-        %?_assert(Result3 =:= ExpectedResult3),
-        ?_assert(Result5 =:= ExpectedResult5) ].
-
+    receive
+        {timer_reply, _Reply} ->
+            utils:log("Test: receive timeout reply")
+    end.
 
 
 % erl -sname car1@car1 -run init_state_test sync_crash_test_

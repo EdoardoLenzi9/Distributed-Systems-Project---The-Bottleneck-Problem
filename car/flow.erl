@@ -28,7 +28,7 @@ nickname(Name, Index) ->
     end.
 
 
-%%% Simulate a car crash after a given timeout
+%%% request timer
 request_timer(Req) ->
     utils:log("Timer: receive request"),
     {Label, Sender, Target, CurrentTime, RTT, Body} = Req,
