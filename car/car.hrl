@@ -7,9 +7,11 @@
                         name,
                         side,
                         power,
+                        size,
                         speed,
                         position,
                         crossing,
+                        synchronized,
                         delta,
                         arrival_time, 
                         current_time,
@@ -60,7 +62,7 @@ unmarshalling_sync([]) ->
 unmarshalling_sync([First| Rest]) ->
     { [ {<<"name">>, Name},{<<"side">>,Side},{<<"power">>,Power} ] } = First,
     [#car_state{ name = utils:binary_to_atom(Name), 
-                side = utils:binary_to_atom(Side), 
+                side = Side, 
                 power = Power } | unmarshalling_sync(Rest)].
 
 

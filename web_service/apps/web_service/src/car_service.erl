@@ -8,9 +8,9 @@
 %%%===================================================================
 
 sync(Entity) ->
-    Sync = if Entity#syncEntity.side == left -> 
+    Sync = if Entity#syncEntity.side == -1 -> 
         utils:first_elements( sync_repository:get_all(), Entity#syncEntity.power);
-    Entity#syncEntity.side == right ->
+    Entity#syncEntity.side == 1 ->
         lists:reverse(utils:last_elements( sync_repository:get_all(), Entity#syncEntity.power))
     end,    
     sync_repository:add(Entity),
@@ -18,9 +18,9 @@ sync(Entity) ->
 
 
 adj(Entity) ->
-    [Front, Rear] = if Entity#adjEntity.side == left -> 
+    [Front, Rear] = if Entity#adjEntity.side == -1 -> 
         get_left(Entity);
-    Entity#adjEntity.side == right ->
+    Entity#adjEntity.side == 1 ->
         get_right(Entity)
     end,    
     adj_repository:add(Entity),

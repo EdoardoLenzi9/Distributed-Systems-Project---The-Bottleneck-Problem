@@ -4,11 +4,13 @@ var carIndex = 0;
 
 function CreateCar(side){
     carIndex++;
+    
     var parameters = {
         name:       "car" + carIndex,     
-        side:       side,
-        power:      parseInt($('#' + side + '-power')[0].value),
-        timeout:    parseInt($('#' + side + '-timer')[0].value),
+        side:       side == "left" ? -1 : 1,
+        power:      $('#' + side + '-power')[0].value == "" ? 1 : parseInt($('#' + side + '-power')[0].value),
+        size:       $('#' + side + '-size')[0].value == "" ? 1 : parseInt($('#' + side + '-size')[0].value),
+        timeout:    $('#' + side + '-timer')[0].value == "" ? -1 : parseInt($('#' + side + '-timer')[0].value),
     }
     if(side == 'small'){
         parameters.side = $('#direction > .btn.active').text().trim().toLowerCase();
@@ -23,11 +25,13 @@ function CreateCar(side){
 
 function SaveSettings(){
     var parameters = {
-        turn:               $('#turn')[0].value,
-        bridge_capacity:     $('#bridge-capacity')[0].value,
-        bridgeCrossingTime: $('#bridge-crossing-time')[0].value
+        max_speed:           $('#max-speed')[0].value != "" ? $('#max-speed')[0].value : settings.max_speed + "",
+        max_RTT:             $('#max-RTT')[0].value != "" ? $('#max-RTT')[0].value : settings.max_RTT + "",
+        tow_truck_time:       $('#tow-truck-time')[0].value != "" ? $('#tow-truck-time')[0].value : settings.tow_truck_time + "",
+        bridge_capacity:    $('#bridge-capacity')[0].value != "" ? $('#bridge-capacity')[0].value : settings.bridge_capacity + "",
+        bridge_length:       $('#bridge-length')[0].value != "" ? $('#bridge-length')[0].value : settings.bridge_length + ""
     }
-
+    console.dir(parameters);
     httpPostAsync('/simulation/init', parameters, function(content){
         console.log(content);
     })
@@ -57,6 +61,7 @@ function HideTimer(side){
 function ShowTimer(side){
     $( '#' + side + '-timer-mask' ).removeClass( 'd-hide' ).addClass( 'd-block' );
 }
+
 
 function SwitchMode(){
     manualGeneration = !manualGeneration;

@@ -21,13 +21,13 @@ get_all() ->
 
 order(List) ->
     F = fun(X, Y) -> 
-        if X#adjEntity.side == right, Y#adjEntity.side == right -> 
+        if X#adjEntity.side == 1, Y#adjEntity.side == 1 -> 
             X#adjEntity.arrival_time + X#adjEntity.delta < Y#adjEntity.arrival_time + Y#adjEntity.delta;
-        X#adjEntity.side == right, Y#adjEntity.side == left ->
+        X#adjEntity.side == 1, Y#adjEntity.side == -1 ->
             false;
-        X#adjEntity.side == left, Y#adjEntity.side == right ->
+        X#adjEntity.side == -1, Y#adjEntity.side == 1 ->
             true; 
-        X#adjEntity.side == left, Y#adjEntity.side == left -> 
+        X#adjEntity.side == -1, Y#adjEntity.side == -1 -> 
             X#adjEntity.arrival_time + X#adjEntity.delta > Y#adjEntity.arrival_time + Y#adjEntity.delta
             end
         end,

@@ -21,13 +21,13 @@ get_all() ->
 
 order(List) ->
     F = fun(X, Y) -> 
-        if X#syncEntity.side == right, Y#syncEntity.side == right -> 
+        if X#syncEntity.side == 1, Y#syncEntity.side == 1 -> 
             X#syncEntity.timeStamp < Y#syncEntity.timeStamp;
-        X#syncEntity.side == right, Y#syncEntity.side == left ->
+        X#syncEntity.side == 1, Y#syncEntity.side == -1 ->
             false;
-        X#syncEntity.side == left, Y#syncEntity.side == right ->
+        X#syncEntity.side == -1, Y#syncEntity.side == 1 ->
             true; 
-        X#syncEntity.side == left, Y#syncEntity.side == left -> 
+        X#syncEntity.side == -1, Y#syncEntity.side == -1 -> 
             X#syncEntity.timeStamp > Y#syncEntity.timeStamp
             end
         end,

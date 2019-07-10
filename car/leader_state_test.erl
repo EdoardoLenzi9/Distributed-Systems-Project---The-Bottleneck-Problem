@@ -69,7 +69,7 @@ leader_test2_() ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 receives the check"),
                     %check reponse = risposta di car2 a car1 del check
-                    {_Result2, _Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result2, _Data2} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = 1,
                                                                         crossing = false,

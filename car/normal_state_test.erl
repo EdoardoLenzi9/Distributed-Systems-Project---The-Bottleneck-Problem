@@ -80,7 +80,7 @@ normal_test2_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 remains in the same position -1"),
-                    {_Result2, _Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result2, _Data2} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
@@ -97,7 +97,7 @@ normal_test2_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 moves to position 0"),
-                    {_Result3, _Data3} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result3, _Data3} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = State#car_state.max_speed,
@@ -134,7 +134,7 @@ normal_test3_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 remains in the same position 1"),
-                    {_Result2, _Data2} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result2, _Data2} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
@@ -151,7 +151,7 @@ normal_test3_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 moves to position 0"),
-                    {_Result3, _Data3} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result3, _Data3} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = State#car_state.max_speed,
@@ -171,7 +171,7 @@ normal_test3_() ->
     %            check ->
     %                utils:log("Supervisor receive check call"),
     %                utils:log("Car2 crossing to position -1"),
-    %                {_Result5, _Data5} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+    %                {_Result5, _Data5} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
     %                                                       #car_state{  name = car2, 
     %                                                                    side = State#car_state.side,
     %                                                                    speed = State#car_state.max_speed,
@@ -188,7 +188,7 @@ normal_test3_() ->
     %            check ->
     %                utils:log("Supervisor receive check call"),
     %                utils:log("Car2 crossing to position 0"),
-    %                {_Result6, _Data6} = car:check_response({response_check, car2, car1, utils:get_timestamp(), 0, 
+    %                {_Result6, _Data6} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
     %                                                       #car_state{  name = car2, 
     %                                                                    side = State#car_state.side,
     %                                                                    speed = State#car_state.max_speed,

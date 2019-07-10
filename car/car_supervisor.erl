@@ -8,9 +8,12 @@
 
 
 start(Args) -> 
-    [Name, PSide, PPower, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
+    utils:log("Args: ~p", [Args]),
+    [PName, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
+    Name = list_to_atom(PName),
     {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
+    {Size, _ } = string:to_integer(PSize),
     {BridgeCapacity, _ } = string:to_integer(PBridgeCapacity),
     {BridgeLength, _ } = string:to_integer(PBridgeLength),
     {MaxSpeed, _ } = string:to_integer(PMaxSpeed),
@@ -25,8 +28,10 @@ start(Args) ->
                         name = Name, 
                         side = Side, 
                         power = Power, 
+                        size = Size,
                         speed = 0,
                         crossing = false,
+                        synchronized = false,
                         delta = 0,
                         adj = #adj{front_cars = http_client:get_sync(Name, Side, Power), rear_cars = []}, 
                         state = init,
@@ -37,13 +42,12 @@ start(Args) ->
                         tow_truck_time = TowTruckTime,
                         max_RTT = MaxRTT 
                     },
-
+    utils:log("Timeout: ~p", [Timeout]),
 	if Timeout > 0 ->
         utils:log("Launch killer process with timeout"),
         flow:killer(State#car_state.name, Timeout)
-       
     end,
-    car:start_link(State),
+    car:start_link(State#car_state.name, State),
     car:default_behaviour(State#car_state.name),
     loop().
 
@@ -52,14 +56,22 @@ loop() ->
     receive
         % Car -> Supervisor call API
         {car_call, Req} ->
-            utils:log("Car call supervisor - receive"),
             CurrentTime = utils:get_timestamp(),
             % start timer
             {Label, Sender, Target, Body} = Req,
+            utils:log("Supervisor receives a car call ~p", [Label]),
             case Label of 
                 adj ->
+                    utils:log("Supervisor call adj endpoint"),
                     Adj = http_client:get_adj(Body),
                     car:adj_response({Label, Sender, Target, CurrentTime, 0, Adj});
+                next ->
+                    car:default_behaviour(Sender);
+                wait ->
+                    flow:launch_event(timer, [Req]);
+                wait_response ->
+                    car:default_behaviour(Sender);
+                % wild-card used for: check, crossing
                 _ ->
                     supervisor_call_supervisor_api:sup_call({Label, Sender, Target, CurrentTime, Body})
             end;
@@ -68,24 +80,32 @@ loop() ->
         % Supervisor -> Supervisor call API
         {sup_call, Req} ->
             {Label, _Sender, _Target, _SendingTime, _Body} = Req,
+            utils:log("Supervisor receives a supervisor call ~p", [Label]),
             case Label of 
                 check ->
-                    utils:log("Supervisor call car"),
-                    car:check(Req)
+                    car:check(Req);
+                crossing ->
+                    car:crossing(Req)
             end;
 
 
         % Car -> Supervisor response API
         {car_response, Response} ->
-            utils:log("Car response - receive"),
+            {Label, _Sender, _Target, _SendingTime, _Body} = Response,
+            utils:log("Supervisor receives a car response ~p", [Label]),
             supervisor_call_supervisor_api:sup_response(Response);
 
 
         % Supervisor -> Supervisor response API
         {sup_response, Response} ->
-            utils:log("Sepervisor response - receive"),
             {Label, Sender, Target, SendingTime, Body} = Response,
+            utils:log("Supervisor receives a supervisor response ~p", [Label]),
             RTT = utils:get_timestamp() - SendingTime,
-            car:check_response({Label, Sender, Target, SendingTime, RTT, Body})
+            case Label of 
+                check ->
+                    car:check_response({Label, Sender, Target, SendingTime, RTT, Body});
+                crossing ->
+                    car:crossing_response({Label, Sender, Target, SendingTime, RTT, Body})
+            end
     end,
     loop().

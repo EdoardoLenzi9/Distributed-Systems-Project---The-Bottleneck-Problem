@@ -29,18 +29,18 @@ sync_test_() ->
 adj_test_() ->
         db_manager:start(),
         % 3 2 1 [bridge] 4 5
-        Car1 = "{\"name\":\"car1\",\"side\":\"left\",\"power\":2,\"arrivalTime\":1000,\"delta\":5,\"state\":\"create\"}",
+        Car1 = "{\"name\":\"car1\",\"side\":\"left\",\"power\":2,\"arrival_time\":1000,\"delta\":5,\"state\":\"create\"}",
         Res1 = <<"[[],[]]">>,
-        Car2 = "{\"name\":\"car2\",\"side\":\"left\",\"power\":2,\"arrivalTime\":2000,\"delta\":5,\"state\":\"create\"}",
+        Car2 = "{\"name\":\"car2\",\"side\":\"left\",\"power\":2,\"arrival_time\":2000,\"delta\":5,\"state\":\"create\"}",
         Res2 = list_to_binary(utils:concat(["[[", Car1, "],[]]"])),
-        Car3 = "{\"name\":\"car3\",\"side\":\"left\",\"power\":2,\"arrivalTime\":3000,\"delta\":5,\"state\":\"create\"}",
+        Car3 = "{\"name\":\"car3\",\"side\":\"left\",\"power\":2,\"arrival_time\":3000,\"delta\":5,\"state\":\"create\"}",
         Res3 = list_to_binary(utils:concat(["[[", Car2, ",", Car1, "],[]]"])),
-        Car4 = "{\"name\":\"car4\",\"side\":\"right\",\"power\":2,\"arrivalTime\":4000,\"delta\":5,\"state\":\"create\"}",
+        Car4 = "{\"name\":\"car4\",\"side\":\"right\",\"power\":2,\"arrival_time\":4000,\"delta\":5,\"state\":\"create\"}",
         Res4 = list_to_binary(utils:concat(["[[", Car1, ",", Car2, "],[]]"])),
-        Car5 = "{\"name\":\"car5\",\"side\":\"right\",\"power\":2,\"arrivalTime\":5000,\"delta\":5,\"state\":\"create\"}",
+        Car5 = "{\"name\":\"car5\",\"side\":\"right\",\"power\":2,\"arrival_time\":5000,\"delta\":5,\"state\":\"create\"}",
         Res5 = list_to_binary(utils:concat(["[[", Car4, ",", Car1, "],[]]"])),
         % Update state of car1 to leader
-        Car1_leader = "{\"name\":\"car1\",\"side\":\"left\",\"power\":2,\"arrivalTime\":1000,\"delta\":5,\"state\":\"leader\"}",
+        Car1_leader = "{\"name\":\"car1\",\"side\":\"left\",\"power\":2,\"arrival_time\":1000,\"delta\":5,\"state\":\"leader\"}",
         Res6 = list_to_binary(utils:concat(["[[", Car4, ",", Car5, "],[", Car2, ",", Car3, "]]"])),
         % Check state update
         Res7 = list_to_binary(utils:concat(["[[", Car1_leader, ",", Car4, "],[", Car3, "]]"])),

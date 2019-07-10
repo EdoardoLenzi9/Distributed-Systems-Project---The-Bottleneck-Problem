@@ -1,5 +1,6 @@
 -module(utils).
 -compile(export_all).
+-include("entity.hrl").
 -define(LOG, true).
 
 
@@ -40,3 +41,23 @@ concat([]) ->
     [];
 concat([First | Rest]) ->
     string:concat(First, concat(Rest)).
+
+
+% Load environment.json
+load_environment() ->
+    os:cmd("echo ciao > a.txt"),
+    {ok, Content} = file:read_file("environment.json"),
+    {[{<<"host">>,_Host},
+    {<<"max_speed">>,MaxSpeed},
+    {<<"bridge_capacity">>,BridgeCapacity},
+    {<<"bridge_length">>,BridgeLength},
+    {<<"sampling_frequency">>,_SamplingFrequency},
+    {<<"tow_truck_time">>,TowTruckTime},
+    {<<"max_RTT">>,MaxRTT}]} = jiffy:decode(Content),
+    #settingsEntity{
+        max_speed = MaxSpeed, 
+        bridge_capacity = BridgeCapacity, 
+        bridge_length = BridgeLength, 
+        tow_truck_time = TowTruckTime,
+        max_RTT = MaxRTT
+    }.

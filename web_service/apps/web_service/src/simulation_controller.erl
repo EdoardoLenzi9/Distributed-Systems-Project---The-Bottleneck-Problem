@@ -58,12 +58,17 @@ state_handler() ->
 
 init_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
-	{[	{<<"turn">>, Turn},
+
+	{[	{<<"max_speed">>, MaxSpeed},
+		{<<"max_RTT">>, MaxRTT},
+		{<<"tow_truck_time">>, TowTruckTime},
 		{<<"bridge_capacity">>, BridgeCapacity},
-		{<<"bridgeCrossingTime">>, BridgeCrossingTime} ]} = DecodedTuple, 
-	simulation_service:init(#settingsEntity{ 	turn = Turn, 
+		{<<"bridge_length">>, BridgeLength} ]} = DecodedTuple, 
+	simulation_service:init(#settingsEntity{ 	max_speed = MaxSpeed,
+												max_RTT = MaxRTT,
+												tow_truck_time = TowTruckTime,
 												bridge_capacity = BridgeCapacity, 
-												bridgeCrossingTime = BridgeCrossingTime }),
+												bridge_length = BridgeLength }),
 	jiffy:encode({[{result, success}]}). 
 
 
@@ -72,13 +77,15 @@ new_node_handler(Body) ->
 	{[	{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power},
+		{<<"size">>, Size},
 		{<<"timeout">>, Timeout} ]} = DecodedTuple, 
 		jiffy:encode(simulation_service:new(#newCarEntity{ 	name = binary_to_list(Name), 
-											side = binary_to_list(Side), 
+											side = Side, 
 											power = Power, 
+											size = Size,
 											timeout = Timeout })).
 										
 
-reset_handler(Body) ->
+reset_handler(_Body) ->
 	simulation_service:reset(),
 	jiffy:encode({[{result, success}]}). 

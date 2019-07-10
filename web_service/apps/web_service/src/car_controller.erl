@@ -48,7 +48,7 @@ sync_handler(Body) ->
 		{<<"side">>, Side},
 		{<<"power">>, Power} ]} = DecodedTuple, 
 	jiffy:encode(car_service:sync(#syncEntity{	name = list_to_atom(binary_to_list(Name)), 
-												side = list_to_atom(binary_to_list(Side)), 
+												side = Side, 
 												power = Power,
 												timeStamp = utils:get_timestamp() })).
 
@@ -58,12 +58,14 @@ adj_handler(Body) ->
 	{[	{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power},
+		{<<"size">>, Size},
 		{<<"arrival_time">>, ArrivalTime},
 		{<<"delta">>, Delta},
 		{<<"state">>, State} ]} = DecodedTuple, 
 	jiffy:encode(car_service:adj(#adjEntity{ 	name = list_to_atom(binary_to_list(Name)), 
-											 	side = list_to_atom(binary_to_list(Side)), 
+											 	side = Side, 
 											 	power = Power, 
+											 	size = Size, 
 											 	arrival_time = ArrivalTime, 
 												delta = Delta, 
 												state = list_to_atom(binary_to_list(State)) })).

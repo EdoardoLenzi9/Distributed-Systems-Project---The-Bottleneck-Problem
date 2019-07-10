@@ -23,12 +23,21 @@
             <div class="row vspace-20">
                 <div class="col-0 col-md-2"></div>
                 <div class="col-12 col-md-4 align-self-center">
-                    <!--Turn time-->
+                    <!--Max speed-->
                     <div class="row vspace">
-                        <input type="number" id="turn" class="form-control col-input" placeholder="Turn time (1000)" aria-label="Turn time"
+                        <input type="number" id="max-speed" class="form-control col-input" placeholder="Max speed (1)" aria-label="Max speed"
                             aria-describedby="button-addon4">
                     </div>
                 </div>
+                <div class="col-12 col-md-4 align-self-center">
+                    <!--Max RTT-->
+                    <div class="row vspace">
+                        <input type="number" id="max-RTT" class="form-control col-input" placeholder="Max RTT (1000)" aria-label="Max RTT"
+                            aria-describedby="button-addon4">
+                    </div>
+                </div>
+                <div class="col-0 col-md-2"></div>
+                <div class="col-0 col-md-2"></div>
                 <div class="col-12 col-md-4 align-self-center">
                     <!--Bridge Capacity-->
                     <div class="row vspace">
@@ -36,12 +45,19 @@
                             aria-describedby="button-addon4">
                     </div>
                 </div>
+                <div class="col-12 col-md-4 align-self-center">
+                    <!--Bridge Length-->
+                    <div class="row vspace">
+                        <input type="number" id="bridge-length" class="form-control col-input" placeholder="Bridge length (2)" aria-label="Bridge length"
+                            aria-describedby="button-addon4">
+                    </div>
+                </div>
                 <div class="col-0 col-md-2"></div>
                 <div class="col-0 col-md-2"></div>
                 <div class="col-12 col-md-4 align-self-center">
-                    <!--Bridge Crossing Time-->
+                    <!--Tow Truck Time-->
                     <div class="row vspace">
-                        <input type="number" id="bridge-crossing-time" class="form-control col-input" placeholder="Bridge crossing time (2000)" aria-label="Bridge crossing time"
+                        <input type="number" id="tow-truck-time" class="form-control col-input" placeholder="Tow truck time (1500)" aria-label="Tow truck time"
                             aria-describedby="button-addon4">
                     </div>
                 </div>
@@ -86,6 +102,11 @@
                             <input type="number" id="left-power" class="form-control col-input" placeholder="Power (1)" aria-label="Power"
                                 aria-describedby="button-addon4">
                         </div>
+                        <!--Size-->
+                        <div class="row vspace">
+                            <input type="number" id="left-size" class="form-control col-input" placeholder="Size (1)" aria-label="Size"
+                                aria-describedby="button-addon4">
+                        </div>
                         <!--Create new car-->
                         <div class="row vspace">
                             <div class="col">
@@ -127,6 +148,11 @@
                         <!--Power-->
                         <div class="row vspace">
                             <input type="number" id="right-power" class="form-control col-input" placeholder="Power (1)" aria-label="Power"
+                                aria-describedby="button-addon4">
+                        </div>
+                        <!--Size-->
+                        <div class="row vspace">
+                            <input type="number" id="right-size" class="form-control col-input" placeholder="Size (1)" aria-label="Size"
                                 aria-describedby="button-addon4">
                         </div>
                         <!--Create new car-->
@@ -179,6 +205,11 @@
                         <!--Power-->
                         <div class="row vspace">
                             <input type="number" id="small-power" class="form-control col-input" placeholder="Power (1)" aria-label="Power"
+                                aria-describedby="button-addon4">
+                        </div>
+                        <!--Size-->
+                        <div class="row vspace">
+                            <input type="number" id="small-small" class="form-control col-input" placeholder="Size (1)" aria-label="Size"
                                 aria-describedby="button-addon4">
                         </div>
                         <!--Create new car-->

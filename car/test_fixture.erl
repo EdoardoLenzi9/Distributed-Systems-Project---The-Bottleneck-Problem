@@ -17,6 +17,7 @@ default_state() ->
         power = 2, 
         speed = 0,
         crossing = false,
+        synchronized = false,
         adj = #adj{front_cars = [], rear_cars = []}, 
         arrival_time = utils:get_timestamp(), 
         state = init,
@@ -145,7 +146,7 @@ skip_normal2(_State) ->
     todo.     
 
 
-skip_normal3(State) ->
+skip_normal3(_State) ->
     receive
         {car_call, Req1} ->
             {Label1, Sender1, _Target1, _Body1} = Req1,

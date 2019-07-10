@@ -2,6 +2,7 @@
                         name,
                         side,
                         power,
+                        size,
                         arrival_time,
                         delta,
                         state
@@ -12,14 +13,17 @@
                         name,
                         side,
                         power,
+                        size,
                         timeStamp             
                     }).
 
 
 -record(settingsEntity, {
-                            turn,
+                            max_speed,
+                            max_RTT,
+                            tow_truck_time,
                             bridge_capacity,
-                            bridgeCrossingTime
+                            bridge_length
                         }).
 
 
@@ -27,6 +31,7 @@
                         name,
                         side,
                         power,
+                        size,
                         timeout  
                     }).
 
@@ -35,9 +40,12 @@
                         name,
                         side,
                         power,
-                        turn, 
-                        bridge_capacity, 
-                        bridgeCrossingTime, 
+                        size,
+                        max_speed,
+                        max_RTT,
+                        tow_truck_time,
+                        bridge_capacity,
+                        bridge_length,
                         timeout  
                     }).
 
@@ -60,22 +68,28 @@ adj_marshalling([First|Rest]) ->
     [{[ {name, First#adjEntity.name}, 
         {side, First#adjEntity.side}, 
         {power, First#adjEntity.power}, 
+        {size, First#adjEntity.size}, 
         {arrival_time, First#adjEntity.arrival_time},
         {delta, First#adjEntity.delta},
         {state, First#adjEntity.state} ]} | adj_marshalling(Rest)].
 
 
 settings_marshalling(Settings) ->
-    {[  {turn, Settings#settingsEntity.turn}, 
+
+    {[  {max_speed, Settings#settingsEntity.max_speed}, 
+        {max_RTT, Settings#settingsEntity.max_RTT}, 
+        {tow_truck_time, Settings#settingsEntity.tow_truck_time}, 
         {bridge_capacity, Settings#settingsEntity.bridge_capacity}, 
-        {bridgeCrossingTime, Settings#settingsEntity.bridgeCrossingTime} ]}.
+        {bridge_length, Settings#settingsEntity.bridge_length} ]}.
 
 
 car_marshalling(Car) ->
     {[ {name, Car#carEntity.name}, 
     {side, Car#carEntity.side}, 
     {power, Car#carEntity.power}, 
-    {turn, Car#carEntity.turn},
+    {max_speed, Car#carEntity.max_speed},
+    {max_RTT, Car#carEntity.max_RTT},
+    {tow_truck_time, Car#carEntity.tow_truck_time},
     {bridge_capacity, Car#carEntity.bridge_capacity},
-    {bridgeCrossingTime, Car#carEntity.bridgeCrossingTime},
+    {bridge_length, Car#carEntity.bridge_length},
     {timeout, Car#carEntity.timeout} ]}.

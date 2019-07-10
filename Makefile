@@ -3,7 +3,7 @@
 
 # public rules
 
-start: clean dependencies env build
+start: clean dependencies build env
 
 
 run:
@@ -52,7 +52,8 @@ clean:
 	@find . -type f -name '*.log' -delete
 	@find . -type f -name '*.out' -delete
 	@rm -rf web_service/_build
-	@rm -rf web_service/client/node_modules
+	#TODO
+	#@rm -rf web_service/client/node_modules
 
 	@echo "delete jiffy"
 	@rm -rf ./jiffy
@@ -64,7 +65,7 @@ clean:
 	@rm ./web_service/environment.json  || true
 	@rm ./web_service/client/environment.json  || true
 	@rm ./web_service/client/views/simulation-view/environment.json  || true
-
+	@rm ./web_service/_build/default/rel/web_service/environment.json  || true
 	@echo "clean tests"
 	@rm ./car/test/tmp/* || true
 	@rm ./web_service/test/tmp/* || true
@@ -80,8 +81,10 @@ dependencies:
 	make ; \
 	cp -r ./priv ./ebin ; \
 	cp -r ./ebin/* ../car ; \
-	cp -r ./ebin/* ../web_service/apps/web_service/src ; \
-	cd ..
+	cp -r ./ebin/* ../web_service/apps/web_service/src
+	@echo "setup node modules"
+	@cd web_service/client ; \
+	npm install || true
 
 
 env:
@@ -90,6 +93,7 @@ env:
 	@cp environment.json web_service/ 
 	@cp environment.json web_service/client/ 
 	@cp environment.json web_service/client/views/simulation-view/ 
+	@cp environment.json web_service/_build/default/rel/web_service/
 
 
 build: 
@@ -99,4 +103,4 @@ build:
 	sh ../scripts/compile-all.sh
 	@echo "build web service"
 	@cd web_service ; \
-	rebar3 compile
+	rebar3 run || true
