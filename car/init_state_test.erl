@@ -12,7 +12,7 @@
 % Launch every test with
 % erl -sname car1@car1 -run init_state_test test
 
-% erl -sname car1@car1 -run init_state_test sync_test_
+% cerl ; erl -sname car1@car1 -run init_state_test sync_test_
 sync_test_() ->
     % Arrange
     
@@ -36,7 +36,7 @@ sync_test_() ->
                     utils:log("Supervisor receive adj call"),
                     % respond with no adj
                     Adj = #adj{front_cars = [], rear_cars = []},
-                    {Result2, Data2} = car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj}),
+                    {Result2, Data2} = car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj}),
                     ExpectedData2 = State#car_state{    speed = 0, 
                                                         position = State#car_state.side, 
                                                         current_time = Data2#car_state.current_time, 
@@ -57,8 +57,8 @@ sync_test_() ->
     [ ?_assert(Result1 =:= ExpectedResult1) ].
 
 
-% erl -sname car1@car1 -run init_state_test sync_test2_
-sync_test2_() ->
+% cerl ; erl -sname car1@car1 -run init_state_test sync2_test_
+sync2_test_() ->
     % Arrange
 
     test_fixture:register(),
@@ -81,8 +81,8 @@ sync_test2_() ->
 
     TimeStamp3 = utils:get_timestamp(),
     RTT = utils:get_timestamp() - TimeStamp3,
-    {Result5, _Delta} = car:check_response({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
-    ExpectedResult5 = sync_check_response,
+    {Result5, _Delta} = car:check_reply({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
+    ExpectedResult5 = sync_check_reply,
     
     receive
         {car_call, Req} ->
@@ -90,7 +90,7 @@ sync_test2_() ->
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    {Result6, Data6} = car:adj_response({Label, Sender, Target, TimeStamp3, 0, Adj}),
+                    {Result6, Data6} = car:adj_reply({Label, Sender, Target, TimeStamp3, 0, Adj}),
                     ExpectedData6 = State#car_state{speed = 0, position = State#car_state.side, arrival_time = Data6#car_state.arrival_time, current_time = Data6#car_state.current_time, delta = Data6#car_state.delta, adj = Adj, synchronized = true},
                     utils:log("~p", [Data6]),
                     utils:log("~p", [ExpectedData6]),
@@ -112,8 +112,8 @@ sync_test2_() ->
         ?_assert(Result5 =:= ExpectedResult5) ].
 
 
-% erl -sname car1@car1 -run init_state_test sync_test3_
-sync_test3_() ->
+% cerl ; erl -sname car1@car1 -run init_state_test sync3_test_
+sync3_test_() ->
     % Arrange
 
     test_fixture:register(),
@@ -141,17 +141,17 @@ sync_test3_() ->
     {Result3, _Data} = car:check(Request3),
     ExpectedResult3 = sync_check,
 
-    % receive car response with current state
+    % receive car reply with current state
     receive
-        {car_response, Response4} ->
+        {car_reply, Response4} ->
             {Label4, Sender4, Target4, Time4, _Body4} = Response4,
-            test_fixture:assert({Label4, Sender4, Target4, Time4}, {check_response, car1, car1, TimeStamp3})
+            test_fixture:assert({Label4, Sender4, Target4, Time4}, {check_reply, car1, car1, TimeStamp3})
     end,
 
-    % send check response to the car
+    % send check reply to the car
     RTT = utils:get_timestamp() - TimeStamp3,
-    {Result5, _Delta} = car:check_response({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
-    ExpectedResult5 = sync_check_response,
+    {Result5, _Delta} = car:check_reply({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
+    ExpectedResult5 = sync_check_reply,
 
     receive
         {car_call, Req} ->
@@ -159,7 +159,7 @@ sync_test3_() ->
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    {Result6, Data6} = car:adj_response({Label, Sender, Target, TimeStamp3, 0, Adj}),
+                    {Result6, Data6} = car:adj_reply({Label, Sender, Target, TimeStamp3, 0, Adj}),
                     ExpectedData6 = State#car_state{speed = 0, position = State#car_state.side, arrival_time = Data6#car_state.arrival_time, current_time = Data6#car_state.current_time, delta = Data6#car_state.delta, adj = Adj, synchronized = true},
                     utils:log("~p", [Data6]),
                     utils:log("~p", [ExpectedData6]),
@@ -179,3 +179,84 @@ sync_test3_() ->
     [   ?_assert(Result1 =:= ExpectedResult1),
         ?_assert(Result3 =:= ExpectedResult3),
         ?_assert(Result5 =:= ExpectedResult5) ].
+
+
+% cerl ; erl -sname car1@car1 -run init_state_test sync_check_timeout_test_
+sync_check_timeout_test_() ->
+    test_fixture:register(),
+    State = test_fixture:default_state2(),
+    car:start_link(State#car_state.name, State),
+    car:default_behaviour(State#car_state.name),
+
+    % Act and Assert
+    receive
+        {car_call, Request1} ->
+            ExpectedRequest2 = {check, car1, car2, {}}
+            %test_fixture:assert(Request2, ExpectedRequest2)
+    end,
+
+    TimeStamp3 = utils:get_timestamp(),
+    RTT = utils:get_timestamp() - TimeStamp3,
+    {Result5, _Delta} = car:check_reply({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
+    ExpectedResult5 = sync_check_reply,
+
+    receive
+        {car_call, Req} ->
+            {Label, Sender, Target, _Body} = Req,
+            case Label of 
+                adj ->
+                    Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
+                    {Result6, Data6} = car:adj_reply({Label, Sender, Target, TimeStamp3, 0, Adj}),
+                    ExpectedData6 = State#car_state{speed = 0, position = State#car_state.side, arrival_time = Data6#car_state.arrival_time, current_time = Data6#car_state.current_time, delta = Data6#car_state.delta, adj = Adj, synchronized = true},
+                    utils:log("~p", [Data6]),
+                    utils:log("~p", [ExpectedData6]),
+                    test_fixture:assert(Result6, normal),
+                    test_fixture:assert(Data6, ExpectedData6)
+            end
+    end,
+        
+    car:stop(State#car_state.name),
+
+    % Assert
+
+    %test_fixture:assert(Result1, ExpectedResult1),
+    %test_fixture:assert(Result3, ExpectedResult3),
+    test_fixture:assert(Result5, ExpectedResult5),
+
+    [   %?_assert(Result1 =:= ExpectedResult1),
+        %?_assert(Result3 =:= ExpectedResult3),
+        ?_assert(Result5 =:= ExpectedResult5) ].
+
+
+
+% erl -sname car1@car1 -run init_state_test sync_crash_test_
+sync_crash_test_() ->
+    % Arrange
+
+    test_fixture:register(),
+    State = test_fixture:default_state(),
+    car:start_link(State#car_state.name, State),
+    car:default_behaviour(State#car_state.name),
+    % Act and Assert
+
+    utils:log("before crash"),
+    flow:killer(State#car_state.name, 0),
+    utils:log("after crash"),
+        
+    car:stop(State#car_state.name).
+
+
+% erl -sname car1@car1 -run init_state_test sync_crash2_test_
+sync_crash2_test_() ->
+    % Arrange
+
+    test_fixture:register(),
+    State = test_fixture:default_state(),
+    car:start_link(State#car_state.name, State),
+    car:default_behaviour(State#car_state.name),
+    % Act and Assert
+
+    utils:log("before crash"),
+    flow:killer(State#car_state.name, 1000),
+    utils:log("after crash"),
+    timer:apply_after(1000, car, stop, [State#car_state.name]).

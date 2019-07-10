@@ -19,14 +19,24 @@ init([State]) ->
 sync({call, From}, Event, Data) ->
     utils:log("STATE Sync"),
     case Event of  
-    {check, _Req} ->   
-        {keep_state, Data, [postpone]};  
+    {update, Req} ->  
+        utils:log("Event update"), 
+        {_Label, Sender, _Target, SendingTime, _Body} = Req,
+        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+        flow:keep(Data, From, {sync_check, Data});
+    {check, Req} ->  
+        utils:log("Event check"), 
+        {_Label, Sender, _Target, SendingTime, _Body} = Req,
+        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+        flow:keep(Data, From, {sync_check, Data});
     {crossing, _Req} ->   
+        utils:log("Event crossing"), 
         {keep_state, Data, [postpone]};  
-    {crash, _Req} ->   
+    crash ->   
+        utils:log("Event crash"), 
         {keep_state, Data, [postpone]};  
-    {check_response, Response} ->
-        utils:log("Event check_response"),
+    {check_reply, Response} ->
+        utils:log("Event check_reply"),
         % berkeley
         {_Label, _Sender, _Target, SendingTime, RTT, Body} = Response,
         CurrentTime = SendingTime, 
@@ -34,9 +44,9 @@ sync({call, From}, Event, Data) ->
         Delta = CurrentTime - (PivotTime + RTT / 2),
         NewData = Data#car_state{delta = Delta, arrival_time = Data#car_state.arrival_time + Delta},
         car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData}),
-        flow:keep(NewData, From, {sync_check_response, NewData});
-    {response_adj, Response} ->
-        utils:log("Event response_adj"),
+        flow:keep(NewData, From, {sync_check_reply, NewData});
+    {reply_adj, Response} ->
+        utils:log("Event reply_adj"),
         {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response,
         NewData = Data#car_state{adj = Body},
         utils:log("~p", [NewData]),
@@ -66,7 +76,10 @@ sync({call, From}, Event, Data) ->
         true ->
             car_call_supervisor_api:car_call({adj, Data#car_state.name, none, Data})
         end,
-        flow:keep(Data#car_state{delta = 0}, From, {sync_default_behaviour, Data#car_state{delta = 0}})
+        flow:keep(Data#car_state{delta = 0}, From, {sync_default_behaviour, Data#car_state{delta = 0}});
+    Event ->
+        utils:log("Unhandled event postponed: ~p", [Event]),
+        flow:postpone(Data) 
     end.
 
 
@@ -76,10 +89,10 @@ normal({call, From}, Event, Data) ->
         {check, Req} ->     
             utils:log("Event check"),
             {_Label, Sender, _Target, SendingTime, _Body} = Req,
-            car_response_supervisor_api:car_response({check_response, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+            car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
             flow:keep(Data, From, {normal_check, Data});
-        {check_response, Response} ->
-            utils:log("Event check_response"),
+        {check_reply, Response} ->
+            utils:log("Event check_reply"),
             {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response,
 
             Position = compute_position(Data),
@@ -105,9 +118,10 @@ normal({call, From}, Event, Data) ->
                     car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}})
                 end,
                 NewData = Data#car_state{position = Position, speed = Speed, current_time = utils:get_timestamp() },
-                flow:keep(NewData, From, {normal_check_response, NewData})
+                flow:keep(NewData, From, {normal_check_reply, NewData})
             end;
         crash ->
+            utils:log("Event crash"),
             %%if only engine
             flow:tow_truck(Data#car_state.name, Data#car_state.tow_truck_time),
             flow:next(dead, Data, From, {dead, Data});
@@ -130,7 +144,7 @@ normal({call, From}, Event, Data) ->
                 if Data#car_state.crossing ->
                     utils:log("Car crossing the bridge"),
                     CarCross = Data#car_state{position = Position},    
-                    flow:keep(CarCross, From, {normal_check_response, CarCross});
+                    flow:keep(CarCross, From, {normal_check_reply, CarCross});
                 true->
                     utils:log("Car away from the bridge"),
                     FrontCars = Data#car_state.adj#adj.front_cars,
@@ -177,10 +191,10 @@ leader({call, From}, Event, Data) ->
         {check, Req} ->     
             utils:log("Event check"),
             {_Label, Sender, _Target, SendingTime, _Body} = Req,
-            car_response_supervisor_api:car_response({check_response, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
+            car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
             flow:keep(Data, From, {leader_check, Data});
-        {check_response, Response} ->
-            utils:log("Event check_response"),
+        {check_reply, Response} ->
+            utils:log("Event check_reply"),
             {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Response, 
 
             if Body#car_state.arrival_time > Data#car_state.arrival_time ->
@@ -245,13 +259,7 @@ dead({call, _From}, Event, Data) ->
     case Event of    
         default_behaviour ->
             utils:log("Event default_behaviour"),
-            if (Data#car_state.position * Data#car_state.side) =< 0 , Data#car_state.crossing ->
-                utils:log("The car completed the crossing."),
-                stop(Data#car_state.name);
-            true ->
-                utils:log("The car crashed."),
-                car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.tow_truck_time}),
-                utils:log("Tow truck has removed the car"),
-                stop(Data#car_state.name)
-            end
+            stop(Data#car_state.name);
+        _ ->
+            {keep_state, Data, [postpone]}  
     end.

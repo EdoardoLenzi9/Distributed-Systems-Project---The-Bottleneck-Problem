@@ -46,16 +46,16 @@ normal_test_() ->
             {Label3, Sender3, _Target3, _Body3} = Req3,
             case Label3 of 
                 % receive turn timeout
-                wait_response ->
-                    utils:log("Supervisor receive wait_response call"),
+                wait_reply ->
+                    utils:log("Supervisor receive wait_reply call"),
                     car:default_behaviour(Sender3)
             end
     end.
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
 
 
-%erl -sname car1@car1 -run normal_state_test normal_test2_
-normal_test2_() ->
+%erl -sname car1@car1 -run normal_state_test normal2_test_
+normal2_test_() ->
 
     test_fixture:register(),
     State = test_fixture:default_state2(),
@@ -80,7 +80,7 @@ normal_test2_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 remains in the same position -1"),
-                    {_Result2, _Data2} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result2, _Data2} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
@@ -97,7 +97,7 @@ normal_test2_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 moves to position 0"),
-                    {_Result3, _Data3} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result3, _Data3} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = State#car_state.max_speed,
@@ -108,8 +108,8 @@ normal_test2_() ->
             end
     end.
 
-%erl -sname car1@car1 -run normal_state_test normal_test3_
-normal_test3_() ->
+%erl -sname car1@car1 -run normal_state_test normal3_test_
+normal3_test_() ->
 
     test_fixture:register(),
     State = test_fixture:default_state3(),
@@ -134,7 +134,7 @@ normal_test3_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 remains in the same position 1"),
-                    {_Result2, _Data2} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result2, _Data2} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
@@ -151,7 +151,7 @@ normal_test3_() ->
                 check ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 moves to position 0"),
-                    {_Result3, _Data3} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result3, _Data3} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = State#car_state.side,
                                                                         speed = State#car_state.max_speed,
@@ -171,7 +171,7 @@ normal_test3_() ->
     %            check ->
     %                utils:log("Supervisor receive check call"),
     %                utils:log("Car2 crossing to position -1"),
-    %                {_Result5, _Data5} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+    %                {_Result5, _Data5} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
     %                                                       #car_state{  name = car2, 
     %                                                                    side = State#car_state.side,
     %                                                                    speed = State#car_state.max_speed,
@@ -188,7 +188,7 @@ normal_test3_() ->
     %            check ->
     %                utils:log("Supervisor receive check call"),
     %                utils:log("Car2 crossing to position 0"),
-    %                {_Result6, _Data6} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+    %                {_Result6, _Data6} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
     %                                                       #car_state{  name = car2, 
     %                                                                    side = State#car_state.side,
     %                                                                    speed = State#car_state.max_speed,
@@ -199,3 +199,28 @@ normal_test3_() ->
     %        end
     %end.
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
+
+
+
+%erl -sname car1@car1 -run normal_state_test normal_crash_test_
+normal_crash_test_() ->
+
+    test_fixture:register(),
+    State = test_fixture:default_state(),
+    car:start_link(State#car_state.name, State#car_state{ delta = 0 }),
+    test_fixture:skip_sync(State),
+    receive
+        {car_call, Req1} ->
+            {Label1, Sender1, _Target1, _Body1} = Req1,
+            case Label1 of 
+                % launch normal defaultBehaviour
+                next ->
+                    utils:log("Supervisor receive next call"),
+                    car:default_behaviour(Sender1)
+                    %assert(Result1, normal_default_behaviour)
+            end
+    end,
+    flow:killer(State#car_state.name, 0),
+    flow:killer(State#car_state.name, 1000).
+    %[ ?_assert(Response1 =:= ExpectedResponse1) ].
+

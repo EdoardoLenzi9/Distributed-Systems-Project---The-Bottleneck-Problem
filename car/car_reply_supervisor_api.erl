@@ -3,14 +3,14 @@
 %%%===================================================================
 
 
--module(car_response_supervisor_api).
+-module(car_reply_supervisor_api).
 -compile(export_all).
 -include("car.hrl").
 
 
-car_response(Response) ->
+car_reply(Response) ->
     {_Label, _Sender, Target, _SendingTime, _Body} = Response, 
-    call_supervisor(Target, {car_response, Response}).        
+    call_supervisor(Target, {car_reply, Response}).        
 
 
 call_supervisor(Name, Event) ->

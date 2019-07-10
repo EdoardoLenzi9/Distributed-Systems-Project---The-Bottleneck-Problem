@@ -31,10 +31,10 @@ check(Req) ->
     gen_statem:call({global, Target}, {check, Req}).
 
 
-check_response(Response) ->
+check_reply(Response) ->
     utils:log("API Check Response"),
     {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Target}, {check_response, Response}).
+    gen_statem:call({global, Target}, {check_reply, Response}).
 
 
 crossing(Req) ->
@@ -43,13 +43,13 @@ crossing(Req) ->
     gen_statem:call({global, Target}, {crossing, Req}).
         
         
-crossing_response(Response) ->
+crossing_reply(Response) ->
     utils:log("API Crossing Response"),
     {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Target}, {crossing_response, Response}).
+    gen_statem:call({global, Target}, {crossing_reply, Response}).
 
 
-adj_response(Response) ->
+adj_reply(Response) ->
     utils:log("API Adj Response"),
     {_Label, Sender, _Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Sender}, {response_adj, Response}).
+    gen_statem:call({global, Sender}, {reply_adj, Response}).

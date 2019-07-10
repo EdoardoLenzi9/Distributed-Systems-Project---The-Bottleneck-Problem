@@ -42,8 +42,8 @@ leader_test_() ->
 %    [?_assert(true =:= true) ].
 %
 %
-%%erl -sname car1@car1 -run leader_state_test leader_test2_
-leader_test2_() ->
+%%erl -sname car1@car1 -run leader_state_test leader2_test_
+leader2_test_() ->
     % Arrange
     test_fixture:register(),
     State = test_fixture:default_state3(),
@@ -69,7 +69,7 @@ leader_test2_() ->
                     utils:log("Supervisor receive check call"),
                     utils:log("Car2 receives the check"),
                     %check reponse = risposta di car2 a car1 del check
-                    {_Result2, _Data2} = car:check_response({check_response, car2, car1, utils:get_timestamp(), 0, 
+                    {_Result2, _Data2} = car:check_reply({check_reply, car2, car1, utils:get_timestamp(), 0, 
                                                            #car_state{  name = car2, 
                                                                         side = 1,
                                                                         crossing = false,

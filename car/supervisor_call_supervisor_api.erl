@@ -10,14 +10,14 @@
 
 sup_call(Req) ->
     utils:log("Supervisor call supervisor"),
-    {_Label, _Sender, Target, _SendingTime, _Body} = Req,
+    {_Label, _Sender, Target, _Nickname, _SendingTime, _Body} = Req,
     call_supervisor(Target, {sup_call, Req}).        
 
 
-sup_response(Response) ->
-    utils:log("Supervisor response supervisor"),
-    {_Label, _Sender, Target, _SendingTime, _Body} = Response,
-    call_supervisor(Target, {sup_response, Response}). 
+timer_call(Req) ->
+    utils:log("Timer call supervisor"),
+    {_Label, _Sender, Target, _Nickname, _SendingTime, _Body} = Req,
+    call_supervisor(Target, {timer_call, Req}). 
 
 
 call_supervisor(Name, Event) ->

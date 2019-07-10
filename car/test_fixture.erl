@@ -70,7 +70,7 @@ skip_sync(State) ->
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [], rear_cars = []},
-                    car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+                    car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
             end
     end.
 
@@ -80,7 +80,7 @@ skip_sync2(State) ->
     car:default_behaviour(State#car_state.name),
     receive
         {car_call, _Request2} ->
-            car:check_response({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+            car:check_reply({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
     end,
     receive
         {car_call, Req} ->
@@ -88,7 +88,7 @@ skip_sync2(State) ->
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+                    car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
             end
     end.
 
@@ -98,7 +98,7 @@ skip_sync3(State) ->
     car:default_behaviour(State#car_state.name),
     receive
         {car_call, _Request2} ->
-            car:check_response({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+            car:check_reply({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
     end,
     receive
         {car_call, Req} ->
@@ -106,7 +106,7 @@ skip_sync3(State) ->
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [#car_state{ name = car2, side = 1, position = 0 }], rear_cars = []},
-                    car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+                    car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
             end
     end.
 
@@ -136,7 +136,7 @@ skip_normal(_State) ->
         {car_call, Req3} ->
             {Label3, Sender3, _Target3, _Body3} = Req3,
             case Label3 of 
-                wait_response ->
+                wait_reply ->
                     car:default_behaviour(Sender3)
             end
     end.
@@ -167,7 +167,7 @@ skip_normal3(_State) ->
         {car_call, Req3} ->
             {Label3, Sender3, _Target3, _Body3} = Req3,
             case Label3 of 
-                wait_response ->
+                wait_reply ->
                     car:default_behaviour(Sender3)
             end
     end.
