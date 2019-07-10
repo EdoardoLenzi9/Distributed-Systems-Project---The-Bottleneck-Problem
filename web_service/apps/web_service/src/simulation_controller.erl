@@ -80,10 +80,10 @@ new_node_handler(Body) ->
 		{<<"size">>, Size},
 		{<<"timeout">>, Timeout} ]} = DecodedTuple, 
 		jiffy:encode(simulation_service:new(#newCarEntity{ 	name = binary_to_list(Name), 
-											side = Side, 
-											power = Power, 
-											size = Size,
-											timeout = Timeout })).
+															side = Side, 
+															power = Power, 
+															size = Size,
+															timeout = Timeout })).
 										
 
 reset_handler(_Body) ->
