@@ -9,6 +9,18 @@
 
 
 % car alone
+
+queue_car(Position, Crossing) ->
+    #car_state{  
+                name = car1, 
+                side = -1,
+                speed = 0,
+                size = 1,
+                crossing = Crossing,
+                position = Position,
+                current_time = utils:get_timestamp()
+            }.
+
 default_state() ->
     Env = utils:load_environment(),
     #car_state{

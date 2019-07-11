@@ -349,6 +349,11 @@ timeout(State, Target, Data, From) ->
 update(State, Replacement, Data, From) ->
     utils:log("EVENT update"), 
     NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
+    car_call_supervisor_api:car_call({  default_behaviour, 
+                                        Data#car_state.name,
+                                        Data#car_state.name,
+                                        Data#car_state.max_RTT, 
+                                        {}}),
     flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_update")), NewData}).
 
 
