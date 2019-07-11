@@ -1,6 +1,18 @@
 \chapter{Implementation}\label{ch:implementation}
 
-\section{TODO}
+\section{Language}
+To implement the project Erlang language was used. The decision was made due to the nature of the language itself.\\
+In fact, Erlang allows to handle concurrency and distributed programming: programs that can handle several threads of execution at the same time. 
+Actually each processo only swaps between jobs so fast, so it only gives the illusion of running them all at the same time. 
+What is great about Erlang is that it make it easy to create parallel threads of execution and it also permits these
+threads (called process because they do not share data) to communicate with each other.\\
+Furthermore Erlang can models finite state machine thanks to the $gen_statem$ behaviour and that fitted perfectly
+with the nature of the problem.\\ \\
+The standard data interchange format used is JSON. The main reason of this decision is that it is used 
+for transmitting data between a web application and a server. 
+Moreover JSON files are lightweight, text-based and human-readable, so we tought that would be good for our goal.
+
+\section{TODO-- ?docker?}
 Details about the implementation: every choice about platforms, languages, software/hardware, middlewares, which has not been decided in the requirements.
 
 \section{Data structures}
