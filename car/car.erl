@@ -20,32 +20,19 @@ sync({call, From}, Event, Data) ->
     utils:log("STATE Sync"),
     case Event of  
     {timeout, Target} ->  
-        utils:log("Event timeout"), 
-        car_call_supervisor_api:car_call({  call_tow_truck, 
-                                            Data#car_state.name, 
-                                            Target, 
-                                            Data#car_state.max_RTT, 
-                                            Data#car_state.tow_truck_time}),
-        flow:keep(Data, From, {sync_timeout, Data});
+        timeout(sync, Target, Data, From);
     {update, Replacement} ->  
-        utils:log("Event update"), 
-        NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
-        flow:keep(NewData, From, {sync_update, NewData});
-    {check, Req} ->  
-        utils:log("Event check"), 
-        {_Label, Sender, _Target, Nickname, SendingTime, _Body} = Req,
-        NewData = Data#car_state{current_time = utils:get_timestamp()},
-        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, Nickname, SendingTime, NewData}),
-        flow:keep(NewData, From, {sync_check, NewData});
-    {crossing, _Req} ->   
-        utils:log("Event crossing"), 
-        {keep_state, Data, [postpone]};  
+        update(sync, Replacement, Data, From);
+    check ->  
+        check(sync, Data, From);
+    {crossing, Req} ->   
+        crossing(sync, Req, Data, From);
     {crash, CrashType} ->   
-        utils:log("Event crash"), 
+        utils:log("EVENT crash (postpone)"), 
         NewData = Data#car_state{ crash_type = CrashType },
         flow:keep(NewData, From, {sync_crash, NewData});
     {check_reply, Reply} ->
-        utils:log("Event check_reply"),
+        utils:log("EVENT check_reply"),
         % berkeley
         {_Sender, _Target, SendingTime, RTT, Body} = Reply,
         CurrentTime = SendingTime, 
@@ -55,7 +42,7 @@ sync({call, From}, Event, Data) ->
         car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
         flow:keep(NewData, From, {sync_check_reply, NewData});
     {adj_reply, Adj} ->
-        utils:log("Event adj_reply"),
+        utils:log("EVENT adj_reply"),
         NewData = Data#car_state{adj = Adj},
         utils:log("~p", [NewData]),
         Position = if length(NewData#car_state.adj#adj.front_cars) > 0 ->
@@ -74,7 +61,7 @@ sync({call, From}, Event, Data) ->
         NewData2 = NewData#car_state{speed = 0, position = Position, current_time = utils:get_timestamp(), synchronized = true},
         flow:next(normal, NewData2, From, {normal, NewData2});
     default_behaviour ->
-        utils:log("Event default_behaviour"),
+        utils:log("EVENT default_behaviour"),
         FrontCars = Data#car_state.adj#adj.front_cars,
         if length(FrontCars) > 0 ->
             [Pivot | _Rest] = FrontCars,
@@ -91,26 +78,25 @@ sync({call, From}, Event, Data) ->
         end,
         flow:keep(Data, From, {sync_default_behaviour, Data});
     Event ->
-        utils:log("Ignore unhandled events (crossing, etc.): ~p", [Event]),
-        flow:keep(Data, From, {sync_ignore, Data})
+        ignore(sync, Event, Data, From)
     end.
 
 
 normal({call, From}, Event, Data) ->
     utils:log("STATE Normal"),
     case Event of   
+        {timeout, Target} ->  
+            timeout(normal, Target, Data, From);
+        {crash, CrashType} ->
+            crash(CrashType, Data, From);
         {update, Replacement} ->  
-            utils:log("Event update"), 
-            NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
-            car_call_supervisor_api:car_call({default_behaviour, Data#car_state.name, Data#car_state.name, Data#car_state.max_RTT, {}}),
-            flow:keep(NewData, From, {normal_update, NewData});     
-        {check, Req} ->     
-            utils:log("Event check"),
-            {_Label, Sender, _Target, SendingTime, _Body} = Req,
-            car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
-            flow:keep(Data, From, {normal_check, Data});
+            update(normal, Replacement, Data, From);
+        {crossing, Req} ->   
+            crossing(normal, Req, Data, From);    
+        check ->  
+            check(normal,Data, From);
         {check_reply, Reply} ->
-            utils:log("Event check_reply"),
+            utils:log("EVENT check_reply"),
             {_Sender, _Target, _SendingTime, _RTT, Body} = Reply,
 
             Position = compute_position(Data),
@@ -142,12 +128,8 @@ normal({call, From}, Event, Data) ->
                 NewData = Data#car_state{position = Position, speed = Speed, current_time = utils:get_timestamp() },
                 flow:keep(NewData, From, {normal_check_reply, NewData})
             end;
-        {crash, CrashType} ->
-            utils:log("Event crash"),
-            NewData = Data#car_state{ crash_type = CrashType },
-            flow:next(dead, NewData, From, {dead, NewData});
         default_behaviour ->
-            utils:log("Event default_behaviour"),
+            utils:log("EVENT default_behaviour"),
 
             if Data#car_state.crash_type > 0 ->
                 utils:log("Postponed events, car crashed during sync"),
@@ -201,28 +183,25 @@ normal({call, From}, Event, Data) ->
                             end,
                     flow:keep(NewData, From, {normal_default_behaviour, Data})
                 end
-    end
-end.
-
-
-compute_position(Data) ->
-    % compute car position
-    TravelTime = utils:get_timestamp() - Data#car_state.current_time,
-    Position = Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side)),
-    utils:log("Travel Time: ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position]),
-    Position.
+            end;
+        Event ->
+            ignore(normal, Event, Data, From)
+    end.
 
 
 leader({call, From}, Event, Data) ->
     utils:log("STATE Leader"),
     case Event of
-        {check, Req} ->     
-            utils:log("Event check"),
-            {_Label, Sender, _Target, SendingTime, _Body} = Req,
-            car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
-            flow:keep(Data, From, {leader_check, Data});
+        {timeout, Target} ->  
+            timeout(leader, Target, Data, From);
+        {crash, CrashType} ->
+            crash(CrashType, Data, From);
+        {update, Replacement} ->  
+            update(leader, Replacement, Data, From);  
+        check ->  
+            check(leader, Data, From);
         {check_reply, Reply} ->
-            utils:log("Event check_reply"),
+            utils:log("EVENT check_reply"),
             {_Label, _Sender, _Target, _SendingTime, _RTT, Body} = Reply, 
 
             if Body#car_state.arrival_time > Data#car_state.arrival_time ->
@@ -249,50 +228,44 @@ leader({call, From}, Event, Data) ->
                 %the car must wait (has arrived after)
                 flow:keep(Data, From, default_behaviour)
             end;
-        {crash, CrashType} ->
-            utils:log("Event crash"),
-            NewData = Data#car_state{ crash_type = CrashType },
-            flow:next(dead, NewData, From, {dead, NewData});
         default_behaviour ->
             FrontCars = Data#car_state.adj#adj.front_cars,
             RearCars = Data#car_state.adj#adj.rear_cars,
             if length(FrontCars) > 0 ->
                 [Pivot|_Rest] = FrontCars,
-                car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}});
+                car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}}),
+                flow:keep(Data, From, {leader_default_behaviour, Data});
             true ->
                 %the car can start crossing the bridge
-                Position = Data#car_state.bridge_length, 
-                Bridge_capacity = (Data#car_state.bridge_capacity - 1),
-                Speed = Data#car_state.max_speed,
-                RearCars = Data#car_state.adj#adj.rear_cars,
-                NewData = Data#car_state{
-                                        position = Position, 
-                                        bridge_capacity = Bridge_capacity,
+                NewData = Data#car_state{   
+                                        position = Data#car_state.bridge_length * Data#car_state.side, 
                                         crossing = true, 
-                                        speed = Speed
+                                        speed = Data#car_state.max_speed
                                     },
+                RearCars = Data#car_state.adj#adj.rear_cars,
                 if length(RearCars) > 0 ->
                     [Pivot | _Rest] = RearCars,
                     utils:log("Start call"),
-                    car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, {}});
+                    car_call_supervisor_api:car_call({crossing, Data#car_state.name, Pivot#car_state.name, {}});
                 true ->
                     utils:log("Nothing to propagate")
                 end,
                 flow:next(normal, NewData, From, {normal, NewData})
-            end,
-            flow:keep(Data, From, {leader_default_behaviour, Data})
-        end.
+            end;
+        Event ->
+            ignore(leader, Event, Data, From)
+    end.
 
 
 dead({call, From}, Event, Data) -> 
     utils:log("STATE Dead"),
     case Event of    
         tow_truck ->
-            utils:log("Event tow_truck"),
+            utils:log("EVENT tow_truck"),
             notify_dead_and_stop(Data),
             flow:keep(Data, From, {dead_tow_truck, Data});
         default_behaviour ->
-            utils:log("Event default_behaviour"),
+            utils:log("EVENT default_behaviour"),
             case Data#car_state.crash_type of 
                 0 -> 
                     notify_dead_and_stop(Data),
@@ -307,9 +280,14 @@ dead({call, From}, Event, Data) ->
                 2 -> 
                     flow:keep(Data, From, {dead_default_behaviour_2, Data})
             end;
-        _ ->
-            {keep_state, Data, [postpone]}  
+        Event ->
+            ignore(dead, Event, Data, From)
     end.
+
+
+%%%===================================================================
+%%% Utility functions
+%%%===================================================================
 
 
 notify_dead_and_stop(Data) ->
@@ -330,17 +308,87 @@ notify_dead_and_stop(Data) ->
                                             Data#car_state.name, 
                                             FrontCar#car_state.name,  
                                             Data#car_state.max_RTT, 
-                                            RearCar})
+                                            RearCar});
+    true ->
+        ok
     end,
     if RearCar =/= [] ->
         car_call_supervisor_api:car_call({  update_front, 
                                             Data#car_state.name, 
                                             RearCar#car_state.name,  
                                             Data#car_state.max_RTT, 
-                                            FrontCar})
+                                            FrontCar});
+    true ->
+        ok
     end,
     car_call_supervisor_api:car_call({  stop, 
                                         Data#car_state.name, 
                                         Data#car_state.name,  
                                         Data#car_state.max_RTT, 
                                         {}}).
+
+
+compute_position(Data) ->
+        % compute car position
+        TravelTime = utils:get_timestamp() - Data#car_state.current_time,
+        Position = Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side)),
+        utils:log("Travel Time: ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position]),
+        Position.
+
+
+timeout(State, Target, Data, From) ->
+    utils:log("EVENT timeout"), 
+    car_call_supervisor_api:car_call({  call_tow_truck, 
+                                        Data#car_state.name, 
+                                        Target, 
+                                        Data#car_state.max_RTT, 
+                                        Data#car_state.tow_truck_time}),
+    flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_timeout")), Data}).
+
+
+update(State, Replacement, Data, From) ->
+    utils:log("EVENT update"), 
+    NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
+    flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_update")), NewData}).
+
+
+check(State, Data, From) -> 
+    utils:log("EVENT check"), 
+    NewData = Data#car_state{current_time = utils:get_timestamp()},
+    flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_check")), NewData}).
+
+
+crossing(State, Req, Data, From) ->
+    utils:log("EVENT crossing"), 
+    {_Label, _Sender, _Target, _Nickname, _SendingTime, Body} = Req,
+
+    if Body#car_state.arrival_time >= State#car_state.arrival_time ->
+        utils:log("Car: can cross the bridge, propagate"),
+        propagate_crossing(Data#car_state.adj#adj.rear_cars, Req),
+    
+        if Data#car_state.crossing ->
+            flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_crossing")), Data});
+        true ->
+            NewData = Data#car_state{
+                                        crossing = true, 
+                                        position = Data#car_state.position + (Data#car_state.bridge_length * Data#car_state.side)
+                                    },
+            flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_crossing")), Data})
+        end
+    end.
+
+
+propagate_crossing(RearCars, Req) -> 
+    %car_call_supervisor_api:car_call({crossing, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+    todo.
+
+
+crash(CrashType, Data, From) -> 
+    utils:log("EVENT crash"),
+    NewData = Data#car_state{ crash_type = CrashType },
+    flow:next(dead, NewData, From, {dead, NewData}).
+
+
+ignore(State, Event, Data, From) ->
+    utils:log("Ignore unhandled events", [Event]),
+    flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_ignore")), Data}).

@@ -34,25 +34,6 @@ normal_test_() ->
                     %assert(Result1, normal_default_behaviour)
             end
     end,
-    receive
-        {car_call, Req2} ->
-            {Label2, _Sender2, _Target2, _RTT2, _Body2} = Req2,
-            case Label2 of 
-                wait ->
-                    utils:log("Test: receive wait call"),
-                    flow:launch_event(timer, [Req2])
-            end
-    end,
-    receive
-        {car_call, Req3} ->
-            {Label3, Sender3, _Target3, _RTT3, _Body3} = Req3,
-            case Label3 of 
-                % receive turn timeout
-                wait_reply ->
-                    utils:log("Test: receive wait_reply call"),
-                    car:default_behaviour(Sender3)
-            end
-    end,
     car:stop(State#car_state.name).
     % Assert 
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
@@ -216,27 +197,7 @@ normal3_test_() ->
                     %assert(Result1, normal_default_behaviour)
             end
     end,
-    receive
-        {car_call, Req2} ->
-            {Label2, _Sender2, _Target2, _RTT2, _Body2} = Req2,
-            case Label2 of 
-                % launch timer
-                wait ->
-                    utils:log("Test: receive wait call"),
-                    flow:launch_event(timer, [Req2])
-            end
-    end,
-    receive
-        {car_call, Req3} ->
-            {Label3, Sender3, _Target3, _RTT3, _Body3} = Req3,
-            case Label3 of 
-                % receive turn timeout
-                wait_reply ->
-                    utils:log("Test: receive wait_reply call"),
-                    car:default_behaviour(Sender3)
-            end
-    end.
-
+    car:stop(State#car_state.name).
     %Assert
 
 

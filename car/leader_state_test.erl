@@ -40,8 +40,7 @@ leader_test_() ->
 %        
 %    % Assert
 %    [?_assert(true =:= true) ].
-%
-%
+
 
 %% cerl ; erl -sname car1@car1 -run leader_state_test leader2_test_
 leader2_test_() ->

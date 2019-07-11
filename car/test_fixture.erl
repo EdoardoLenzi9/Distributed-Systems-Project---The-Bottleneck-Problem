@@ -38,12 +38,12 @@ default_state() ->
 
 % car with car2 on the same side in position - 1
 default_state2() ->
-    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = -1, position = -1 } ]}}.
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = -1, position = -1, size = 1 } ]}}.
 
 
 % car with car2 on the opposite side
 default_state3() ->
-    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = 1, position = 1 } ]}}.
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = 1, position = 1, size = 1 } ]}}.
 
 
 register() ->
@@ -62,6 +62,40 @@ assert(CurrentResult, ExpectedResult) ->
         throw("test fail")
     end.
 
+
+listen(Label, Handler) ->
+    receive
+        {car_call, Req} ->
+            utils:log("Test: receive car_call ~p ", [Req]),
+            {ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody} = Req,
+            case ReqLabel of 
+                Label ->
+                    utils:log("Test: result ~p ", [Handler(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody)])
+            end;
+        {car_reply, Reply} ->
+            utils:log("Test: receive car_reply ~p ", [Reply]),
+            {ReplyLabel, ReplySender, ReplyTarget, ReplyNickname, ReplyRTT, ReplyBody} = Reply,
+            case ReplyLabel of 
+                Label ->
+                    utils:log("Test: result ~p ", [Handler(ReplyLabel, ReplySender, ReplyTarget, ReplyNickname, ReplyRTT, ReplyBody)])
+            end;
+        {timer_call, Req} ->
+            utils:log("Test: receive timer_call ~p ", [Req]),
+            {ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, ReqBody} = Req,
+            case ReqLabel of 
+                Label ->
+                    utils:log("Test: result ~p ", [Handler(ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, ReqBody)])
+            end;
+        {timer_reply, Reply} ->
+            utils:log("Test: receive timer_reply ~p ", [Reply]),
+            {ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody} = Reply,
+            case ReplyLabel of 
+                Label ->
+                    utils:log("Test: result ~p ", [Handler(ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody)])
+            end;   
+        Any ->
+            utils:log("Test: receive unhandled call ~p ", [Any])
+    end.
 
 %%%===================================================================
 %%% Skip sync state
@@ -156,22 +190,6 @@ skip_normal(_State) ->
             case Label1 of 
                 next ->
                     car:default_behaviour(Sender1)
-            end
-    end,
-    receive
-        {car_call, Req2} ->
-            {Label2, _Sender2, _Target2, _RTT2, _Body2} = Req2,
-            case Label2 of 
-                wait ->
-                    flow:launch_event(timer, [Req2])
-            end
-    end,
-    receive
-        {car_call, Req3} ->
-            {Label3, Sender3, _Target3, _RTT3, _Body3} = Req3,
-            case Label3 of 
-                wait_reply ->
-                    car:default_behaviour(Sender3)
             end
     end.
 
