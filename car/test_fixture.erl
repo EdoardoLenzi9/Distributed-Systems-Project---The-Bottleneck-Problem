@@ -95,7 +95,7 @@ skip_sync2(State) ->
             {Label, Sender, Target, _RTT, _Body} = Req,
             case Label of 
                 adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
+                    Adj = #adj{front_cars = [#car_state{ name = car1, side = -1, position = 0, size = 1 }], rear_cars = []},
                     car:adj_reply(Sender, Adj)
             end
     end.
@@ -113,7 +113,7 @@ skip_sync3(State) ->
             {Label, Sender, Target, _RTT, _Body} = Req,
             case Label of 
                 adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car2, side = 1, position = 0 }], rear_cars = []},
+                    Adj = #adj{front_cars = [#car_state{ name = car1, side = 1, position = 0, size = 1 }], rear_cars = []},
                     car:adj_reply(Sender, Adj)
             end
     end.
@@ -131,7 +131,7 @@ skip_to_dead(State, CrashType) ->
             {Label2, Sender2, Target2, _RTT2, _Body2} = Req2,
             case Label2 of 
                 adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car2, side = 1, position = 0 }], rear_cars = []},
+                    Adj = #adj{front_cars = [#car_state{ name = car1, side = 1, position = 0, size = 1 }], rear_cars = []},
                     car:adj_reply(Sender2, Adj)
             end
     end,
