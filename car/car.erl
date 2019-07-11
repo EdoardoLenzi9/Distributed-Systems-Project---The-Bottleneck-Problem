@@ -141,9 +141,11 @@ normal({call, From}, Event, Data) ->
         default_behaviour ->
             utils:log("Event default_behaviour"),
 
-            if Data#car_state.crash_type =/= 0 ->
+            if Data#car_state.crash_type > 0 ->
                 utils:log("Postponed events, car crashed during sync"),
-                car_call_supervisor_api:car_call({crash, Data#car_state.name, Data#car_state.name, Data#car_state.max_RTT, Data#car_state.crash_type})
+                car_call_supervisor_api:car_call({crash, Data#car_state.name, Data#car_state.name, Data#car_state.max_RTT, Data#car_state.crash_type});
+            true ->
+                ok
             end,
 
             Position = compute_position(Data),

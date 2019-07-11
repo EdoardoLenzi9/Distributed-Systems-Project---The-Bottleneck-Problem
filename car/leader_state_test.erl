@@ -13,7 +13,7 @@
 % erl -sname car1@car1 -run leader_state_test test
   
 
-%erl -sname car1@car1 -run leader_state_test leader_test_
+%cerl ; erl -sname car1@car1 -run leader_state_test leader_test_
 % if there is nobody in front car adj then the car simply change state in normal
 leader_test_() ->
     % Arrange
@@ -25,7 +25,7 @@ leader_test_() ->
 
     receive
         {car_call, Req1} ->
-            {Label1, Sender1, _Target1, _Body1} = Req1,
+            {Label1, Sender1, _Target1, _RTT, _Body1} = Req1,
             case Label1 of 
                 % launch normal defaultBehaviour
                 next ->
@@ -42,7 +42,8 @@ leader_test_() ->
 %    [?_assert(true =:= true) ].
 %
 %
-%%erl -sname car1@car1 -run leader_state_test leader2_test_
+
+%% cerl ; erl -sname car1@car1 -run leader_state_test leader2_test_
 leader2_test_() ->
     % Arrange
     test_fixture:register(),
@@ -105,7 +106,8 @@ leader2_test_() ->
 %    [?_assert(true =:= true) ].
 %
 %
-%%erl -sname car1@car1 -run leader_state_test leader_test3_
+
+%%cerl ; erl -sname car1@car1 -run leader_state_test leader_test3_
 %leader_test3_() ->
 %    % Arrange
 %    test_fixture:register(),
