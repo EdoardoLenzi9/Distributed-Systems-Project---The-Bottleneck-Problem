@@ -23,11 +23,11 @@ normal_test_() ->
     test_fixture:skip_sync(State),
 
     % Act
+    utils:log("Test: car alone"),
     receive
         {car_call, Req1} ->
             {Label1, Sender1, _Target1, _RTT1, _Body1} = Req1,
             case Label1 of 
-                % launch normal defaultBehaviour
                 next ->
                     utils:log("Test: receive next call"),
                     car:default_behaviour(Sender1)
@@ -38,7 +38,6 @@ normal_test_() ->
         {car_call, Req2} ->
             {Label2, _Sender2, _Target2, _RTT2, _Body2} = Req2,
             case Label2 of 
-                % launch timer
                 wait ->
                     utils:log("Test: receive wait call"),
                     flow:launch_event(timer, [Req2])

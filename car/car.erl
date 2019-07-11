@@ -62,14 +62,14 @@ sync({call, From}, Event, Data) ->
             [First | _Rest] = NewData#car_state.adj#adj.front_cars,
             % if there is any car in the front queue and on the same side
             if First#car_state.side == NewData#car_state.side ->
-                First#car_state.position + First#car_state.side; 
+                First#car_state.position + (((Data#car_state.size / 2) + (First#car_state.size / 2)) * Data#car_state.side); 
             % if there are only cars on the opposite side
             true -> 
-                Data#car_state.side
+                Data#car_state.side * Data#car_state.size / 2 
             end;
-        % if there isn't any other car in the front queue
+            % if there isn't any other car in the front queue
         true ->
-            Data#car_state.side
+            Data#car_state.side * Data#car_state.size / 2 
         end,
         NewData2 = NewData#car_state{speed = 0, position = Position, current_time = utils:get_timestamp(), synchronized = true},
         flow:next(normal, NewData2, From, {normal, NewData2});
@@ -111,20 +111,22 @@ normal({call, From}, Event, Data) ->
             Position = compute_position(Data),
 
             % if car reahes the bridge go to leader state
-            if (Position * Data#car_state.side) =< 0 ->
+            if (Position * Data#car_state.side) =< (Data#car_state.size / 2) ->
                 utils:log("Car: reach the bridge"),
                 NewData = Data#car_state{position = 0, speed = 0},
                 flow:next(leader, NewData, From, {leader, NewData});
             % otherwise continue polling
             true ->
-                Offset = (Data#car_state.size / 2 + Body#car_state.size / 2),
+                Offset = ((Data#car_state.size / 2 + Body#car_state.size / 2) * Data#car_state.side),
                 Distance = if Body#car_state.crossing ->
-                    Data#car_state.position - (Body#car_state.position - (Body#car_state.bridge_length * Body#car_state.side));
+                    Data#car_state.position - (Body#car_state.position - (Body#car_state.bridge_length * Body#car_state.side)) - Offset;
                 true ->
-                        Data#car_state.position - Body#car_state.position
+                    Data#car_state.position - Body#car_state.position - Offset
                 end,
-                Speed = Distance / Data#car_state.max_RTT,
-
+                Speed = Distance * Data#car_state.side / Data#car_state.max_RTT,
+                
+                utils:log("Car: travel with position ~p, speed ~p, distance ~p, offset ~p", [Position, Speed, Distance, Offset]),
+                
                 % continue polling
                 FrontCars = Data#car_state.adj#adj.front_cars,
                 if length(FrontCars) > 0 ->
@@ -150,7 +152,7 @@ normal({call, From}, Event, Data) ->
 
             Position = compute_position(Data),
 
-            if (Position * Data#car_state.side) =< 0 ->
+            if (Position * Data#car_state.side) =< (Data#car_state.size / 2) ->
                 if Data#car_state.crossing ->
                     utils:log("Car: reach the end of the bridge"),
                     flow:next(dead, Data, From, {dead, Data});
@@ -180,14 +182,14 @@ normal({call, From}, Event, Data) ->
                                 % if there is only a car on the opposite side of the bridge
                                 true ->
                                     utils:log("Car: there is only a car on the opposite side of the bridge"),
-                                    Speed = erlang:min(((Data#car_state.position * Data#car_state.side) / Data#car_state.max_RTT), Data#car_state.max_speed),
+                                    Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / Data#car_state.max_RTT), Data#car_state.max_speed),
                                     car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
                                     Data#car_state{speed = Speed}
                                 end;
                             % if there isn't any other car 
                             true ->
                                 utils:log("Car: there isn't any other car in the front queue"),
-                                Speed = erlang:min(((Data#car_state.position * Data#car_state.side) / Data#car_state.max_RTT), Data#car_state.max_speed),
+                                Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / Data#car_state.max_RTT), Data#car_state.max_speed),
                                 car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
                                 Data#car_state{speed = Speed}
                             end,
