@@ -12,7 +12,7 @@
                         position,
                         crossing,
                         synchronized,
-                        crashed,
+                        crash_type,     % 0 normal, 1 broken, 2 dead
                         delta,
                         arrival_time, 
                         current_time,

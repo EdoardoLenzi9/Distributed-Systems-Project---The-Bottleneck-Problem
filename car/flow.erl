@@ -14,8 +14,8 @@ launch_event(Handler, Args) ->
 
 %%% Simulate a car crash after a given timeout
 timer(Req) ->
-    {_Label, Sender, Target, Body} = Req,
-    timer:apply_after(Body, car_call_supervisor_api, car_call, [{wait_reply, Sender, Target, Body}]).
+    {_Label, Sender, Target, RTT, Body} = Req,
+    timer:apply_after(Body, car_call_supervisor_api, car_call, [{wait_reply, Sender, Target, RTT, Body}]).
 
 
 nickname(Name, Index) ->
@@ -70,7 +70,7 @@ postpone(Data) ->
 
 %%% Simulate a car crash after a given timeout
 killer(Name, Timeout) ->
-    timer:apply_after(Timeout, car, crash, [Name]).
+    timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{crash, Name, Name, 0, {}}]).
     
 %%% Simulate a tow truck fix after a given timeout
 tow_truck(Timeout, Target) ->

@@ -193,7 +193,7 @@ sync_check_timeout_test_() ->
             flow:launch_event(tow_truck, [Body6, Target6]),
             utils:log("Test: call car crash (will be postponed)"),
             car:update(Sender6, []),
-            car:crash(Target6),
+            car:crash(Target6, 2),
             car:default_behaviour(Sender6)
     end,
     receive
@@ -241,5 +241,11 @@ sync_crash_test_() ->
 
     utils:log("Test: call killer process"),
     flow:launch_event(killer, [State#car_state.name, 0]),
-        
+    receive
+        {car_call, Req} ->
+            utils:log("Test: killer crash event"),
+            {Label, Sender, Target, RTT, Body} = Req,
+            utils:log("Test: launch crash on car"),
+            car:crash(Sender, 2)
+    end,
     car:stop(State#car_state.name).

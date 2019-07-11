@@ -20,7 +20,7 @@ default_state() ->
         % position undefined
         crossing = false,
         synchronized = false,
-        crashed = false,
+        crash_type = 0,
         delta = 0,
         arrival_time = utils:get_timestamp(),
         current_time = utils:get_timestamp(), 
@@ -73,11 +73,12 @@ skip_sync(State) ->
 
     receive
         {car_call, Req} ->
-            {Label, Sender, Target, _Body} = Req,
+            {Label, Sender, Target, _RTT, _Body} = Req,
             case Label of 
                 adj ->
+                    utils:log("Fixture: return adj"),
                     Adj = #adj{front_cars = [], rear_cars = []},
-                    car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+                    car:adj_reply(Sender, Adj)
             end
     end.
 
@@ -87,15 +88,15 @@ skip_sync2(State) ->
     car:default_behaviour(State#car_state.name),
     receive
         {car_call, _Request2} ->
-            car:check_reply({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+            car:check_reply({car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
     end,
     receive
         {car_call, Req} ->
-            {Label, Sender, Target, _Body} = Req,
+            {Label, Sender, Target, _RTT, _Body} = Req,
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+                    car:adj_reply(Sender, Adj)
             end
     end.
 
@@ -105,15 +106,41 @@ skip_sync3(State) ->
     car:default_behaviour(State#car_state.name),
     receive
         {car_call, _Request2} ->
-            car:check_reply({check, car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+            car:check_reply({car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
     end,
     receive
         {car_call, Req} ->
-            {Label, Sender, Target, _Body} = Req,
+            {Label, Sender, Target, _RTT, _Body} = Req,
             case Label of 
                 adj ->
                     Adj = #adj{front_cars = [#car_state{ name = car2, side = 1, position = 0 }], rear_cars = []},
-                    car:adj_reply({Label, Sender, Target, utils:get_timestamp(), 0, Adj})
+                    car:adj_reply(Sender, Adj)
+            end
+    end.
+
+
+% car with car2 on the opposite side
+skip_to_dead(State, CrashType) ->
+    car:default_behaviour(State#car_state.name),
+    receive
+        {car_call, _Req1} ->
+            car:check_reply({car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+    end,
+    receive
+        {car_call, Req2} ->
+            {Label2, Sender2, Target2, _RTT2, _Body2} = Req2,
+            case Label2 of 
+                adj ->
+                    Adj = #adj{front_cars = [#car_state{ name = car2, side = 1, position = 0 }], rear_cars = []},
+                    car:adj_reply(Sender2, Adj)
+            end
+    end,
+    receive
+        {car_call, Req3} ->
+            {Label3, Sender3, _Target3, _RTT3, _Body3} = Req3,
+            case Label3 of 
+                next ->
+                    car:crash(State#car_state.name, CrashType)
             end
     end.
 

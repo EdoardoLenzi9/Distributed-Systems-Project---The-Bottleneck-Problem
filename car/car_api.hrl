@@ -27,9 +27,9 @@ default_behaviour(Name) ->
     gen_statem:call({global, Name}, default_behaviour).
 
     
-crash(Name) ->
+crash(Name, CrashType) ->
     utils:log("API Crash"),
-    gen_statem:call({global, Name}, crash).
+    gen_statem:call({global, Name}, {crash, CrashType}).
 
 
 adj_reply(Name, Adj) ->
