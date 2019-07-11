@@ -52,7 +52,8 @@ normal_test_() ->
                     utils:log("Test: receive wait_reply call"),
                     car:default_behaviour(Sender3)
             end
-    end.
+    end,
+    car:stop(State#car_state.name).
     % Assert 
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
 
@@ -84,9 +85,10 @@ normal2_test_() ->
                     utils:log("Test: receive check call"),
                     utils:log("Test: Car2 remains in the same position -1"),
                     {_Result2, _Data2} = car:check_reply({car2, car1, utils:get_timestamp(), 0, 
-                                                           #car_state{  name = car2, 
+                                                           #car_state{  name = car1, 
                                                                         side = State#car_state.side,
                                                                         speed = 0,
+                                                                        size = 1,
                                                                         crossing = false,
                                                                         % remains in the same position -1
                                                                         position = -1,
@@ -101,15 +103,96 @@ normal2_test_() ->
                     utils:log("Test: receive check call"),
                     utils:log("Test: Car2 moves to position 0"),
                     {_Result3, _Data3} = car:check_reply({car2, car1, utils:get_timestamp(), 0, 
-                                                           #car_state{  name = car2, 
+                                                           #car_state{  name = car1, 
                                                                         side = State#car_state.side,
                                                                         speed = State#car_state.max_speed,
+                                                                        size = 1,
                                                                         crossing = false,
                                                                         % moves to position 0
                                                                         position = 0,
                                                                         current_time = utils:get_timestamp()}})
             end
-    end.
+    end,
+    receive
+        {car_call, Req4} ->
+            {Label4, _Sender4, _Target4, _RTT4, _Body4} = Req4,
+            case Label4 of 
+                check ->
+                    utils:log("Test: receive check call"),
+                    utils:log("Test: Car2 moves to crossing position -1"),
+                    {_Result4, _Data4} = car:check_reply({car2, car1, utils:get_timestamp(), 0, 
+                                                           #car_state{  name = car1, 
+                                                                        side = State#car_state.side,
+                                                                        speed = State#car_state.max_speed,
+                                                                        size = 1,
+                                                                        crossing = true,
+                                                                        % moves to position 0
+                                                                        position = -1,
+                                                                        current_time = utils:get_timestamp()}})
+            end
+    end,
+    receive
+        {car_call, Req5} ->
+            {Label5, Sender5, _Target5, _RTT5, _Body5} = Req5,
+            case Label5 of 
+                check ->
+                    utils:log("Test: receive check call"),
+                    utils:log("Test: Car2 moves to crossing position 0"),
+                    {_Result5, _Data5} = car:check_reply({car2, car1, utils:get_timestamp(), 0, 
+                                                           #car_state{  name = car1, 
+                                                                        side = State#car_state.side,
+                                                                        speed = State#car_state.max_speed,
+                                                                        size = 1,
+                                                                        crossing = true,
+                                                                        % moves to position 0
+                                                                        position = 0,
+                                                                        current_time = utils:get_timestamp()}}),
+                utils:log("Test: send update"),
+                car:update(Sender5, [])
+            end
+    end,
+    receive
+        {car_call, Req6} ->
+            {Label6, Sender6, _Target6, _RTT6, _Body6} = Req6,
+            case Label6 of 
+                check ->
+                    utils:log("Test: receive fail check");
+                default_behaviour ->
+                    utils:log("Test: receive default behaviour"),
+                    car:default_behaviour(Sender6)
+            end
+    end,
+    receive
+        {car_call, Req7} ->
+            {Label7, Sender7, _Target7, _RTT7, _Body7} = Req7,
+            case Label7 of 
+                check ->
+                    utils:log("Test: receive fail check");
+                default_behaviour ->
+                    utils:log("Test: receive default behaviour"),
+                    car:default_behaviour(Sender7)
+            end
+    end,
+    receive
+        {car_call, Req8} ->
+            {Label8, _Sender8, _Target8, _RTT8, _Body8} = Req8,
+            case Label8 of 
+                wait ->
+                    utils:log("Test: receive wait call"),
+                    flow:launch_event(timer, [Req8])
+            end
+    end,
+    receive
+        {car_call, Req9} ->
+            {Label9, Sender9, _Target9, _RTT9, _Body9} = Req9,
+            case Label9 of 
+                % receive turn timeout
+                wait_reply ->
+                    utils:log("Test: receive wait_reply call"),
+                    car:default_behaviour(Sender9)
+            end
+    end,
+    car:stop(State#car_state.name).
 
 
 %cerl ; erl -sname car1@car1 -run normal_state_test normal3_test_
@@ -179,11 +262,11 @@ normal_crash_test_() ->
     utils:log("Test: launch crash"),
     flow:killer(State#car_state.name, 0),
     receive
-        {car_call, Req} ->
+        {car_call, Req2} ->
             utils:log("Test: killer crash event"),
-            {Label, Sender, Target, RTT, Body} = Req,
+            {_Label2, Sender2, _Target2, _RTT2, _Body2} = Req2,
             utils:log("Test: launch crash on car"),
-            car:crash(Sender, 2)
+            car:crash(Sender2, 2)
     end.
     %[ ?_assert(Response1 =:= ExpectedResponse1) ].
 

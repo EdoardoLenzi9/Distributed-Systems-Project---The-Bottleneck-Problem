@@ -30,7 +30,7 @@ sync({call, From}, Event, Data) ->
     {update, Replacement} ->  
         utils:log("Event update"), 
         NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
-        flow:keep(NewData, From, {sync_check, NewData});
+        flow:keep(NewData, From, {sync_update, NewData});
     {check, Req} ->  
         utils:log("Event check"), 
         {_Label, Sender, _Target, Nickname, SendingTime, _Body} = Req,
@@ -98,7 +98,12 @@ sync({call, From}, Event, Data) ->
 
 normal({call, From}, Event, Data) ->
     utils:log("STATE Normal"),
-    case Event of        
+    case Event of   
+        {update, Replacement} ->  
+            utils:log("Event update"), 
+            NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
+            car_call_supervisor_api:car_call({default_behaviour, Data#car_state.name, Data#car_state.name, Data#car_state.max_RTT, {}}),
+            flow:keep(NewData, From, {normal_update, NewData});     
         {check, Req} ->     
             utils:log("Event check"),
             {_Label, Sender, _Target, SendingTime, _Body} = Req,
@@ -117,9 +122,10 @@ normal({call, From}, Event, Data) ->
                 flow:next(leader, NewData, From, {leader, NewData});
             % otherwise continue polling
             true ->
+                utils:log("Car: away from the bridge"),
                 Offset = ((Data#car_state.size / 2 + Body#car_state.size / 2) * Data#car_state.side),
                 Distance = if Body#car_state.crossing ->
-                    Data#car_state.position - (Body#car_state.position - (Body#car_state.bridge_length * Body#car_state.side)) - Offset;
+                    Data#car_state.position - (Body#car_state.position - (Data#car_state.bridge_length * Body#car_state.side)) - Offset;
                 true ->
                     Data#car_state.position - Body#car_state.position - Offset
                 end,
@@ -243,8 +249,10 @@ leader({call, From}, Event, Data) ->
                 %the car must wait (has arrived after)
                 flow:keep(Data, From, default_behaviour)
             end;
-        crash ->
-            flow:next(dead, Data, From, {dead, Data});
+        {crash, CrashType} ->
+            utils:log("Event crash"),
+            NewData = Data#car_state{ crash_type = CrashType },
+            flow:next(dead, NewData, From, {dead, NewData});
         default_behaviour ->
             FrontCars = Data#car_state.adj#adj.front_cars,
             RearCars = Data#car_state.adj#adj.rear_cars,
