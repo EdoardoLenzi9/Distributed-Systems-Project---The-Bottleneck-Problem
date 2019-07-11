@@ -1,6 +1,124 @@
 \chapter{Implementation}\label{ch:implementation}
 
+\section{TODO}
 Details about the implementation: every choice about platforms, languages, software/hardware, middlewares, which has not been decided in the requirements.
 
+\section{Data structures}
+As described in chaper 1, cars and bridge must be aware about some of their characteristics.
+In order to do that we decided to implement the car with a new data structure as follows:
 
-Important choices about implementation should be described here; e.g., peculiar data structures.
+\subsection{Environment}
+
+To model the environment the following attributes, which are set in environment.js for once, will be used:
+\begin{itemize}
+    \item $host$:\\ Web service IP:PORT
+    \item $max\_speed$:\\ the maximun speed allowed
+    \item $bridge\_capacity$: number\\ it defines the maximun number of cars that can cross the bridge
+    at the same time
+    \item $bridge\_length$: number\\ it defines the lenght of the bridge
+    \item $tow\_truck\_time$: number\\ time necessary for the tow truck to arrive and remove the dead car
+    \item $max\_RTT$:number\\ it is the maximun RTT that could happen
+\end{itemize}
+
+These attributes will never be modified during the simulation.
+
+\subsection{Car}
+
+Each car A is modelled exploiting the following attributes:
+\begin{itemize}
+    \item $name$: number\\ it identifies univocally the car
+    \item $side$: number\\ if equal to 1 means that the car is on the right side, 
+    if equal to -1 it means that it is on left side
+    \item $power$: number\\ it defines the number of rear and front cars that the car can reach
+    \item $size$: number \\ it defines the lenght of the car
+    \item $speed$: number\\ it defines the distance that the car goes through in one turn\\
+    it has a maximun value specified in \textbf{environment.js}\\
+    it is initialized with 0 to prevent crashing 
+    \item $position$: number \\it indicates the distance between the car and the bridge or the car and the end of the
+    bridge\\it is initialized as $pos(B)+1*side(B)$, where B is the first front car, if B is on the same side of A, or
+    as $-pos(B)$ if B is on the other side\\ when negative it means that the car is on the left side, otherwise on the right side
+    \item $crossing$: boolean\\ if true it means that the car is on the bridge
+    \item $syncrhonized$: boolean\\ if true it means that the car is syncrhonized    
+    \item $delta$: number\\ it is the difference between the local time and the global time
+    \item $arrival\_time$: number\\ it defines the time when the car has arrived in the queue
+    \item $current\_time$: number\\ it indicates the local time at each turn
+    \item $adj$: another data structure\\ it contains the lists of front and rear cars
+    \item $state$: string\\ it defines the current state of the car\\ it could be \textbf{init}, \textbf{sync}, \textbf{normal} or \textbf{dead}
+\end{itemize}
+These above are the car metadata, while the following are settings and bridge metadata 
+(these are taken from the environment definition but must be part of the car specifics too):
+\begin{itemize}
+    \item $host$:\\ Web service IP:PORT
+    \item $bridge\_capacity$: number\\ it defines the maximun number of cars that can cross the bridge
+    at the same time
+    \item $bridge\_length$: number\\ it defines the lenght of the bridge
+    \item $max\_speed$:\\ the maximun speed allowed
+    \item $tow\_truck\_time$: number\\ time necessary for the tow truck to arrive and remove the dead car
+    \item $max\_RTT$:number\\ it is the maximun RTT that could happen
+\end{itemize}
+
+Note that $bridge\_capacity$ and $bridge\_length$ are imposed by the environment and cannot change during the
+simulation. Furthermore $name$ and $power$ are defined independently, while $delta$ and $adj$ 
+depend on the other cars.\\
+
+The problem allows to describe the car as a finite state machine. We choose this modality because
+the car can switch between four main different states. The first one is a so called \textbf{init}: the 
+undefined attributes are computed here. It is assumed that in this state the car cannot receive
+any sort of event and that cannot crash. \\
+When the car is syncrhonized it changes its state in \textbf{sync}: the car call the web service to receive the list of adiacents cars. 
+When it is received the car knows how to communicate with the current front car and so can define its $speed$ and $position$ according to
+the state of the front car. Finally thee car can change its state to \textbf{normal}.\\
+In \textbf{normal} the car still sends repeatedly a check event to the front car in order to regolate hers speed
+(and consequently the new position).\\
+In particular, at every iteration, the car computes the following function to determinate the 
+new $speed$: \[\frac{pos(A)-pos(B)}{RTT + turn}\] 
+and the new $position$: \[pos(A) + \frac{|pos(A)-pos(B)|}{RTT + turn}\]
+where $pos(x)$ = $position$ of x. \\
+Obviously this means that if the distance between A and B is zero, the car will change its speed to 
+zero: this avoids crashing during the next turn even if the front car says that its $speed$ is greater
+then zero. In fact, if B crashes immediately after sending its state, the other car assumes that B
+is moving and so she decides to move too ending up colliding with B.\\ When the car finally reach the position
+zero she become a leader and so its state would be the \textbf{leader} state. If there is a car B on the opposite side 
+(that can be in the leader state too), they have to decide who will start crossing:
+\begin{itemize}
+    \item if A's $crossing$ attribute is true and her arrival time is less than B's,
+     she start crossing the bridge
+    \item if A's $crossing$ attribute is false and her arrival time is less than B's,
+     she change it to true
+    \item if A's arrival time is greater than B's, she stops and waits her turn
+\end{itemize}
+
+When it's its turn, the car change its $position$, that will be equal to the bridge lenght, and its $speed$,
+that will be the maximun speed allowed. Before changing state to normal the car has also to propagate to the first n cars behind her (n is equal to the bridge capacity) 
+to change $crossing$ value to true. After that she moves and returns to the \textbf{normal} state.\\
+Obviously there is another state called $\textbf{dead}$ that could be reached from every state, except for \textbf{init}, 
+when the car's engine or the car's engine and system crash. In that case the car cannot move anymore 
+and so somebody (the car itself or the first behind her) must call the tow truck to be removed. 
+\\Notice that if there is a car whose $speed$ = 0 it may mean that the car is stationary, waiting the front
+ car to move, or in \textbf{dead} status.\\
+
+\subsubsection{Communication}
+
+It is important to underline how two cars can send message to each other. \\
+First of all, each car has a supervisor and, when a car A want to send something to another car B,
+this happens:
+\begin{itemize}
+   \item{1.} A sends a message to hers supervisor S$_{A}$
+   \item {2.} S$_{A}$ calls a process, we can refer at it as $Timer$, which is used to send a timeout
+   if the supervisor didn't receive a response from the other within a certain time. In that case S$_{A}$ assumes 
+   that B is dead and so A will call a tow truck to remove it.
+   \item{3.}S$_{A}$ sends it to the supervisor of B S$_{B}$
+   \item {4.} S$_{B}$ sends an event to B which contains the message of A
+   \item {5.} B send a message to S$_{B}$ whit the response
+   \item {6.} S$_{B}$ sends it to S$_{A}$, going through the $Timer$ as S$_{A}$ has done at point 2
+   \item {7.} finally S$_{A}$ sends another event to A with the response of B, to which A reacts appropiately
+\end{itemize}
+
+\subsection{Adj}
+We used another data structure for the adiacents cars, called $adj$:
+\begin{itemize}
+    \item $front\_cars$: list of cars\\ it contains all the car ahead that are rechable\\ the first element
+     is the next car
+    \item $rear\_cars$: list of cars\\ it contains all the car behind that are rechable\\ the last element
+     is the previous car
+\end{itemize} 
