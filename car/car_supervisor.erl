@@ -32,6 +32,7 @@ start(Args) ->
                         speed = 0,
                         crossing = false,
                         synchronized = false,
+                        crashed = false,
                         delta = 0,
                         adj = #adj{front_cars = http_client:get_sync(Name, Side, Power), rear_cars = []}, 
                         state = init,

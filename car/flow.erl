@@ -73,8 +73,8 @@ killer(Name, Timeout) ->
     timer:apply_after(Timeout, car, crash, [Name]).
     
 %%% Simulate a tow truck fix after a given timeout
-tow_truck(Name, Timeout) ->
-    timer:apply_after(Timeout, car, default_behaviour, [Name]).
+tow_truck(Timeout, Target) ->
+    timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{tow_truck, Target, Target, 0, {}}]).
 
 %
 %call_tow_truck(Data) ->

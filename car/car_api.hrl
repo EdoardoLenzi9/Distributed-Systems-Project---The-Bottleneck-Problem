@@ -17,6 +17,11 @@ stop(Name) ->
 
 % Simple events
     
+tow_truck(Name) ->
+    utils:log("API tow_truck"),
+    gen_statem:call({global, Name}, tow_truck).
+
+
 default_behaviour(Name) ->
     utils:log("API default_behaviour"),
     gen_statem:call({global, Name}, default_behaviour).
@@ -28,8 +33,18 @@ crash(Name) ->
 
 
 adj_reply(Name, Adj) ->
-    utils:log("API Adj Response"),
+    utils:log("API Adj Reply"),
     gen_statem:call({global, Name}, {adj_reply, Adj}).
+
+
+update(Name, Replacement) ->
+    utils:log("API Update"),
+    gen_statem:call({global, Name}, {update, Replacement}).
+
+
+timeout(Name, Target) ->
+    utils:log("API Timeout Reply"),
+    gen_statem:call({global, Name}, {timeout, Target}).
 
 
 % Req/reply events
@@ -40,10 +55,10 @@ check(Req) ->
     gen_statem:call({global, Target}, {check, Req}).
 
 
-check_reply(Response) ->
-    utils:log("API Check Response"),
-    {_Sender, Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Target}, {check_reply, Response}).
+check_reply(Reply) ->
+    utils:log("API Check Reply"),
+    {_Sender, Target, _SendingTime, _RTT, _Body} = Reply,
+    gen_statem:call({global, Target}, {check_reply, Reply}).
 
 
 crossing(Req) ->
@@ -52,7 +67,9 @@ crossing(Req) ->
     gen_statem:call({global, Target}, {crossing, Req}).
         
         
-crossing_reply(Response) ->
-    utils:log("API Crossing Response"),
-    {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Target}, {crossing_reply, Response}).
+crossing_reply(Reply) ->
+    utils:log("API Crossing Reply"),
+    {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Reply,
+    gen_statem:call({global, Target}, {crossing_reply, Reply}).
+
+

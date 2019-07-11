@@ -12,6 +12,7 @@
                         position,
                         crossing,
                         synchronized,
+                        crashed,
                         delta,
                         arrival_time, 
                         current_time,

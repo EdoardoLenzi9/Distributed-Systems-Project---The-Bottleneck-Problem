@@ -20,6 +20,7 @@ default_state() ->
         % position undefined
         crossing = false,
         synchronized = false,
+        crashed = false,
         delta = 0,
         arrival_time = utils:get_timestamp(),
         current_time = utils:get_timestamp(), 

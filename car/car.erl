@@ -19,29 +19,31 @@ init([State]) ->
 sync({call, From}, Event, Data) ->
     utils:log("STATE Sync"),
     case Event of  
-    {update, Req} ->  
+    {timeout, Target} ->  
+        utils:log("Event timeout"), 
+        car_call_supervisor_api:car_call({  call_tow_truck, 
+                                            Data#car_state.name, 
+                                            Target, 
+                                            Data#car_state.max_RTT, 
+                                            Data#car_state.tow_truck_time}),
+        flow:keep(Data, From, {sync_timeout, Data});
+    {update, Replacement} ->  
         utils:log("Event update"), 
-        {_Label, Sender, _Target, SendingTime, _Body} = Req,
-        car_reply_supervisor_api:car_reply({    check_reply, 
-                                                Data#car_state.name, 
-                                                Sender, 
-                                                SendingTime, 
-                                                Data#car_state{
-                                                    current_time = utils:get_timestamp()
-                                                }
-                                            }),
-        flow:keep(Data, From, {sync_check, Data});
+        NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
+        flow:keep(NewData, From, {sync_check, NewData});
     {check, Req} ->  
         utils:log("Event check"), 
         {_Label, Sender, _Target, Nickname, SendingTime, _Body} = Req,
-        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, Nickname, SendingTime, Data#car_state{current_time = utils:get_timestamp()}}),
-        flow:keep(Data, From, {sync_check, Data});
+        NewData = Data#car_state{current_time = utils:get_timestamp()},
+        car_reply_supervisor_api:car_reply({check_reply, Data#car_state.name, Sender, Nickname, SendingTime, NewData}),
+        flow:keep(NewData, From, {sync_check, NewData});
     {crossing, _Req} ->   
         utils:log("Event crossing"), 
         {keep_state, Data, [postpone]};  
     crash ->   
         utils:log("Event crash"), 
-        {keep_state, Data, [postpone]};  
+        NewData = Data#car_state{ crashed = true },
+        flow:keep(NewData, From, {sync_crash, NewData});
     {check_reply, Reply} ->
         utils:log("Event check_reply"),
         % berkeley
@@ -85,9 +87,9 @@ sync({call, From}, Event, Data) ->
                                             }),
             flow:keep(Data, From, {sync_default_behaviour, Data});
         true ->
-            car_call_supervisor_api:car_call({adj, Data#car_state.name, none, Data})
+            car_call_supervisor_api:car_call({adj, Data#car_state.name, none, Data#car_state.max_RTT, Data})
         end,
-        flow:keep(Data#car_state{delta = 0}, From, {sync_default_behaviour, Data#car_state{delta = 0}});
+        flow:keep(Data, From, {sync_default_behaviour, Data});
     Event ->
         utils:log("Unhandled event postponed: ~p", [Event]),
         flow:postpone(Data) 
