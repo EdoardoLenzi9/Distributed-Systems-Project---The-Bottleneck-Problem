@@ -57,6 +57,8 @@ start(Args) ->
 
 loop() ->
     receive
+        smoke_test -> 
+            utils:log("Supervisor receives smoke test");
         {car_call, Req} ->
             utils:log("Supervisor: receive car_call ~p ", [Req]),
             {ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody} = Req,
