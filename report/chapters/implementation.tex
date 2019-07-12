@@ -1,4 +1,6 @@
 \chapter{Implementation}\label{ch:implementation}
+In this chapter we will explain how the system was implemented, so we will analize the languages, the data structures that were used
+and something more, inherent to that.
 
 \section{Language}
 To implement the project Erlang language was used. The decision was made due to the nature of the language itself.\\
@@ -104,8 +106,8 @@ When it's its turn, the car change its $position$, that will be equal to the bri
 that will be the maximun speed allowed. Before changing state to normal the car has also to propagate to the first n cars behind her (n is equal to the bridge capacity) 
 to change $crossing$ value to true. After that she moves and returns to the \textbf{normal} state.\\
 Obviously there is another state called $\textbf{dead}$ that could be reached from every state, except for \textbf{init}, 
-when the car's engine or the car's engine and system crash. In that case the car cannot move anymore 
-and so somebody (the car itself or the first behind her) must call the tow truck to be removed. 
+when the car's engine or the car's engine and system crash or when the car completes the crossing. 
+In the first case the car cannot move anymore and so somebody (the car itself or the first behind her) must call the tow truck to be removed. 
 \\Notice that if there is a car whose $speed$ = 0 it may mean that the car is stationary, waiting the front
  car to move, or in \textbf{dead} status.\\
 
@@ -115,15 +117,15 @@ It is important to underline how two cars can send message to each other. \\
 First of all, each car has a supervisor and, when a car A want to send something to another car B,
 this happens:
 \begin{itemize}
-   \item{1.} A sends a message to hers supervisor S$_{A}$
-   \item {2.} S$_{A}$ calls a process, we can refer at it as $Timer$, which is used to send a timeout
+   \item[1.] A sends a message to hers supervisor S$_{A}$
+   \item [2.] S$_{A}$ calls a process, we can refer at it as $Timer$, which is used to send a timeout
    if the supervisor didn't receive a response from the other within a certain time. In that case S$_{A}$ assumes 
    that B is dead and so A will call a tow truck to remove it.
-   \item{3.}S$_{A}$ sends it to the supervisor of B S$_{B}$
-   \item {4.} S$_{B}$ sends an event to B which contains the message of A
-   \item {5.} B send a message to S$_{B}$ whit the response
-   \item {6.} S$_{B}$ sends it to S$_{A}$, going through the $Timer$ as S$_{A}$ has done at point 2
-   \item {7.} finally S$_{A}$ sends another event to A with the response of B, to which A reacts appropiately
+   \item[3.] S$_{A}$ sends it to the supervisor of B S$_{B}$
+   \item [4.] S$_{B}$ sends an event to B which contains the message of A
+   \item [5.] B send a message to S$_{B}$ whit the response
+   \item [6.] S$_{B}$ sends it to S$_{A}$, going through the $Timer$ as S$_{A}$ has done at point 2
+   \item [7.] finally S$_{A}$ sends another event to A with the response of B, to which A reacts appropiately
 \end{itemize}
 
 \subsection{Adj}
