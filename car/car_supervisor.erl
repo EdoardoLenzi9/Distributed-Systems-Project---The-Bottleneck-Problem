@@ -46,7 +46,7 @@ start(Args) ->
     utils:log("Timeout: ~p", [Timeout]),
 	if Timeout > 0 ->
         utils:log("Launch killer process with timeout"),
-        flow:killer(State#car_state.name, Timeout)
+        flow:launch_event(killer, [State#car_state.name, Timeout])
     end,
     car:start_link(State#car_state.name, State),
     car:default_behaviour(State#car_state.name),
@@ -55,58 +55,60 @@ start(Args) ->
 
 loop() ->
     receive
-        % Car -> Supervisor call API
         {car_call, Req} ->
-            CurrentTime = utils:get_timestamp(),
-            % start timer
-            {Label, Sender, Target, Body} = Req,
-            utils:log("Supervisor receives a car call ~p", [Label]),
-            case Label of 
+            utils:log("Supervisor: receive car_call ~p ", [Req]),
+            {ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody} = Req,
+            CurrentTime = utils:gat_timestamp(),
+            case ReqLabel of 
                 adj ->
-                    utils:log("Supervisor call adj endpoint"),
-                    Adj = http_client:get_adj(Body),
-                    car:adj_reply({Label, Sender, Target, CurrentTime, 0, Adj});
+                    Adj = http_client:get_adj(ReqBody),
+                    car:adj_reply({ReqLabel, ReqSender, ReqTarget, CurrentTime, 0, Adj});
                 next ->
-                    car:default_behaviour(Sender);
+                    car:default_behaviour(ReqSender);
                 wait ->
                     flow:launch_event(timer, [Req]);
                 wait_reply ->
-                    car:default_behaviour(Sender);
-                % wild-card used for: check, crossing
+                    car:default_behaviour(ReqSender);
+                default_behaviour ->
+                    car:default_behaviour(ReqSender);
+                call_tow_truck ->
+                    flow:launch_event(tow_truck, [ReqBody, ReqTarget]);
+                tow_truck -> 
+                    car:tow_truck(ReqTarget);
+                stop -> 
+                    car:stop(ReqTarget);
+                % wild-card used for: check, crossing, update_rear, update_front
                 _ ->
-                    flow:launch_event(request_timer, [{Label, Sender, Target, CurrentTime, Body}])
+                    flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, CurrentTime, ReqRTT, ReqBody}])
             end;
-
-
-        % Supervisor -> Supervisor call API
-        {sup_call, Req} ->
-            {Label, _Sender, _Target, _SendingTime, _Body} = Req,
-            utils:log("Supervisor receives a supervisor call ~p", [Label]),
-            case Label of 
+        {timer_call, Req} ->
+            utils:log("Supervisor: receive timer_call ~p ", [Req]),
+            {ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, ReqBody} = Req,
+            case ReqLabel of 
                 check ->
-                    car:check(Req);
+                    {_Result, Data} = car:check(ReqTarget),
+                    supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data});
                 crossing ->
-                    car:crossing(Req)
+                    {Result, _Data} = car:crossing(Req),
+                    supervisor_reply_supervisor_api:sup_reply({crossing_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                update_rear ->
+                    {Result, _Data} = car:update_rear(ReqSender, ReqBody),
+                    supervisor_reply_supervisor_api:sup_reply({update_rear_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                update_front ->
+                    {Result, _Data} = car:update_front(ReqSender, ReqBody),
+                    supervisor_reply_supervisor_api:sup_reply({update_front_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result})
             end;
-
-
-        % Car -> Supervisor reply API
-        {car_reply, Response} ->
-            {Label, _Sender, _Target, _SendingTime, _Body} = Response,
-            utils:log("Supervisor receives a car reply ~p", [Label]),
-            supervisor_call_supervisor_api:sup_reply(Response);
-
-
-        % Supervisor -> Supervisor reply API
-        {sup_reply, Response} ->
-            {Label, Sender, Target, SendingTime, Body} = Response,
-            utils:log("Supervisor receives a supervisor reply ~p", [Label]),
-            RTT = utils:get_timestamp() - SendingTime,
-            case Label of 
-                check ->
-                    car:check_reply({Label, Sender, Target, SendingTime, RTT, Body});
-                crossing ->
-                    car:crossing_reply({Label, Sender, Target, SendingTime, RTT, Body})
-            end
+        {timer_reply, Reply} ->
+            utils:log("Supervisor: receive timer_reply ~p ", [Reply]),
+            {ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody} = Reply,
+            RTT = utils:get_timestamp() - ReplySendingTime,
+            case ReplyLabel of 
+                check_reply ->
+                    car:check_reply({ReplySender, ReplyTarget, ReplySendingTime, RTT, ReplyBody});
+                timeout ->
+                    car:timeout(ReplySender, ReplyTarget)
+            end;   
+        Any ->
+            utils:log("Test: receive unhandled call ~p ", [Any])
     end,
     loop().

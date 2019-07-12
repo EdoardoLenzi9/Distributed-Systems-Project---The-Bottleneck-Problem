@@ -37,9 +37,14 @@ adj_reply(Name, Adj) ->
     gen_statem:call({global, Name}, {adj_reply, Adj}).
 
 
-update(Name, Replacement) ->
-    utils:log("API Update"),
-    gen_statem:call({global, Name}, {update, Replacement}).
+update_front(Name, Replacement) ->
+    utils:log("API Update front"),
+    gen_statem:call({global, Name}, {update_front, Replacement}).
+
+
+update_rear(Name, Replacement) ->
+    utils:log("API Update rear"),
+    gen_statem:call({global, Name}, {update_rear, Replacement}).
 
 
 timeout(Name, Target) ->
@@ -65,10 +70,3 @@ crossing(Req) ->
     {_Label, _Sender, Target, _SendingTime, _Body} = Req,
     gen_statem:call({global, Target}, {crossing, Req}).
         
-        
-crossing_reply(Reply) ->
-    utils:log("API Crossing Reply"),
-    {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Reply,
-    gen_statem:call({global, Target}, {crossing_reply, Reply}).
-
-

@@ -102,7 +102,11 @@ sync_check_timeout_test_() ->
         flow:launch_event(tow_truck, [ReqBody, ReqTarget]),
         utils:log("Test: call car crash (will be postponed)"),
         car:crash(ReqTarget, 2),
-        car:update(ReqSender, []),
+        car:update_front(ReqSender, []),
+        car:default_behaviour(ReqSender)
+    end),
+    % TODO
+    test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),
     test_fixture:listen(adj, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
@@ -124,6 +128,7 @@ sync_check_timeout_test_() ->
     test_fixture:listen(tow_truck, fun(_ReqLabel, _ReqSender, ReqTarget, _ReqRTT, _ReqBody) -> 
         car:tow_truck(ReqTarget)
     end),
+    % TODO
     test_fixture:listen(update_rear, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         ok
     end),

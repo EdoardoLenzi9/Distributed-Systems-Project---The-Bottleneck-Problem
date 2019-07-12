@@ -39,8 +39,14 @@ request_timer(Req) ->
     supervisor_call_supervisor_api:timer_call({Label, Sender, Target, Nickname, CurrentTime, Body}),
     receive
         {sup_reply, Response} ->
+            {_Label, _Sender, _Target, _Nickname, _SendingTime, Body} = Response,
             utils:log("Timer: receive reply"),
-            supervisor_reply_supervisor_api:timer_reply(Response)
+            if Body =/= dead_ignore ->
+                supervisor_reply_supervisor_api:timer_reply(Response);
+            true ->
+                utils:log("Timer: car is dead"),
+                supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, Nickname, CurrentTime, Body})
+            end
     after RTT ->
         utils:log("Timer: timeout reached"),
         supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, Nickname, CurrentTime, Body})

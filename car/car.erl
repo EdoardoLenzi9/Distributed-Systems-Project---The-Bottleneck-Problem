@@ -21,8 +21,10 @@ sync({call, From}, Event, Data) ->
     case Event of  
     {timeout, Target} ->  
         timeout(sync, Target, Data, From);
-    {update, Replacement} ->  
-        update(sync, Replacement, Data, From);
+    {update_front, Replacement} ->  
+        update_front(sync, Replacement, Data, From);
+    {update_rear, Replacement} ->  
+        update_rear(sync, Replacement, Data, From);
     check ->  
         check(sync, Data, From);
     {crossing, Req} ->   
@@ -89,8 +91,10 @@ normal({call, From}, Event, Data) ->
             timeout(normal, Target, Data, From);
         {crash, CrashType} ->
             crash(CrashType, Data, From);
-        {update, Replacement} ->  
-            update(normal, Replacement, Data, From);
+        {update_front, Replacement} ->  
+            update_front(sync, Replacement, Data, From);
+        {update_rear, Replacement} ->  
+            update_rear(sync, Replacement, Data, From);
         {crossing, Req} ->   
             crossing(normal, Req, Data, From);    
         check ->  
@@ -196,8 +200,10 @@ leader({call, From}, Event, Data) ->
             timeout(leader, Target, Data, From);
         {crash, CrashType} ->
             crash(CrashType, Data, From);
-        {update, Replacement} ->  
-            update(leader, Replacement, Data, From);  
+        {update_front, Replacement} ->  
+            update_front(sync, Replacement, Data, From);
+        {update_rear, Replacement} ->  
+            update_rear(sync, Replacement, Data, From);
         check ->  
             check(leader, Data, From);
         {check_reply, Reply} ->
@@ -339,15 +345,26 @@ timeout(State, Target, Data, From) ->
     flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_timeout")), Data}).
 
 
-update(State, Replacement, Data, From) ->
-    utils:log("EVENT update"), 
+update_front(State, Replacement, Data, From) ->
+    utils:log("EVENT update_front"), 
     NewData = Data#car_state{ adj = Data#car_state.adj#adj{front_cars = Replacement} },
     car_call_supervisor_api:car_call({  default_behaviour, 
                                         Data#car_state.name,
                                         Data#car_state.name,
                                         Data#car_state.max_RTT, 
                                         {}}),
-    flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_update")), NewData}).
+    flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_update_front")), NewData}).
+
+
+update_rear(State, Replacement, Data, From) ->
+    utils:log("EVENT update_rear"), 
+    NewData = Data#car_state{ adj = Data#car_state.adj#adj{rear_cars = Replacement} },
+    car_call_supervisor_api:car_call({  default_behaviour, 
+                                        Data#car_state.name,
+                                        Data#car_state.name,
+                                        Data#car_state.max_RTT, 
+                                        {}}),
+    flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_update_rear")), NewData}).
 
 
 check(State, Data, From) -> 

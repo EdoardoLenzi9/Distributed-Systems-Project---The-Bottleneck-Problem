@@ -7,14 +7,6 @@
 -compile(export_all).
 -include("car.hrl").
 
-sup_call({Label, Sender, Target, SendingTime, Body}) ->
-    utils:log("Supervisor call supervisor"),
-    call_supervisor(Target, {sup_call, {Label, Sender, Target, SendingTime, Body}});   
-
-sup_call({Label, Sender, Target, Nickname, SendingTime, Body}) ->
-    utils:log("Supervisor call supervisor"),
-    call_supervisor(Target, {sup_call, {Label, Sender, Target, Nickname, SendingTime, Body}}).        
-
 
 timer_call(Req) ->
     utils:log("Timer call supervisor"),

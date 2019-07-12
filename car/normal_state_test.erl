@@ -60,7 +60,7 @@ normal2_test_() ->
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: Car2 moves to crossing position 0"),
         car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(0, true)}),
-        car:update(_ReqSender, [])
+        car:update_front(_ReqSender, [])
     end),
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: receive fail check")
@@ -113,7 +113,7 @@ normal_crash_test_() ->
         ok
     end),
     utils:log("Test: launch crash"),
-    flow:killer(State#car_state.name, 0),
+    flow:launch_event(killer, [State#car_state.name, 0]),
     test_fixture:listen(crash, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:crash(ReqSender, 2)
     end),
