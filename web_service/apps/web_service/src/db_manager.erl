@@ -13,8 +13,8 @@ start() ->
 
 create_table_scheme() ->
     mnesia:create_table(settingsEntity, [{attributes, record_info(fields, settingsEntity)}]),
-    mnesia:create_table(syncEntity, [{attributes, record_info(fields, syncEntity)}]),
-    mnesia:create_table(adjEntity, [{attributes, record_info(fields, adjEntity)}]).
+    mnesia:create_table(sync_entity, [{attributes, record_info(fields, sync_entity)}]),
+    mnesia:create_table(adj_entity, [{attributes, record_info(fields, adj_entity)}]).
 
 
 addRange(List) ->
@@ -40,8 +40,8 @@ clear(Entity) ->
 
 
 clear_all() ->
-    clear(adjEntity),
-    clear(syncEntity),
+    clear(adj_entity),
+    clear(sync_entity),
     clear(settingsEntity).
 
 
@@ -57,5 +57,11 @@ delete(Item) ->
 
 get_all(Entity) ->
     F = fun() -> mnesia:select(Entity,[{'_',[],['$_']}]) end,
+    {atomic, Data} = mnesia:transaction(F),
+    Data.
+
+
+select(Entity, MatchHead, Guard, Result) ->
+    F = fun() -> mnesia:select(Entity,[{MatchHead, Guard, Result}]) end,
     {atomic, Data} = mnesia:transaction(F),
     Data.

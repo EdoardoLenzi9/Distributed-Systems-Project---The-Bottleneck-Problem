@@ -15,7 +15,7 @@ delete(Entity) ->
     db_manager:delete(Entity).
 
 get_all() ->
-    order(db_manager:get_all(adjEntity)).
+    order(db_manager:get_all(adj_entity)).
 
 
 %%%===================================================================
@@ -24,14 +24,14 @@ get_all() ->
 
 order(List) ->
     F = fun(X, Y) -> 
-        if X#adjEntity.side == 1, Y#adjEntity.side == 1 -> 
-            X#adjEntity.arrival_time + X#adjEntity.delta < Y#adjEntity.arrival_time + Y#adjEntity.delta;
-        X#adjEntity.side == 1, Y#adjEntity.side == -1 ->
+        if X#adj_entity.side == 1, Y#adj_entity.side == 1 -> 
+            X#adj_entity.arrival_time + X#adj_entity.delta < Y#adj_entity.arrival_time + Y#adj_entity.delta;
+        X#adj_entity.side == 1, Y#adj_entity.side == -1 ->
             false;
-        X#adjEntity.side == -1, Y#adjEntity.side == 1 ->
+        X#adj_entity.side == -1, Y#adj_entity.side == 1 ->
             true; 
-        X#adjEntity.side == -1, Y#adjEntity.side == -1 -> 
-            X#adjEntity.arrival_time + X#adjEntity.delta > Y#adjEntity.arrival_time + Y#adjEntity.delta
+        X#adj_entity.side == -1, Y#adj_entity.side == -1 -> 
+            X#adj_entity.arrival_time + X#adj_entity.delta > Y#adj_entity.arrival_time + Y#adj_entity.delta
             end
         end,
     lists:sort(F, List).

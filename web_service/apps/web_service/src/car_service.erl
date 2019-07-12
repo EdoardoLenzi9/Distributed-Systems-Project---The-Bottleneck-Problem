@@ -8,25 +8,26 @@
 %%%===================================================================
 
 sync(Entity) ->
-    Sync = if Entity#syncEntity.side == -1 -> 
-        utils:first_elements( sync_repository:get_all(), Entity#syncEntity.power);
-    Entity#syncEntity.side == 1 ->
-        lists:reverse(utils:last_elements( sync_repository:get_all(), Entity#syncEntity.power))
+    Sync = if Entity#sync_entity.side == -1 -> 
+        utils:first_elements( sync_repository:get_all(), Entity#sync_entity.power);
+    Entity#sync_entity.side == 1 ->
+        lists:reverse(utils:last_elements( sync_repository:get_all(), Entity#sync_entity.power))
     end,    
     sync_repository:add(Entity),
     sync_marshalling(Sync).
 
 
 adj(Entity) ->
-    [Front, Rear] = if Entity#adjEntity.side == -1 -> 
+    [Front, Rear] = if Entity#adj_entity.side == -1 -> 
         get_left(Entity);
-    Entity#adjEntity.side == 1 ->
+    Entity#adj_entity.side == 1 ->
         get_right(Entity)
     end,    
     adj_repository:add(Entity),
-    if Entity#adjEntity.state == stop ->
+    if Entity#adj_entity.state == stop ->
         io:format("Adj delete stopped car"),
-        adj_repository:delete(Entity);
+        adj_repository:delete(Entity),
+        sync_repository:delete(#sync_entity{name = Entity#adj_entity.name, side = Entity#adj_entity.side, power = Entity#adj_entity.power});
     true ->
         ok 
     end,
@@ -38,13 +39,13 @@ adj(Entity) ->
 %%%===================================================================
         
 get_left(Entity) ->
-    [Left , Right] = split(adj_repository:get_all(), Entity#adjEntity.name, left),
-    [ utils:first_elements(Right, Entity#adjEntity.power), lists:reverse(utils:last_elements(Left, Entity#adjEntity.power)) ].
+    [Left , Right] = split(adj_repository:get_all(), Entity#adj_entity.name, left),
+    [ utils:first_elements(Right, Entity#adj_entity.power), lists:reverse(utils:last_elements(Left, Entity#adj_entity.power)) ].
 
 
 get_right(Entity) ->
-    [Left , Right] = split(adj_repository:get_all(), Entity#adjEntity.name, right),
-    [ lists:reverse(utils:last_elements(Left, Entity#adjEntity.power)), utils:first_elements(Right, Entity#adjEntity.power) ].
+    [Left , Right] = split(adj_repository:get_all(), Entity#adj_entity.name, right),
+    [ lists:reverse(utils:last_elements(Left, Entity#adj_entity.power)), utils:first_elements(Right, Entity#adj_entity.power) ].
     
                                         
 split(List, Name, Side) ->
@@ -89,7 +90,7 @@ split_right_wrapper([First | Rest], ItemIndex, Side) ->
 get_index([], _Name, _Counter) ->
     -1;
 get_index([First | Rest], Name, Counter) ->
-    if First#adjEntity.name == Name ->
+    if First#adj_entity.name == Name ->
         Counter;
     true ->
         get_index(Rest, Name, Counter + 1)

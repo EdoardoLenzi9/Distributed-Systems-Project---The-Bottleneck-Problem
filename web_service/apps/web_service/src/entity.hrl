@@ -1,4 +1,4 @@
--record(adjEntity, {         
+-record(adj_entity, {         
                         name,
                         side,
                         power,
@@ -9,7 +9,7 @@
                     }).
 
 
--record(syncEntity, {              
+-record(sync_entity, {              
                         name,
                         side,
                         power,
@@ -57,21 +57,21 @@
 sync_marshalling([]) ->
     [];
 sync_marshalling([First|Rest]) ->
-    [{[ {name, First#syncEntity.name}, 
-        {side, First#syncEntity.side}, 
-        {power, First#syncEntity.power} ]} | sync_marshalling(Rest)].
+    [{[ {name, First#sync_entity.name}, 
+        {side, First#sync_entity.side}, 
+        {power, First#sync_entity.power} ]} | sync_marshalling(Rest)].
 
 
 adj_marshalling([]) ->
     [];
 adj_marshalling([First|Rest]) ->
-    [{[ {name, First#adjEntity.name}, 
-        {side, First#adjEntity.side}, 
-        {power, First#adjEntity.power}, 
-        {size, First#adjEntity.size}, 
-        {arrival_time, First#adjEntity.arrival_time},
-        {delta, First#adjEntity.delta},
-        {state, First#adjEntity.state} ]} | adj_marshalling(Rest)].
+    [{[ {name, First#adj_entity.name}, 
+        {side, First#adj_entity.side}, 
+        {power, First#adj_entity.power}, 
+        {size, First#adj_entity.size}, 
+        {arrival_time, First#adj_entity.arrival_time},
+        {delta, First#adj_entity.delta},
+        {state, First#adj_entity.state} ]} | adj_marshalling(Rest)].
 
 
 settings_marshalling(Settings) ->

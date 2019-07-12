@@ -43,6 +43,7 @@ start(Args) ->
                         tow_truck_time = TowTruckTime,
                         max_RTT = MaxRTT 
                     },
+    utils:log("Car adj ~p", [State#car_state.adj]),
     utils:log("Timeout: ~p", [Timeout]),
 	if Timeout > 0 ->
         utils:log("Launch killer process with timeout"),
