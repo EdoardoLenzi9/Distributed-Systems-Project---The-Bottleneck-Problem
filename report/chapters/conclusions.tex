@@ -1,3 +1,20 @@
 \chapter{Conclusions}\label{ch:conclusions}
 
-What has been done with respect to what has been promised in Chapters~\ref{ch:intro} and \ref{ch:analysis}, and what is left out.
+The goal of our work was to devewlop a system that models the behaviour of a bridge. We managed to ensure
+the most of the requisite.\\ In particular our model avoids any accident between two or more cars: this is 
+really important because in a real world the first thing to ensures is that nobody get hurt or damaged. 
+For the same reason we made the cars able to detect any brokn car. The case of the broken engine is the simpliest
+to handle because the broken car can still communicate with the others and so notify them she is not moving.
+Moreover the tow truck can remove the car so that the rear ones can eventually move again.\\ Similar to that
+was ensuring that nobody will wait forever to cross the bridge. In a realistic situation it is not contemplated
+that one or more cars could never cross the bridge.\\
+The chosen strategy is FIFO order. This avoids starvation but isn't the best choice for performance: consider
+the case where one car arrives on the left side while on the right there are, for example, 20 cars, and that the bridge
+has capacity equal to 1 and lenght 30. The car on the left has to wait for all the other 20 on the right side: this 
+is a very long time due to the fact that only one car per time can cross the bridge and to the lenght of the bridge.
+If that car could cross without waiting for all the others its waiting time would decrease significally while
+the waiting time for the others will increase only as if there were one car more before them. So one thing 
+that can improve the system could be order the cars by minimizing the average waiting time.\\
+Finally the system satisfy all the requisites of the bridge (capacity and one way cross).
+
+??? something more  ???

@@ -107,8 +107,9 @@ that will be the maximun speed allowed. Before changing state to normal the car 
 to change $crossing$ value to true. After that she moves and returns to the \textbf{normal} state.\\
 Obviously there is another state called $\textbf{dead}$ that could be reached from every state, except for \textbf{init}, 
 when the car's engine or the car's engine and system crash or when the car completes the crossing. 
-In the first case the car cannot move anymore and so somebody (the car itself or the first behind her) must call the tow truck to be removed. 
-\\Notice that if there is a car whose $speed$ = 0 it may mean that the car is stationary, waiting the front
+In the first case the car cannot move anymore and so somebody (the car itself or the first behind her)
+ must call the tow truck to be removed. Anyway the car must send periodically a check message to the others
+in order to find out if one is dead. \\Notice that if there is a car whose $speed$ = 0 it may mean that the car is stationary, waiting the front
  car to move, or in \textbf{dead} status.\\
 
 \subsubsection{Communication}
