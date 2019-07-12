@@ -45,32 +45,35 @@ normal2_test_() ->
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: Car2 remains in the same position -1"),
         car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(-1, false)})
-   
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: Car2 moves to position 0"),
         car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(0, false)})
-    
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: Car2 moves to crossing position -1"),
         car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(-1, true)})
-    
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: Car2 moves to crossing position 0"),
         car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(0, true)}),
         car:update_front(_ReqSender, [])
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: receive fail check")
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),
     test_fixture:listen(wait, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
         flow:launch_event(timer, [{ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody}])
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),

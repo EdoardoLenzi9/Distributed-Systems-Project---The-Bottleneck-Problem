@@ -63,13 +63,13 @@ dead3_test_() ->
     % Act and Assert
     test_fixture:skip_next(),    
     test_fixture:listen(update_rear, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
-        supervisor_call_supervisor_api:sup_call({ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody})
+        flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, utils:get_timestamp(), ReqRTT, ReqBody}])
     end),
     test_fixture:listen(stop, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:stop(ReqSender)
     end),
-    test_fixture:listen(update_rear, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-        utils:log("update reached")
+    test_fixture:listen(update_rear, fun(_ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, _ReqBody) -> 
+        utils:log("update rear reached")
     end).
 
 
