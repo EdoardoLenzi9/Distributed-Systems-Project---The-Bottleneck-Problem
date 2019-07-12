@@ -17,12 +17,10 @@ state() ->
 
 new(Entity) ->
     [Settings] = settings_repository:get_all(),
-    utils:log("~p", [utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -name ", 
+    utils:log("~p", [utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -sname ", 
         Entity#newCarEntity.name, 
-        "@", 
-        Entity#newCarEntity.name, 
+        " -setcookie distributed-system-project"
         " -run car_supervisor start ",
-        Entity#newCarEntity.name, " ",
         lists:flatten(io_lib:format("~p", [Entity#newCarEntity.side + 1])), " ",
         lists:flatten(io_lib:format("~p", [Entity#newCarEntity.power])), " ",
         lists:flatten(io_lib:format("~p", [Entity#newCarEntity.size])), " ",
@@ -33,12 +31,10 @@ new(Entity) ->
         lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridge_length])), " ",
         lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
         "'"])]),
-    os:cmd(utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -name ", 
+    os:cmd(utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -sname ", 
                             Entity#newCarEntity.name, 
-                            "@", 
-                            Entity#newCarEntity.name, 
+                            " -setcookie distributed-system-project"
                             " -run car_supervisor start ",
-                            Entity#newCarEntity.name, " ",
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.side + 1])), " ",
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.power])), " ",
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.size])), " ",

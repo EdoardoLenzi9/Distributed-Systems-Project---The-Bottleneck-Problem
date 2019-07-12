@@ -9,8 +9,7 @@
 
 start(Args) -> 
     utils:log("Args: ~p", [Args]),
-    [PName, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
-    Name = list_to_atom(PName),
+    [PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
     {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
     {Size, _ } = string:to_integer(PSize),
@@ -25,7 +24,7 @@ start(Args) ->
     Env = utils:load_environment(),
 
     State = #car_state{
-                        name = Name, 
+                        name = node(), 
                         side = Side - 1, 
                         power = Power, 
                         size = Size,
@@ -34,7 +33,7 @@ start(Args) ->
                         synchronized = false,
                         crash_type = 0,
                         delta = 0,
-                        adj = #adj{front_cars = http_client:get_sync(Name, Side - 1, Power), rear_cars = []}, 
+                        adj = #adj{front_cars = http_client:get_sync(node(), Side - 1, Power), rear_cars = []}, 
                         state = sync,
                         host = Env#env.host,
                         bridge_capacity = BridgeCapacity, 

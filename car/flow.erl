@@ -81,28 +81,3 @@ killer(Name, Timeout) ->
 %%% Simulate a tow truck fix after a given timeout
 tow_truck(Timeout, Target) ->
     timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{tow_truck, Target, Target, 0, {}}]).
-
-%
-%call_tow_truck(Data) ->
-%    Replys = message:send_to_all_adj(Data#car_state.adj#adj.front_cars ++ Data#car_state.adj#adj.rear_cars, check),
-%    call_tow_truck_wrap(Replys).
-%
-%call_tow_truck_wrap([]) ->
-%    [];
-%call_tow_truck_wrap([{Car, Reply} | Rest]) ->
-%    if Reply =/= ok ->
-%        launch_event(tow_truck, [Car#car_state.name, 3000])
-%    end,
-%    call_tow_truck_wrap(Rest).
-%
-%
-%%% Launch a given event until success (polling)
-%launcher(Name, Event) ->
-%    io:format("loop detection"),
-%    try gen_statem:call({global, Name}, Event) of 
-%        _ -> { } 
-%    catch 
-%        exit:_ -> {launcher(Name, Event)}; 
-%        error:_ -> {launcher(Name, Event)};
-%        throw:_ -> {launcher(Name, Event)} 
-%    end. 

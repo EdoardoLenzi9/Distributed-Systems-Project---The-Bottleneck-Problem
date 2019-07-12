@@ -22,4 +22,4 @@ timer_reply(Response) ->
 
 reply_supervisor(Name, Nickname, Event) ->
     utils:log("send event"),
-    {Nickname, list_to_atom(atom_to_list(Name) ++ "@" ++ atom_to_list(Name))} ! Event.
+    {Nickname, Name} ! Event.

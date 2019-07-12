@@ -332,7 +332,7 @@ notify_dead_and_stop(Data) ->
 
 compute_position(Data) ->
         % compute car position
-        TravelTime = (utils:get_timestamp() - Data#car_state.current_time) / 1000,
+        TravelTime = utils:get_timestamp() - Data#car_state.current_time,
         Position = Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side)),
         utils:log("Travel Time: ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position]),
         Position.

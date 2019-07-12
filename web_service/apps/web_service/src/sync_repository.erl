@@ -12,9 +12,15 @@ add(Entity) ->
 
 
 delete(Entity) ->
-    [Result] = db_manager:select(sync_entity, #sync_entity{name = Entity#sync_entity.name, _='_'}, [], ['$_']),
-    utils:log("Delete sync record ~p", [Result]),
-    db_manager:delete(Result).
+    Result = db_manager:select(sync_entity, #sync_entity{name = Entity#sync_entity.name, _='_'}, [], ['$_']),
+    if length(Result) == 1 ->
+        [Item] = Result,
+        utils:log("Delete sync record ~p", [Item]),
+        db_manager:delete(Item);
+    true ->
+        ok 
+    end.
+        
 
 
 get_all() ->
