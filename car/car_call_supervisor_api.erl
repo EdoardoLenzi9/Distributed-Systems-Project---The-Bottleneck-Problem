@@ -9,7 +9,7 @@
 
 
 car_call(Req) ->
-    utils:log("Car call supervisor"),
+    utils:log("Car call supervisor ~p", [Req]),
     {_Label, Sender, _Target, _RTT, _Body} = Req,
     call_supervisor(Sender, {car_call, Req}).
 

@@ -21,7 +21,7 @@ start(Args) ->
     {MaxRTT, _ } = string:to_integer(PMaxRTT),
     {Timeout, _ } = string:to_integer(PTimeout),
     
-    register(Name, self()),    
+    register(supervisor, self()),    
     Env = utils:load_environment(),
 
     State = #car_state{
@@ -46,7 +46,9 @@ start(Args) ->
     utils:log("Timeout: ~p", [Timeout]),
 	if Timeout > 0 ->
         utils:log("Launch killer process with timeout"),
-        flow:launch_event(killer, [State#car_state.name, Timeout])
+        flow:launch_event(killer, [State#car_state.name, Timeout]);
+    true ->
+        ok
     end,
     car:start_link(State#car_state.name, State),
     car:default_behaviour(State#car_state.name),
@@ -58,11 +60,11 @@ loop() ->
         {car_call, Req} ->
             utils:log("Supervisor: receive car_call ~p ", [Req]),
             {ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody} = Req,
-            CurrentTime = utils:gat_timestamp(),
+            CurrentTime = utils:get_timestamp(),
             case ReqLabel of 
                 adj ->
                     Adj = http_client:get_adj(ReqBody),
-                    car:adj_reply({ReqLabel, ReqSender, ReqTarget, CurrentTime, 0, Adj});
+                    car:adj_reply(ReqSender, Adj);
                 next ->
                     car:default_behaviour(ReqSender);
                 wait ->
