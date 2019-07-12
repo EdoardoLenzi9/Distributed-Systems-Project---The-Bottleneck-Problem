@@ -130,6 +130,7 @@ normal({call, From}, Event, Data) ->
                     car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, Data#car_state.max_RTT, {}})
                 end,
                 NewData = Data#car_state{position = Position, speed = Speed, current_time = utils:get_timestamp() },
+                car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
                 flow:keep(NewData, From, {normal_check_reply, NewData})
             end;
         default_behaviour ->
@@ -156,9 +157,10 @@ normal({call, From}, Event, Data) ->
                 end;
             true ->
                 if Data#car_state.crossing ->
-                    utils:log("Car: cross the bridge"),
-                    CarCross = Data#car_state{position = Position},    
-                    flow:keep(CarCross, From, {normal_check_reply, CarCross});
+                    utils:log("Car: on the bridge"),
+                    NewData = Data#car_state{position = Position},    
+                    car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+                    flow:keep(NewData, From, {normal_check_reply, NewData});
                 true->
                     utils:log("Car: away from the bridge"),
                     FrontCars = Data#car_state.adj#adj.front_cars,
@@ -185,6 +187,7 @@ normal({call, From}, Event, Data) ->
                                 car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
                                 Data#car_state{speed = Speed}
                             end,
+                    car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
                     flow:keep(NewData, From, {normal_default_behaviour, Data})
                 end
             end;
@@ -324,7 +327,7 @@ notify_dead_and_stop(Data) ->
                                         Data#car_state.name, 
                                         Data#car_state.name,  
                                         Data#car_state.max_RTT, 
-                                        {}}).
+                                        Data#car_state{ state = stop }}).
 
 
 compute_position(Data) ->

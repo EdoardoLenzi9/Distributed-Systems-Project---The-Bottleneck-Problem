@@ -35,21 +35,21 @@ request_timer(Req) ->
     Nickname = nickname(lists:flatten(io_lib:format("~p", [CurrentTime])), 0),
     utils:log("Timer: find available nickname ~p", [Nickname]),
     register(Nickname, self()),
-    utils:log("Timer: send call"),
+    utils:log("Timer: send call to ~p", [Target]),
     supervisor_call_supervisor_api:timer_call({Label, Sender, Target, Nickname, CurrentTime, Body}),
     receive
-        {sup_reply, Response} ->
-            {_Label, _Sender, _Target, _Nickname, _SendingTime, Body} = Response,
-            utils:log("Timer: receive reply"),
+        {sup_reply, Reply} ->
+            utils:log("~n Timer: receive reply"),
+            {ReplyLabel, ReplySender, ReplyTarget, _ReplyNickname, ReplySendingTime, ReplyBody} = Reply,
             if Body =/= dead_ignore ->
-                supervisor_reply_supervisor_api:timer_reply(Response);
+                supervisor_reply_supervisor_api:timer_reply({ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody});
             true ->
                 utils:log("Timer: car is dead"),
-                supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, Nickname, CurrentTime, Body})
+                supervisor_reply_supervisor_api:timer_reply({timeout, ReplyTarget, ReplySender, ReplySendingTime, ReplyBody})
             end
     after RTT ->
         utils:log("Timer: timeout reached"),
-        supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, Nickname, CurrentTime, Body})
+        supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, CurrentTime, Body})
     end.
 
 
@@ -58,7 +58,7 @@ next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     utils:log("State: ~p", [Data]),
     NewData = Data#car_state{state = NextState},
-    car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, {NewData}}),
+    car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, NewData}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
 
@@ -84,13 +84,13 @@ tow_truck(Timeout, Target) ->
 
 %
 %call_tow_truck(Data) ->
-%    Responses = message:send_to_all_adj(Data#car_state.adj#adj.front_cars ++ Data#car_state.adj#adj.rear_cars, check),
-%    call_tow_truck_wrap(Responses).
+%    Replys = message:send_to_all_adj(Data#car_state.adj#adj.front_cars ++ Data#car_state.adj#adj.rear_cars, check),
+%    call_tow_truck_wrap(Replys).
 %
 %call_tow_truck_wrap([]) ->
 %    [];
-%call_tow_truck_wrap([{Car, Response} | Rest]) ->
-%    if Response =/= ok ->
+%call_tow_truck_wrap([{Car, Reply} | Rest]) ->
+%    if Reply =/= ok ->
 %        launch_event(tow_truck, [Car#car_state.name, 3000])
 %    end,
 %    call_tow_truck_wrap(Rest).

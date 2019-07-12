@@ -26,7 +26,7 @@ start(Args) ->
 
     State = #car_state{
                         name = Name, 
-                        side = Side, 
+                        side = Side - 1, 
                         power = Power, 
                         size = Size,
                         speed = 0,
@@ -34,8 +34,8 @@ start(Args) ->
                         synchronized = false,
                         crash_type = 0,
                         delta = 0,
-                        adj = #adj{front_cars = http_client:get_sync(Name, Side, Power), rear_cars = []}, 
-                        state = init,
+                        adj = #adj{front_cars = http_client:get_sync(Name, Side - 1, Power), rear_cars = []}, 
+                        state = sync,
                         host = Env#env.host,
                         bridge_capacity = BridgeCapacity, 
                         bridge_length = BridgeLength,
@@ -65,7 +65,10 @@ loop() ->
                 adj ->
                     Adj = http_client:get_adj(ReqBody),
                     car:adj_reply(ReqSender, Adj);
+                log_state -> 
+                    http_client:get_adj(ReqBody);
                 next ->
+                    http_client:get_adj(ReqBody),
                     car:default_behaviour(ReqSender);
                 wait ->
                     flow:launch_event(timer, [Req]);
@@ -78,6 +81,7 @@ loop() ->
                 tow_truck -> 
                     car:tow_truck(ReqTarget);
                 stop -> 
+                    http_client:get_adj(ReqBody),
                     car:stop(ReqTarget);
                 % wild-card used for: check, crossing, update_rear, update_front
                 _ ->
