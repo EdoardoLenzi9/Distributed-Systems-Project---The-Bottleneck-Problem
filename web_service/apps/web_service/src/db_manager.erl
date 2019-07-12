@@ -50,6 +50,11 @@ add(Item) ->
     mnesia:transaction(Fun).
 
 
+delete(Item) ->
+    Fun = fun() -> mnesia:delete_object(Item) end,
+    mnesia:transaction(Fun).
+
+
 get_all(Entity) ->
     F = fun() -> mnesia:select(Entity,[{'_',[],['$_']}]) end,
     {atomic, Data} = mnesia:transaction(F),

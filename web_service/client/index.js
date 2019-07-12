@@ -10,7 +10,7 @@ function CreateCar(side){
         side:       side == "left" ? -1 : 1,
         power:      $('#' + side + '-power')[0].value == "" ? 1 : parseInt($('#' + side + '-power')[0].value),
         size:       $('#' + side + '-size')[0].value == "" ? 1 : parseInt($('#' + side + '-size')[0].value),
-        timeout:    $('#' + side + '-timer')[0].value == "" ? -1 : parseInt($('#' + side + '-timer')[0].value),
+        timeout:    $('#' + side + '-timer')[0].value == "" ? 0 : parseInt($('#' + side + '-timer')[0].value),
     }
     if(side == 'small'){
         parameters.side = $('#direction > .btn.active').text().trim().toLowerCase();

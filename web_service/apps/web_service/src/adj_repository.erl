@@ -11,6 +11,9 @@ add(Entity) ->
     db_manager:add(Entity).
 
 
+delete(Entity) ->
+    db_manager:delete(Entity).
+
 get_all() ->
     order(db_manager:get_all(adjEntity)).
 
