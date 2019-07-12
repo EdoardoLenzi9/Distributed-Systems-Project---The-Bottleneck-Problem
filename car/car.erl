@@ -165,28 +165,28 @@ normal({call, From}, Event, Data) ->
                     utils:log("Car: away from the bridge"),
                     FrontCars = Data#car_state.adj#adj.front_cars,
                     NewData = if length(FrontCars) > 0 ->
-                                [Pivot | _Rest] = FrontCars,
-                                % if there is another car on the same side
-                                if Pivot#car_state.side == Data#car_state.side ->
-                                    utils:log("~p", [Pivot]),
-                                    utils:log("Car: there is another car on the same side"),
-                                    % launch a check
-                                    car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, Data#car_state.max_RTT, {}}),
-                                    Data;
-                                % if there is only a car on the opposite side of the bridge
-                                true ->
-                                    utils:log("Car: there is only a car on the opposite side of the bridge"),
-                                    Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / Data#car_state.max_RTT), Data#car_state.max_speed),
-                                    car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
-                                    Data#car_state{speed = Speed}
-                                end;
-                            % if there isn't any other car 
-                            true ->
-                                utils:log("Car: there isn't any other car in the front queue"),
-                                Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / Data#car_state.max_RTT), Data#car_state.max_speed),
-                                car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
-                                Data#car_state{speed = Speed}
-                            end,
+                        [Pivot | _Rest] = FrontCars,
+                        % if there is another car on the same side
+                        if Pivot#car_state.side == Data#car_state.side ->
+                            utils:log("~p", [Pivot]),
+                            utils:log("Car: there is another car on the same side"),
+                            % launch a check
+                            car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, Data#car_state.max_RTT, {}}),
+                            Data;
+                        % if there is only a car on the opposite side of the bridge
+                        true ->
+                            utils:log("Car: there is only a car on the opposite side of the bridge"),
+                            Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / Data#car_state.max_RTT), Data#car_state.max_speed),
+                            car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
+                            Data#car_state{speed = Speed}
+                        end;
+                    % if there isn't any other car 
+                    true ->
+                        utils:log("Car: there isn't any other car in the front queue"),
+                        Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / Data#car_state.max_RTT), Data#car_state.max_speed),
+                        car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
+                        Data#car_state{speed = Speed}
+                    end,
                     car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
                     flow:keep(NewData, From, {normal_default_behaviour, Data})
                 end
@@ -332,7 +332,7 @@ notify_dead_and_stop(Data) ->
 
 compute_position(Data) ->
         % compute car position
-        TravelTime = utils:get_timestamp() - Data#car_state.current_time,
+        TravelTime = (utils:get_timestamp() - Data#car_state.current_time) / 1000,
         Position = Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side)),
         utils:log("Travel Time: ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position]),
         Position.
