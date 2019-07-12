@@ -149,21 +149,23 @@ skip_normal(_State) ->
 
 skip_normal2(_State) ->
     skip_next(),
-    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-        utils:log("Test: Car2 moves to crossing position 0"),
-        car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(0, true)}),
+    listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:check_reply({car2, car1, utils:get_timestamp(), 0, queue_car(0, true)}),
         car:update_front(_ReqSender, [])
     end),
-    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+    skip_log_state(),
+    listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         utils:log("Test: receive fail check")
     end),
-    test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+    skip_log_state(),
+    listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),
-    test_fixture:listen(wait, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
+    listen(wait, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
         flow:launch_event(timer, [{ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody}])
     end),
-    test_fixture:listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+    skip_log_state(),
+    listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end).
 
@@ -184,23 +186,29 @@ skip_leader2(_State) ->
 
 
 skip_leader3(_State) ->   
-    test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+    listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),
-    test_fixture:listen(check, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
+    listen(check, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
         flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, utils:get_timestamp(), ReqRTT, ReqBody}])   
     end),
-    test_fixture:listen(check, fun(_ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, _ReqBody) -> 
+    listen(check, fun(_ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, _ReqBody) -> 
         {_Result, Data} = car:check(ReqTarget),
         supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data})
     end),
-    test_fixture:listen(check_reply, fun(_ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody) -> 
+    listen(check_reply, fun(_ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody) -> 
         RTT = utils:get_timestamp() - ReplySendingTime,
         {_Result, _Data} = car:check_reply({ReplySender, ReplyTarget, ReplySendingTime, RTT, ReplyBody#car_state{arrival_time = ReplySendingTime}})
     end).
 
 
 skip_next() ->   
-    test_fixture:listen(next, fun(_, Sender, _, _, _) -> 
+    listen(next, fun(_, Sender, _, _, _) -> 
         car:default_behaviour(Sender)
+    end).
+
+
+skip_log_state() ->  
+    listen(log_state, fun(_, _, _, _, _) -> 
+        ok
     end).

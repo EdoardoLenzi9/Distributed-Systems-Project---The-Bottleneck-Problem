@@ -105,13 +105,15 @@ sync_check_timeout_test_() ->
         car:update_front(ReqSender, []),
         car:default_behaviour(ReqSender)
     end),
-    % TODO
     test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),
     test_fixture:listen(adj, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         Adj = State#car_state.adj,
         car:adj_reply(ReqSender, Adj)
+    end),
+    test_fixture:listen(adj, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        ok
     end),
     test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
@@ -122,6 +124,7 @@ sync_check_timeout_test_() ->
     test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         ok
     end),
+    test_fixture:skip_log_state(),
     test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),

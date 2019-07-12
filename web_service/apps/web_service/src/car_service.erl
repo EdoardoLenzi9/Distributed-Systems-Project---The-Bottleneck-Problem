@@ -24,6 +24,12 @@ adj(Entity) ->
         get_right(Entity)
     end,    
     adj_repository:add(Entity),
+    if Entity#adjEntity.state == stop ->
+        io:format("Adj delete stopped car"),
+        adj_repository:delete(Entity);
+    true ->
+        ok 
+    end,
     [adj_marshalling(Front), adj_marshalling(Rear)].
 
 

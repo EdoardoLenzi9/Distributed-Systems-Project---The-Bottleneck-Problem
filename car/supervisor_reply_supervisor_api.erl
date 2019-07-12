@@ -16,7 +16,7 @@ sup_reply(Response) ->
 
 timer_reply(Response) ->
     utils:log("Timer reply supervisor"),
-    {Label, Sender, Target, _Nickname, SendingTime, Body} = Response,
+    {Label, Sender, Target, SendingTime, Body} = Response,
     reply_supervisor(Target, supervisor, {timer_reply, {Label, Sender, Target, SendingTime, Body}}). 
 
 
