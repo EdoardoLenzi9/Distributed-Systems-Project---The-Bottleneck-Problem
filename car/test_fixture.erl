@@ -91,6 +91,13 @@ listen(Label, Handler) ->
                 Label ->
                     utils:log("Test: result ~p ", [Handler(ReplyLabel, ReplySender, ReplyTarget, ReplyNickname, ReplyRTT, ReplyBody)])
             end;
+        {sup_call, Req} ->
+            utils:log("Test: receive sup_call ~p ", [Req]),
+            {ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody} = Req,
+            case ReqLabel of 
+                Label ->
+                    utils:log("Test: result ~p ", [Handler(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody)])
+            end;
         {timer_call, Req} ->
             utils:log("Test: receive timer_call ~p ", [Req]),
             {ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, ReqBody} = Req,
@@ -116,79 +123,34 @@ listen(Label, Handler) ->
 % car alone
 skip_sync(State) ->
     car:default_behaviour(State#car_state.name),
-
-    receive
-        {car_call, Req} ->
-            {Label, Sender, Target, _RTT, _Body} = Req,
-            case Label of 
-                adj ->
-                    utils:log("Fixture: return adj"),
-                    Adj = #adj{front_cars = [], rear_cars = []},
-                    car:adj_reply(Sender, Adj)
-            end
-    end.
+    listen(adj, fun(_, Sender, _, _, _) -> 
+        Adj = #adj{front_cars = [], rear_cars = []},
+        {_Result, _Data} = car:adj_reply(Sender, Adj)
+    end).
 
 
 % car with car2 on the same side in position - 1
 skip_sync2(State) ->
     car:default_behaviour(State#car_state.name),
-    receive
-        {car_call, _Request2} ->
-            car:check_reply({car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
-    end,
-    receive
-        {car_call, Req} ->
-            {Label, Sender, Target, _RTT, _Body} = Req,
-            case Label of 
-                adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car1, side = -1, position = 0, size = 1 }], rear_cars = []},
-                    car:adj_reply(Sender, Adj)
-            end
-    end.
+    listen(check, fun(_, _, _, _, _) -> 
+        car:check_reply({car1, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+    end),
+    listen(adj, fun(_, Sender, _, _, _) -> 
+        Adj = #adj{front_cars = [#car_state{ name = car1, side = -1, position = 0, size = 1 }], rear_cars = []},
+        car:adj_reply(Sender, Adj)
+    end).
 
 
 % car with car2 on the opposite side
 skip_sync3(State) ->
     car:default_behaviour(State#car_state.name),
-    receive
-        {car_call, _Request2} ->
-            car:check_reply({car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
-    end,
-    receive
-        {car_call, Req} ->
-            {Label, Sender, Target, _RTT, _Body} = Req,
-            case Label of 
-                adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car1, side = 1, position = 0, size = 1 }], rear_cars = []},
-                    car:adj_reply(Sender, Adj)
-            end
-    end.
-
-
-% car with car2 on the opposite side
-skip_to_dead(State, CrashType) ->
-    car:default_behaviour(State#car_state.name),
-    receive
-        {car_call, _Req1} ->
-            car:check_reply({car2, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
-    end,
-    receive
-        {car_call, Req2} ->
-            {Label2, Sender2, Target2, _RTT2, _Body2} = Req2,
-            case Label2 of 
-                adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car1, side = 1, position = 0, size = 1 }], rear_cars = []},
-                    car:adj_reply(Sender2, Adj)
-            end
-    end,
-    receive
-        {car_call, Req3} ->
-            {Label3, Sender3, _Target3, _RTT3, _Body3} = Req3,
-            case Label3 of 
-                next ->
-                    car:crash(State#car_state.name, CrashType)
-            end
-    end.
+    listen(check, fun(_, _, _, _, _) -> 
+        car:check_reply({car1, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+    end),
+    listen(adj, fun(_, Sender, _, _, _) -> 
+        Adj = #adj{front_cars = [#car_state{ name = car1, side = 1, position = 0, size = 1 }], rear_cars = []},
+        car:adj_reply(Sender, Adj)
+    end).
 
 
 %%%===================================================================
@@ -196,57 +158,63 @@ skip_to_dead(State, CrashType) ->
 %%%===================================================================
 
 skip_normal(_State) ->    
-    receive
-        {car_call, Req1} ->
-            {Label1, Sender1, _Target1, _RTT1, _Body1} = Req1,
-            case Label1 of 
-                next ->
-                    car:default_behaviour(Sender1)
-            end
-    end.
+    skip_next().
 
 
 skip_normal2(_State) ->
-    todo.     
+    skip_next(),
+    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        utils:log("Test: Car2 moves to crossing position 0"),
+        car:check_reply({car2, car1, utils:get_timestamp(), 0, test_fixture:queue_car(0, true)}),
+        car:update(_ReqSender, [])
+    end),
+    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        utils:log("Test: receive fail check")
+    end),
+    test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:default_behaviour(ReqSender)
+    end),
+    test_fixture:listen(wait, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
+        flow:launch_event(timer, [{ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody}])
+    end),
+    test_fixture:listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:default_behaviour(ReqSender)
+    end).
 
 
 skip_normal3(_State) ->
-    receive
-        {car_call, Req1} ->
-            {Label1, Sender1, _Target1, _RTT1, _Body1} = Req1,
-            case Label1 of 
-                next ->
-                    car:default_behaviour(Sender1)
-            end
-    end,
-    receive
-        {car_call, Req2} ->
-            {Label2, _Sender2, _Target2, _RTT2, _Body2} = Req2,
-            case Label2 of 
-                wait ->
-                    flow:launch_event(timer, [Req2])
-            end
-    end,
-    receive
-        {car_call, Req3} ->
-            {Label3, Sender3, _Target3, _RTT3, _Body3} = Req3,
-            case Label3 of 
-                wait_reply ->
-                    car:default_behaviour(Sender3)
-            end
-    end.
+    skip_next().
 
 %%%===================================================================
 %%% Skip leader state
 %%%===================================================================
 
 skip_leader(_State) ->   
-    todo.
+    skip_next().
 
 
 skip_leader2(_State) ->   
-    todo.
+    skip_next().
 
 
 skip_leader3(_State) ->   
-    todo.
+    test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:default_behaviour(ReqSender)
+    end),
+    test_fixture:listen(check, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
+        flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, utils:get_timestamp(), ReqRTT, ReqBody}])   
+    end),
+    test_fixture:listen(check, fun(_ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, _ReqBody) -> 
+        {_Result, Data} = car:check(ReqTarget),
+        supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data})
+    end),
+    test_fixture:listen(check_reply, fun(_ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody) -> 
+        RTT = utils:get_timestamp() - ReplySendingTime,
+        {_Result, _Data} = car:check_reply({ReplySender, ReplyTarget, ReplySendingTime, RTT, ReplyBody#car_state{arrival_time = ReplySendingTime}})
+    end).
+
+
+skip_next() ->   
+    test_fixture:listen(next, fun(_, Sender, _, _, _) -> 
+        car:default_behaviour(Sender)
+    end).

@@ -89,7 +89,7 @@ normal3_test_() ->
     % Act and Assert
 
     test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-            car:default_behaviour(ReqSender)
+        car:default_behaviour(ReqSender)
     end),
 
     car:stop(State#car_state.name).

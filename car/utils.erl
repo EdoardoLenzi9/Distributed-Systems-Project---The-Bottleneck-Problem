@@ -85,6 +85,18 @@ first_element([_First | Rest], Hop) ->
     end.
 
 
+last_elements(List, Hop) ->
+        lists:nthtail(length(List) - erlang:min(length(List), Hop), List).
+        
+        
+first_elements([ ], _) ->
+        [ ];
+first_elements([First | Rest], Hop) ->
+    if Hop > 0 -> 
+        [First | first_elements(Rest, Hop - 1)];
+    true -> 
+        [ ]
+    end.
 %%%===================================================================
 %%% time management
 %%%===================================================================
