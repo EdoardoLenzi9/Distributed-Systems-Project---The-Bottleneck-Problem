@@ -29,8 +29,8 @@ sync({call, From}, Event, Data) ->
         update_rear(sync, Replacement, Data, From);
     check ->  
         check(sync, Data, From);
-    {crossing, Req} ->   
-        crossing(sync, Req, Data, From);
+    {crossing, Body} ->   
+        crossing(sync, Body, Data, From);
     {crash, CrashType} ->   
         utils:log("EVENT crash (postpone)"), 
         NewData = Data#car_state{ crash_type = CrashType },
@@ -110,8 +110,8 @@ normal({call, From}, Event, Data) ->
             update_front(sync, Replacement, Data, From);
         {update_rear, Replacement} ->  
             update_rear(sync, Replacement, Data, From);
-        {crossing, Req} ->   
-            crossing(normal, Req, Data, From);    
+        {crossing, Body} ->   
+            crossing(normal, Body, Data, From);    
         check ->  
             check(normal,Data, From);
         {check_reply, Reply} ->
@@ -228,6 +228,8 @@ leader({call, From}, Event, Data) ->
             timeout(leader, Target, Data, From);
         {crash, CrashType} ->
             crash(CrashType, Data, From);
+        {crossing, Body} ->   
+            crossing(leader, Body, Data, From);
         {update_front, Replacement} ->  
             update_front(sync, Replacement, Data, From);
         {update_rear, Replacement} ->  
@@ -236,7 +238,7 @@ leader({call, From}, Event, Data) ->
             check(leader, Data, From);
         {check_reply, Reply} ->
             utils:log("EVENT check_reply"),
-            {_Sender, _Target, _SendingTime, _RTT, Body} = Reply, 
+            {_Sender, _Target, SendingTime, _RTT, Body} = Reply, 
 
             if Body#car_state.arrival_time > Data#car_state.arrival_time ->
                 %the car can start crossing the bridge
@@ -253,7 +255,7 @@ leader({call, From}, Event, Data) ->
                     RearCars = Data#car_state.adj#adj.rear_cars,
                     [Pivot | _Rest] = RearCars,
                     utils:log("Start call"),
-                    car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, _SendingTime, {cross,NewData, Body}});
+                    car_call_supervisor_api:car_call({check, Data#car_state.name, Pivot#car_state.name, SendingTime, {cross,NewData, Body}});
                 true ->
                     utils:log("Nobody behind, nothing to propagate")
                 end,
@@ -276,7 +278,9 @@ leader({call, From}, Event, Data) ->
                                             crossing = true, 
                                             speed = Data#car_state.max_speed
                                         },
+                utils:log("TODO 1"),
                 propagate_crossing(Data, #car_state{arrival_time = -1, bridge_capacity = Data#car_state.bridge_capacity}),
+                utils:log("TODO 2"),
                 flow:next(normal, NewData, From, {normal, NewData})
             end;
         Event ->
@@ -405,13 +409,12 @@ check(State, Data, From) ->
     flow:keep(NewData, From, {list_to_atom(string:concat(atom_to_list(State),"_check")), NewData}).
 
 
-crossing(State, Req, Data, From) ->
+crossing(State, Body, Data, From) ->
     utils:log("EVENT crossing"), 
-    {_Label, _Sender, _Target, _Nickname, _SendingTime, Body} = Req,
 
     if Body#car_state.arrival_time >= State#car_state.arrival_time; Body#car_state.arrival_time < 0 ->
         utils:log("Car: can cross the bridge, propagate"),
-        propagate_crossing(Data, Req),
+        propagate_crossing(Data, Body),
     
         if Data#car_state.crossing ->
             flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_crossing")), Data});
@@ -426,15 +429,24 @@ crossing(State, Req, Data, From) ->
 
 
 propagate_crossing(Data, Body) -> 
+    utils:log("TODO 3"),
     RearCars = utils:first_elements(Data#car_state.adj#adj.rear_cars, Data#car_state.bridge_length),
-    propagate_crossing_wrapper(Data#car_state.name, RearCars, Body).
+    utils:log("TODO 4"),
+    propagate_crossing_wrapper(Data, RearCars, Body).
 
-propagate_crossing_wrapper(Sender, RearCars, Body) -> 
+propagate_crossing_wrapper(Data, RearCars, Body) -> 
+    Sender = Data#car_state.name,
+    RTT = Data#car_state.max_RTT,
+    utils:log("TODO 5"),
     if length(RearCars) > 0, Body#car_state.bridge_capacity > 0 ->
+        utils:log("TODO 6"),
         [Pivot | Rest] = RearCars,
+        utils:log("TODO 65"),
         NewBody = Body#car_state{bridge_capacity = Body#car_state.bridge_capacity - 1},
-        car_call_supervisor_api:car_call({crossing, Sender, Pivot#car_state.name, NewBody}),
-        propagate_crossing_wrapper(Sender, Rest, NewBody);
+        utils:log("TODO 7"),
+        car_call_supervisor_api:car_call({crossing, Sender, Pivot#car_state.name, RTT, NewBody}),
+        utils:log("TODO 8"),
+        propagate_crossing_wrapper(Data, Rest, NewBody);
     true ->
         utils:log("Propagation ends")
     end.

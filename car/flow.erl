@@ -42,7 +42,12 @@ request_timer(Req) ->
             utils:log("~n Timer: receive reply"),
             {ReplyLabel, ReplySender, ReplyTarget, _ReplyNickname, ReplySendingTime, ReplyBody} = Reply,
             if Body =/= dead_ignore ->
-                supervisor_reply_supervisor_api:timer_reply({ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody});
+                case ReplyLabel of 
+                    check_reply ->
+                        supervisor_reply_supervisor_api:timer_reply({ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody});
+                    _ ->
+                        utils:log("Timer receive ~p reset timeout", [ReplyLabel])
+                end;
             true ->
                 utils:log("Timer: car is dead"),
                 supervisor_reply_supervisor_api:timer_reply({timeout, ReplyTarget, ReplySender, ReplySendingTime, ReplyBody})
