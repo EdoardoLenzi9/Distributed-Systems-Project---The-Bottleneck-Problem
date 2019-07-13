@@ -169,6 +169,7 @@ normal({call, From}, Event, Data) ->
                     utils:log("Car: on the bridge"),
                     NewData = Data#car_state{position = Position},    
                     car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+                    car_call_supervisor_api:car_call({wait, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData#car_state.max_RTT}),
                     flow:keep(NewData, From, {normal_check_reply, NewData});
                 true->
                     utils:log("Car: away from the bridge"),
