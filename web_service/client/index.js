@@ -2,6 +2,28 @@ var manualGeneration = false;
 var carIndex = 0;
 
 
+function LoadScenario(index){
+    Read( "/assets/scenery/" + index + ".json", function(scenario){
+        JSON.parse(scenario).forEach(async element => {
+            console.log(element);   
+            await CreateCarAsync(element.delay, element.parameters);
+        });
+    });
+}
+
+
+function CreateCarAsync(delay, parameters) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            httpPostAsync('/simulation/new', parameters, function(content){
+                resolve(content);
+            })
+        }, delay);
+  
+    });
+}
+  
+
 function CreateCar(side){
     carIndex++;
     

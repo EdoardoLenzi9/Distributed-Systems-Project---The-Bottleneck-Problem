@@ -1,0 +1,20 @@
+[
+    {
+        "delay": 0,
+        "parameters": { "name": "car1",
+                        "side": -1,
+                        "power":  1,
+                        "size": 1,
+                        "timeout": 0
+                    }
+    },
+    {
+        "delay": 2000,
+        "parameters": { "name": "car2",
+                        "side": -1,
+                        "power":  1,
+                        "size": 1,
+                        "timeout": 0
+                    }
+    }
+]

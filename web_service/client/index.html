@@ -9,8 +9,6 @@
 		<link rel="shortcut icon" type="image/png" href="assets/favicon.ico"/>	
         <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="index.css">
-        <script src="node_modules/jquery/dist/jquery.min.js"></script>
-        <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     </head>
     <body>
         <!--Title-->
@@ -225,6 +223,16 @@
             <div class="row vspace">
                 <div class="col-0 col-md-2"></div>
                 <div class="col-12 col-md-8 ">  
+                    <div class="vspace">
+                        <div class="full-width btn-group dropup">
+                            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Simulation scenery
+                            </button>
+                            <div class="dropdown-menu full-width">
+                                <a class="dropdown-item" onclick="LoadScenario('01')">Scenario 1</a>
+                            </div>
+                        </div>  
+                    </div>
                     <div id="random-field">
                         <button type="button" class="btn btn-primary btn-block"
                         onclick="SwitchMode()">Random mode</button>
@@ -242,6 +250,8 @@
             </div>
         </div>
     </body>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="utils/utils.js"></script>
     <script src="utils/http-client.js"></script>
     <script src="index.js"></script>
