@@ -31,7 +31,6 @@ load_environment() ->
     {<<"max_speed">>,MaxSpeed},
     {<<"bridge_capacity">>,BridgeCapacity},
     {<<"bridge_length">>,BridgeLength},
-    {<<"sampling_frequency">>,_SamplingFrequency},
     {<<"tow_truck_time">>,TowTruckTime},
     {<<"max_RTT">>,MaxRTT}]} = jiffy:decode(Content),
     #env{
