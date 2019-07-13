@@ -14,7 +14,8 @@
 init([State]) ->
     utils:log("STATE Init"),
     utils:log("Initial max_speed: ~p", [State#car_state.max_speed]),
-    {ok, sync, State}.
+    NewState = State#car_state{ arrival_time = utils:get_timestamp(), current_time = utils:get_timestamp()}, 
+    {ok, sync, NewState}.
         
 
 sync({call, From}, Event, Data) ->
@@ -37,29 +38,41 @@ sync({call, From}, Event, Data) ->
     {check_reply, Reply} ->
         utils:log("EVENT check_reply"),
         % berkeley
+        utils:log("EVENT check_reply1"),
         {_Sender, _Target, SendingTime, RTT, Body} = Reply,
+        utils:log("EVENT check_reply2 ~p RTT", [RTT]),
         CurrentTime = SendingTime, 
+        utils:log("EVENT check_reply3"),
         PivotTime = Body#car_state.current_time,
+        utils:log("EVENT check_reply4"),
         Delta = CurrentTime - (PivotTime + RTT / 2),
+        utils:log("EVENT check_reply5"),
         NewData = Data#car_state{delta = Delta, arrival_time = Data#car_state.arrival_time + Delta},
+        utils:log("EVENT check_reply6"),
         car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+        utils:log("EVENT check_reply7"),
         flow:keep(NewData, From, {sync_check_reply, NewData});
     {adj_reply, Adj} ->
         utils:log("EVENT adj_reply"),
         NewData = Data#car_state{adj = Adj},
         utils:log("~p", [NewData]),
         Position = if length(NewData#car_state.adj#adj.front_cars) > 0 ->
+            utils:log("EVENT adj_reply1"),
             [First | _Rest] = NewData#car_state.adj#adj.front_cars,
+            utils:log("EVENT adj_reply2"),
             % if there is any car in the front queue and on the same side
             if First#car_state.side == NewData#car_state.side ->
-                First#car_state.position + (((Data#car_state.size / 2) + (First#car_state.size / 2)) * Data#car_state.side); 
+                utils:log("EVENT adj_reply3"),
+                First#car_state.position + (((NewData#car_state.size / 2) + (First#car_state.size / 2)) * NewData#car_state.side); 
             % if there are only cars on the opposite side
             true -> 
-                Data#car_state.side * Data#car_state.size / 2 
+                utils:log("EVENT adj_reply4"),
+                NewData#car_state.side * NewData#car_state.size / 2 
             end;
             % if there isn't any other car in the front queue
         true ->
-            Data#car_state.side * Data#car_state.size / 2 
+            utils:log("EVENT adj_reply"),
+            NewData#car_state.side * NewData#car_state.size / 2 
         end,
         utils:log("initial position: ~p", [Position]),
         NewData2 = NewData#car_state{speed = 0, position = Position, current_time = utils:get_timestamp(), synchronized = true},

@@ -67,24 +67,28 @@ unmarshalling_sync([First| Rest]) ->
                 power = Power } | unmarshalling_sync(Rest)].
 
 
-unmarshalling_adj([ [], [] ]) ->
-    #adj{ front_cars = [], rear_cars = [] };
-unmarshalling_adj([ [Front], [Back] ]) ->
+unmarshalling_adj([ Back | Rest ]) ->
+    utils:log("unmarshalling_adj_wrapper1"),
+    [Front] = Rest,
     #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
 
 
 unmarshalling_adj_wrapper([]) ->
     [];
 unmarshalling_adj_wrapper([First| Rest]) ->
+    utils:log("unmarshalling_adj_wrapper1"),
     { [ {<<"name">>, Name}, 
         {<<"side">>,Side},
         {<<"power">>,Power},
+        {<<"size">>,Size},
         {<<"arrival_time">>,ArrivalTime},
         {<<"delta">>,Delta},
         {<<"state">>,State} ] } = First,
+    utils:log("unmarshalling_adj_wrapper2"),
     [#car_state{    name = utils:binary_to_atom(Name), 
-                    side = utils:binary_to_atom(Side), 
+                    side = Side, 
                     power = Power,
+                    size = Size,
                     arrival_time = ArrivalTime,
                     delta = Delta,
                     state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    
