@@ -10,15 +10,15 @@
 
 
 % Launch every test with
-% erl -sname car1@car1 -run feature_test test
+% erl -sname car1 -run feature_test test
 
-% cerl ; erl -sname car1@car1 -run feature_test request_timer_test_
+% cerl ; erl -sname car1 -run feature_test request_timer_test_
 request_timer_test_() ->
     % Arrange
     
     test_fixture:register(),
    
-    Request = {check, car1, car1, 1000, {}},
+    Request = {check, node(), node(), 1000, {}},
     {Label, Sender, Target, RTT, Body} = Request,
     CurrentTime = utils:get_timestamp(),
     utils:log("Test: send event to timer"),
@@ -37,13 +37,13 @@ request_timer_test_() ->
     end.
 
 
-% cerl ; erl -sname car1@car1 -run feature_test request_timer2_test_
+% cerl ; erl -sname car1 -run feature_test request_timer2_test_
 request_timer2_test_() ->
     % Arrange
     
     test_fixture:register(),
    
-    Request = {check, car1, car1, 1000, {}},
+    Request = {check, node(), node(), 1000, {}},
     {Label, Sender, Target, RTT, Body} = Request,
     CurrentTime = utils:get_timestamp(),
     utils:log("Test: send event to timer"),

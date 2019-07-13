@@ -10,10 +10,10 @@
 
 
 % Launch every test with
-% erl -sname car1@car1 -run leader_state_test test
+% cerl ; erl -sname car1 -setcookie ds-project -run leader_state_test test
   
 
-%cerl ; erl -sname car1@car1 -run leader_state_test leader_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run leader_state_test leader_test_
 leader_test_() ->
     % Arrange
 
@@ -32,7 +32,7 @@ leader_test_() ->
     car:stop(State#car_state.name).
 
 
-%% cerl ; erl -sname car1@car1 -run leader_state_test leader2_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run leader_state_test leader2_test_
 leader2_test_() ->
     % Arrange
 
@@ -51,7 +51,7 @@ leader2_test_() ->
     car:stop(State#car_state.name).
     
 
-%cerl ; erl -sname car1@car1 -run leader_state_test leader_test3_
+% cerl ; erl -sname car1 -setcookie ds-project -run leader_state_test leader_test3_
 leader_test3_() ->
     % Arrange
     test_fixture:register(),

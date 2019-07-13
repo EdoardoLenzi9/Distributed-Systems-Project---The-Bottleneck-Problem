@@ -10,10 +10,10 @@
 
 
 % Launch every test with
-% erl -sname car1@car1 -run normal2_state_test test
+% cerl ; erl -sname car1 -setcookie ds-project -run normal2_state_test test
 
   
-%cerl ; erl -sname car1@car1 -run normal2_state_test normal_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run normal2_state_test normal_test_
 normal_test_() ->
     % Arrange 
 
@@ -29,7 +29,7 @@ normal_test_() ->
     car:stop(State#car_state.name).
 
 
-%cerl ; erl -sname car1@car1 -run normal2_state_test normal2_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run normal2_state_test normal2_test_
 normal2_test_() ->
 
     test_fixture:register(),
@@ -44,7 +44,7 @@ normal2_test_() ->
     car:stop(State#car_state.name).
 
 
-%cerl ; erl -sname car1@car1 -run normal2_state_test normal3_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run normal2_state_test normal3_test_
 normal3_test_() ->
     % Arrange 
 

@@ -10,10 +10,10 @@
 
 
 % Launch every test with
-% erl -sname car1@car1 -run dead_state_test test
+% cerl ; erl -sname car1 -setcookie ds-project -run dead_state_test test
 
 
-%cerl ; erl -sname car1@car1 -run dead_state_test dead_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run dead_state_test dead_test_
 dead_test_() ->
     % Arrange
     test_fixture:register(),
@@ -31,7 +31,7 @@ dead_test_() ->
     end).
 
 
-%cerl ; erl -sname car1@car1 -run dead_state_test dead2_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run dead_state_test dead2_test_
 dead2_test_() ->
     % Arrange
     test_fixture:register(),
@@ -49,7 +49,7 @@ dead2_test_() ->
     end).
 
 
-%cerl ; erl -sname car1@car1 -run dead_state_test dead3_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run dead_state_test dead3_test_
 dead3_test_() ->
     % Arrange
     test_fixture:register(),
@@ -73,7 +73,7 @@ dead3_test_() ->
     end).
 
 
-%cerl ; erl -sname car1@car1 -run dead_state_test dead_state_1_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run dead_state_test dead_state_1_test_
 dead_state_1_test_() ->
     % Arrange
     test_fixture:register(),
@@ -99,7 +99,7 @@ dead_state_1_test_() ->
     end).
 
 
-%cerl ; erl -sname car1@car1 -run dead_state_test dead_state_2_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run dead_state_test dead_state_2_test_
 dead_state_2_test_() ->
     % Arrange
     test_fixture:register(),

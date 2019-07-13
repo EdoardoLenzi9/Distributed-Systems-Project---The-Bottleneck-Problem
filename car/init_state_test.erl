@@ -10,10 +10,9 @@
 
 
 % Launch every test with
-% erl -sname car1@car1 -run init_state_test test
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test test
 
-
-% cerl ; erl -sname car1@car1 -run init_state_test sync_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync_test_
 sync_test_() ->
     % Arrange
     
@@ -35,12 +34,12 @@ sync_test_() ->
     car:stop(State#car_state.name).
 
 
-% cerl ; erl -sname car1@car1 -run init_state_test sync2_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync2_test_
 sync2_test_() ->
     sync_common_test(test_fixture:default_state2()).
 
 
-% cerl ; erl -sname car1@car1 -run init_state_test sync3_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync3_test_
 sync3_test_() ->
     sync_common_test(test_fixture:default_state3()).
 
@@ -76,7 +75,7 @@ sync_common_test(State) ->
     car:stop(State#car_state.name).
 
 
-% cerl ; erl -sname car1@car1 -run init_state_test sync_check_timeout_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync_check_timeout_test_
 sync_check_timeout_test_() ->
     % Arrange
 

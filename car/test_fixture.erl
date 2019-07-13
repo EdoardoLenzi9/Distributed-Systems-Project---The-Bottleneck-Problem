@@ -12,7 +12,7 @@
 
 queue_car(Position, Crossing) ->
     #car_state{  
-                name = car1, 
+                name = node(), 
                 side = -1,
                 speed = 0,
                 size = 1,
@@ -24,7 +24,7 @@ queue_car(Position, Crossing) ->
 default_state() ->
     Env = utils:load_environment(),
     #car_state{
-        name = car1, 
+        name = node(), 
         side = -1, 
         power = 2, 
         size = 1,
@@ -50,12 +50,12 @@ default_state() ->
 
 % car with car2 on the same side in position - 1
 default_state2() ->
-    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = -1, position = -1, size = 1 } ]}}.
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = node(), side = -1, position = -1, size = 1 } ]}}.
 
 
 % car with car2 on the opposite side
 default_state3() ->
-    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = car1, side = 1, position = 1, size = 1 } ]}}.
+    (default_state())#car_state{adj = #adj{ front_cars = [ #car_state{ name = node(), side = 1, position = 1, size = 1 } ]}}.
 
 
 register() ->
@@ -119,10 +119,10 @@ skip_sync(State) ->
 skip_sync2(State) ->
     car:default_behaviour(State#car_state.name),
     listen(check, fun(_, _, _, _, _) -> 
-        car:check_reply({car1, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+        car:check_reply({node(), node(), utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
     end),
     listen(adj, fun(_, Sender, _, _, _) -> 
-        Adj = #adj{front_cars = [#car_state{ name = car1, side = -1, position = 0, size = 1 }], rear_cars = []},
+        Adj = #adj{front_cars = [#car_state{ name = node(), side = -1, position = -1.5, size = 1 }], rear_cars = []},
         car:adj_reply(Sender, Adj)
     end).
 
@@ -131,10 +131,10 @@ skip_sync2(State) ->
 skip_sync3(State) ->
     car:default_behaviour(State#car_state.name),
     listen(check, fun(_, _, _, _, _) -> 
-        car:check_reply({car1, car1, utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
+        car:check_reply({node(), node(), utils:get_timestamp(), 0, State#car_state{current_time = utils:get_timestamp()}})
     end),
     listen(adj, fun(_, Sender, _, _, _) -> 
-        Adj = #adj{front_cars = [#car_state{ name = car1, side = 1, position = 0, size = 1 }], rear_cars = []},
+        Adj = #adj{front_cars = [#car_state{ name = node(), side = 1, position = 0, size = 1 }], rear_cars = []},
         car:adj_reply(Sender, Adj)
     end).
 
@@ -150,7 +150,7 @@ skip_normal(_State) ->
 skip_normal2(_State) ->
     skip_next(),
     listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-        car:check_reply({car2, car1, utils:get_timestamp(), 0, queue_car(0, true)}),
+        car:check_reply({node(), node(), utils:get_timestamp(), 0, queue_car(0, true)}),
         car:update_front(_ReqSender, [])
     end),
     skip_log_state(),
@@ -209,6 +209,6 @@ skip_next() ->
 
 
 skip_log_state() ->  
-    listen(log_state, fun(_, _, _, _, _) -> 
-        ok
+    listen(log_state, fun(_, _, _, _, Body) -> 
+        utils:log("~n current state log ~p ~n", [Body])
     end).
