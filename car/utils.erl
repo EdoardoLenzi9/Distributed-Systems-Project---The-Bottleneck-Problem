@@ -10,9 +10,11 @@
 -ifdef(LOG).
     log(String)->
         ParsedString = io:format(String),
+        os:cmd(lists:flatten(io_lib:format("echo '~p' >> logs/~p.log", [String, node()]))),
         io:format("~n~p~n", [ParsedString]).
     log(String, Args) ->
         ParsedString = io:format(String, Args),
+        os:cmd(lists:flatten( io_lib:format("echo '~p' >> logs/~p.log", [ lists:flatten(io_lib:format(String, [Args])), node() ]))),
         io:format("~n~p~n", [ParsedString]).
 -else.
     log(String)-> ok.

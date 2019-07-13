@@ -60,6 +60,11 @@ clean:
 	@rm -rf ./car/priv
 	@rm ./car/jiffy.app || true
 	
+	@echo "clean logs"
+	@cd car/ ; \
+	rm -rf logs ; \
+	mkdir logs
+
 	@echo "clean env"
 	@rm ./car/environment.json  || true
 	@rm ./web_service/environment.json  || true
@@ -98,6 +103,12 @@ env:
 
 build: 
 	@echo "make rule build"
+
+	@echo "clean logs"
+	@cd car/ ; \
+	rm -rf logs ; \
+	mkdir logs
+	
 	@echo "build car"
 	@cd car/ ; \
 	sh ../scripts/compile-all.sh
