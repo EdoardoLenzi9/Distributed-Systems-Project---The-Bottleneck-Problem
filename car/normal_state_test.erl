@@ -87,13 +87,6 @@ normal2_test_() ->
         flow:launch_event(timer, [{ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody}])
     end),
     test_fixture:skip_log_state(),
-    test_fixture:listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-        car:default_behaviour(ReqSender)
-    end),
-    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-        utils:log("Test: receive fail check")
-    end),
-    test_fixture:skip_log_state(),
     test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
         car:default_behaviour(ReqSender)
     end),
@@ -101,10 +94,16 @@ normal2_test_() ->
         flow:launch_event(timer, [{ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody}])
     end),
     test_fixture:skip_log_state(),
+    utils:log("AAA Checkpoint"),
     test_fixture:listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
-        car:default_behaviour(ReqSender)
+        utils:log("AAA Sender ~p", [ReqSender])
+        %car:default_behaviour(ReqSender)
     end),
-    car:stop(State#car_state.name).
+    test_fixture:listen(wait_reply, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        utils:log("AAA Sender ~p", [ReqSender]),
+        car:default_behaviour(ReqSender)
+    end).
+    %car:stop(State#car_state.name).
 
 
 % cerl ; erl -sname car1 -setcookie ds-project -run normal_state_test normal3_test_

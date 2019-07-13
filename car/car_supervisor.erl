@@ -8,6 +8,7 @@
 
 
 start(Args) -> 
+    utils:log("Args: PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout"),
     utils:log("Args: ~p", [Args]),
     [PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
     {Side, _} = string:to_integer(PSide),

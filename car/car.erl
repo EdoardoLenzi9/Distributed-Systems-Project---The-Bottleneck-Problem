@@ -161,8 +161,8 @@ normal({call, From}, Event, Data) ->
                 true ->
                     % if car reaches the bridge go to leader state
                     utils:log("Car: reach the bridge"),
-                    NewData = Data#car_state{position = (Data#car_state.size * Data#car_state.side / 2), crossing = true, speed = 0},
-                    flow:next(leader, NewData, From, {leader, NewData})
+                    NewData2 = Data#car_state{position = (Data#car_state.size * Data#car_state.side / 2), crossing = true, speed = 0},
+                    flow:next(leader, NewData2, From, {leader, NewData2})
                 end;
             true ->
                 if Data#car_state.crossing ->
