@@ -14,7 +14,8 @@
         io:format("~n~p~n", [ParsedString]).
     log(String, Args) ->
         ParsedString = io:format(String, Args),
-        os:cmd(lists:flatten(io_lib:format("echo '~p' >> logs/~p.log", [String, node()]))),
+        ParsedString2 = lists:flatten(io_lib:format(String, Args)),
+        os:cmd(lists:flatten( io_lib:format("echo '~p' >> logs/~p.log", [ ParsedString2, node() ]))),
         io:format("~n~p~n", [ParsedString]).
 -else.
     log(String)-> ok.
