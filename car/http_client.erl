@@ -19,6 +19,8 @@ get_adj(Data) ->
                     {side, Data#car_state.side}, 
                     {power, Data#car_state.power},
                     {size, Data#car_state.size},
+                    {position, Data#car_state.position},
+                    {crossing, Data#car_state.crossing},
                     {arrival_time, Data#car_state.arrival_time},
                     {delta, Data#car_state.delta},
                     {state, Data#car_state.state}    

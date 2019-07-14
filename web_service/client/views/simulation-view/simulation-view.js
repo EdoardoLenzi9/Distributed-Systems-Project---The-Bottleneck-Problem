@@ -49,14 +49,23 @@ function Init() {
 	camera.position.set( 0, 0, 10 );
 	scene.add( group );
 		
-	// load test state (polling)
-	window.setInterval(function(){
-		console.log('polling')
-		httpPostAsync('/simulation', {}, function(content){
-			console.log(content);
-			LoadState(JSON.parse(content));
-		})
-	}, speed);
+
+	Read("environment.json", function(env){
+		var env = JSON.parse(env);
+		street = new Street(15, env.bridge_length, 10);
+		scene.add(street);
+
+		// load test state (polling)
+		window.setInterval(function(){
+			console.log('polling frequency ' + settings == undefined ? 1000 : settings.sampling_frequency)
+			httpPostAsync('/simulation', {}, function(content){
+				console.log(content);
+				LoadState(JSON.parse(content));
+			})
+		}, env.max_RTT / 4);
+
+	})
+
 
 	// desktop events
 	BindEvent( window, 'mousemove', OnDocumentMouseMove );
@@ -78,25 +87,13 @@ function Init() {
 * deserialize the json content and setup each component defined
 */ 
 function LoadState( state ) {
-	var leftIndex = 0;
-	var rightIndex = 0;
 	for (const [key, car] of Object.entries(cars)) {
 		car.check = false;
 	}
-	middleIndex = state.length;
-	for (let car of state){ 
-		if(car.side == "right"){
-			middleIndex --;
-		}
-	}
 	state.forEach(function(car){ 	//left side
-		if(car.side == "left"){
-			car.side = -1;
-			leftIndex ++;
-			car.position = middleIndex - leftIndex;
-		} else {
-			car.side = 1;
-			car.position = rightIndex ++;				
+		debugger;
+		if(!car.crossing){
+			car.position += (street.bridge_length * car.side)
 		}
 		UpdateState(car);
 	});
@@ -180,10 +177,8 @@ function InitScene(){
 	scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
 	hemiLight = CreateHemiLight();
 	dirLight = CreateDirLight();
-	street = new Street();
     scene.add( hemiLight );  
 	scene.add( dirLight );  
-	scene.add( street );  
 }
 
 

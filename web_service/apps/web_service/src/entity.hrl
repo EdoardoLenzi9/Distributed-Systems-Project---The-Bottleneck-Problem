@@ -3,6 +3,8 @@
                         side,
                         power,
                         size,
+                        position,
+                        crossing,
                         arrival_time,
                         delta,
                         state
@@ -69,6 +71,8 @@ adj_marshalling([First|Rest]) ->
         {side, First#adj_entity.side}, 
         {power, First#adj_entity.power}, 
         {size, First#adj_entity.size}, 
+        {position, First#adj_entity.position}, 
+        {crossing, First#adj_entity.crossing}, 
         {arrival_time, First#adj_entity.arrival_time},
         {delta, First#adj_entity.delta},
         {state, First#adj_entity.state} ]} | adj_marshalling(Rest)].

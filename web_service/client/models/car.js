@@ -14,7 +14,9 @@ class AnimatedCar extends THREE.Group {
 
     constructor( state ){
 		super( );
+		debugger;
 		// car
+		state.postion = state.position == "undefined" ? (street.length / 2) * state.side : state.position;
 		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
@@ -35,8 +37,6 @@ class AnimatedCar extends THREE.Group {
 
 	initState(state){
 		this.state = state;
-		// cross index
-		this.crossIndex = 0;
 		// update position
 		this.computePosition(state)
 		// update state
@@ -55,22 +55,23 @@ class AnimatedCar extends THREE.Group {
 
 
 	computePosition(state){
+		//debugger;
 		var pos = {
 			x: state.side * this.scaleFactor / 2,
-			y: ((street.bridge_capacity + 1) / 2 + state.position - this.crossIndex) * this.scaleFactor * state.side,
+			y: state.position * this.scaleFactor,
 			z: this.position.z 
 		};
 
-		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridge_capacity + 1))){
+		if((state.position * state.side > 0) && (state.position * state.side < street.bridge_lenght)){
 			pos.x = 0;
 		}
 
-		if(state.state == 'dead'){
-			pos.y = ((street.bridge_capacity + street.length) / 2) * this.scaleFactor * ( - state.side);
+		if(state.state == 'stop'){
+			pos.y = ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - state.side);
 		}
 
-		if(state.state == 'create'){
-			this.position.set(pos.x, ((street.bridge_capacity + street.length) / 2) * this.scaleFactor * state.side, pos.z);
+		if(state.state == 'sync'){
+			this.position.set(pos.x, ((street.bridge_length + street.length) / 2) * this.scaleFactor * state.side, pos.z);
 			this.initTween = this.TweenTo( pos ).start();
 		}
 
@@ -89,14 +90,11 @@ class AnimatedCar extends THREE.Group {
 	* 4 dead			1
 	*/
 	updateState(state){
-		
+		//debugger;
 		// update position
-		if(this.state.position != state.position && this.crossIndex >= 0){
-			this.TweenTo( this.computePosition(state) ).start();
-		} else if(state.state == 'crossing' || state.state == 'dead'){
-			this.crossIndex++;
-			this.TweenTo( this.computePosition(state) ).start();
-		}
+
+		this.TweenTo( this.computePosition(state) ).start();
+		
 		switch (state.state) {
 			case 'dead': 	
 				this.car.material.color.setHex(0xff0000);

@@ -81,6 +81,8 @@ unmarshalling_adj_wrapper([First| Rest]) ->
         {<<"side">>,Side},
         {<<"power">>,Power},
         {<<"size">>,Size},
+        {<<"position">>,Position},
+        {<<"crossing">>,Crossing},
         {<<"arrival_time">>,ArrivalTime},
         {<<"delta">>,Delta},
         {<<"state">>,State} ] } = First,
@@ -89,6 +91,8 @@ unmarshalling_adj_wrapper([First| Rest]) ->
                     side = Side, 
                     power = Power,
                     size = Size,
+                    position = Position,
+                    crossing = Crossing,
                     arrival_time = ArrivalTime,
                     delta = Delta,
                     state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    
