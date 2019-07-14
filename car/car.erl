@@ -299,7 +299,7 @@ dead({call, From}, Event, Data) ->
             notify_dead_and_stop(Data),
             flow:keep(Data, From, {dead_tow_truck, Data});
         default_behaviour ->
-            utils:log("EVENT Dead_default_behaviour, CRASHTYPE ~p", [Data#car_state.crash_type]),
+            utils:log("EVENT Dead_default_behaviour"),
             case Data#car_state.crash_type of 
                 0 -> 
                     notify_dead_and_stop(Data),
