@@ -335,20 +335,32 @@ notify_dead_and_stop(Data) ->
         []
     end,
     if FrontCar =/= [] ->
-        car_call_supervisor_api:car_call({  update_rear, 
-                                            Data#car_state.name, 
-                                            FrontCar#car_state.name,  
-                                            Data#car_state.max_RTT, 
-                                            RearCar});
+        if RearCar =/= [] ->
+                car_call_supervisor_api:car_call({  update_front, 
+                                                    Data#car_state.name, 
+                                                    RearCar#car_state.name,  
+                                                    Data#car_state.max_RTT, 
+                                                    RearCar});
+        true -> ok
+                %car_call_supervisor_api:car_call({  update_rear, 
+                %                                    Data#car_state.name, 
+                %                                    FrontCar#car_state.name,  
+                %                                    Data#car_state.max_RTT, 
+                %                                    []})
+        end;
     true ->
         ok
     end,
     if RearCar =/= [] ->
-        car_call_supervisor_api:car_call({  update_front, 
+        if FrontCar =/= [] ->
+            car_call_supervisor_api:car_call({  update_front, 
                                             Data#car_state.name, 
                                             RearCar#car_state.name,  
                                             Data#car_state.max_RTT, 
                                             FrontCar});
+        true ->
+            ok
+        end;
     true ->
         ok
     end,
