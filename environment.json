@@ -3,7 +3,7 @@
     "max_speed": 2,				
     "bridge_capacity": 2,				
     "bridge_length": 2,
-    "tow_truck_time": 1500,
+    "tow_truck_time": 10,
     "max_RTT": 1000			
 }
  

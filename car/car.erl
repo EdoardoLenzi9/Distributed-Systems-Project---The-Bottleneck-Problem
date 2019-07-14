@@ -21,6 +21,10 @@ init([State]) ->
 sync({call, From}, Event, Data) ->
     utils:log("STATE Sync"),
     case Event of  
+    {crash, CrashType} ->   
+        utils:log("EVENT crash (postpone)"), 
+        NewData = Data#car_state{ crash_type = CrashType },
+        flow:keep(NewData, From, {sync_crash, NewData});
     {timeout, Target} ->  
         timeout(sync, Target, Data, From);
     {update_front, Replacement} ->  
@@ -31,10 +35,6 @@ sync({call, From}, Event, Data) ->
         check(sync, Data, From);
     {crossing, Body} ->   
         crossing(sync, Body, Data, From);
-    {crash, CrashType} ->   
-        utils:log("EVENT crash (postpone)"), 
-        NewData = Data#car_state{ crash_type = CrashType },
-        flow:keep(NewData, From, {sync_crash, NewData});
     {check_reply, Reply} ->
         utils:log("EVENT check_reply"),
         % berkeley
@@ -105,7 +105,8 @@ normal({call, From}, Event, Data) ->
         {timeout, Target} ->  
             timeout(normal, Target, Data, From);
         {crash, CrashType} ->
-            crash(CrashType, Data, From);
+            NewData = Data#car_state{crash_type = CrashType},
+            flow:next(dead, NewData, From, {dead, NewData});
         {update_front, Replacement} ->  
             update_front(sync, Replacement, Data, From);
         {update_rear, Replacement} ->  
@@ -224,10 +225,11 @@ normal({call, From}, Event, Data) ->
 leader({call, From}, Event, Data) ->
     utils:log("STATE Leader"),
     case Event of
+        {crash, CrashType} ->
+            NewData = Data#car_state{crash_type = CrashType},
+            flow:next(dead, NewData, From, {dead, NewData});
         {timeout, Target} ->  
             timeout(leader, Target, Data, From);
-        {crash, CrashType} ->
-            crash(CrashType, Data, From);
         {crossing, Body} ->   
             crossing(leader, Body, Data, From);
         {update_front, Replacement} ->  
@@ -290,13 +292,14 @@ leader({call, From}, Event, Data) ->
 
 dead({call, From}, Event, Data) -> 
     utils:log("STATE Dead"),
+    utils:log("Crash type: ~p", [Data#car_state.crash_type]),
     case Event of    
         tow_truck ->
             utils:log("EVENT tow_truck"),
             notify_dead_and_stop(Data),
             flow:keep(Data, From, {dead_tow_truck, Data});
         default_behaviour ->
-            utils:log("EVENT default_behaviour"),
+            utils:log("EVENT Dead_default_behaviour, CRASHTYPE ~p", [Data#car_state.crash_type]),
             case Data#car_state.crash_type of 
                 0 -> 
                     notify_dead_and_stop(Data),
@@ -341,19 +344,15 @@ notify_dead_and_stop(Data) ->
                                                     RearCar#car_state.name,  
                                                     Data#car_state.max_RTT, 
                                                     RearCar});
-        true -> ok
-                %car_call_supervisor_api:car_call({  update_rear, 
-                %                                    Data#car_state.name, 
-                %                                    FrontCar#car_state.name,  
-                %                                    Data#car_state.max_RTT, 
-                %                                    []})
+        true -> 
+            ok    
         end;
     true ->
         ok
     end,
     if RearCar =/= [] ->
         if FrontCar =/= [] ->
-            car_call_supervisor_api:car_call({  update_front, 
+            car_call_supervisor_api:car_call({  update_rear, 
                                             Data#car_state.name, 
                                             RearCar#car_state.name,  
                                             Data#car_state.max_RTT, 
@@ -464,10 +463,9 @@ propagate_crossing_wrapper(Data, RearCars, Body) ->
     end.
 
 
-crash(CrashType, Data, From) -> 
-    utils:log("EVENT crash"),
-    NewData = Data#car_state{ crash_type = CrashType },
-    flow:next(dead, NewData, From, {dead, NewData}).
+%crash(_CrashType, Data, From) -> 
+%    utils:log("EVENT crash"),
+%    flow:next(dead, Data, From, {dead, Data}).
 
 
 ignore(State, Event, Data, From) ->

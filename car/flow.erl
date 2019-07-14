@@ -39,12 +39,14 @@ request_timer(Req) ->
     supervisor_call_supervisor_api:timer_call({Label, Sender, Target, Nickname, CurrentTime, Body}),
     receive
         {sup_reply, Reply} ->
-            utils:log("~n Timer: receive reply"),
+            utils:log("Timer: receive reply"),
             {ReplyLabel, ReplySender, ReplyTarget, _ReplyNickname, ReplySendingTime, ReplyBody} = Reply,
             if Body =/= dead_ignore ->
                 case ReplyLabel of 
                     check_reply ->
                         supervisor_reply_supervisor_api:timer_reply({ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody});
+                    crash ->
+                        utils:log("Timer for crashing received");
                     _ ->
                         utils:log("Timer receive ~p reset timeout", [ReplyLabel])
                 end;
@@ -66,7 +68,6 @@ next(NextState, Data, From, Reply) ->
     car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, NewData}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
-
 %%% Keep the current state, send a Reply to the event sender
 keep(Data, From, Reply) ->
     utils:log("KEEP STATE ~p", [Data#car_state.state]),
@@ -80,9 +81,11 @@ postpone(Data) ->
 
 
 %%% Simulate a car crash after a given timeout
-killer(Name, Timeout) ->
-    timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{crash, Name, Name, 0, {}}]).
+killer(Name, Data, CrashType, Timeout) ->
+    utils:log("KILLER ACTIVATED"),
+    NewData = Data#car_state{crash_type = CrashType},
+    timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{crash, Name, none, 0, CrashType}]).
     
 %%% Simulate a tow truck fix after a given timeout
-tow_truck(Timeout, Target) ->
-    timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{tow_truck, Target, Target, 0, {}}]).
+tow_truck(Timeout, Data, Target) ->
+    timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{tow_truck, Target, Target, Data#car_state.max_RTT, {}}]).

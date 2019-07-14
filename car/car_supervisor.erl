@@ -47,7 +47,7 @@ start(Args) ->
     utils:log("Timeout: ~p", [Timeout]),
 	if Timeout > 0 ->
         utils:log("Launch killer process with timeout"),
-        flow:launch_event(killer, [State#car_state.name, Timeout]);
+        flow:launch_event(killer, [State#car_state.name, State, 1, Timeout]);
     true ->
         ok
     end,
@@ -80,12 +80,15 @@ loop() ->
                 default_behaviour ->
                     car:default_behaviour(ReqSender);
                 call_tow_truck ->
+                    utils:log("TOW TRUCK CALLED"),
                     flow:launch_event(tow_truck, [ReqBody, ReqTarget]);
                 tow_truck -> 
                     car:tow_truck(ReqTarget);
                 stop -> 
                     http_client:get_adj(ReqBody),
                     car:stop(ReqTarget);
+                crash ->
+                    car:crash(ReqSender, ReqBody);
                 % wild-card used for: check, crossing, update_rear, update_front
                 _ ->
                     flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, CurrentTime, ReqRTT, ReqBody}])
