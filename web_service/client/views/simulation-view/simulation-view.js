@@ -50,6 +50,7 @@ function Init() {
 	scene.add( group );
 		
 
+	var counter = 1;
 	Read("environment.json", function(env){
 		var env = JSON.parse(env);
 		street = new Street(15, env.bridge_length, 10);
@@ -62,6 +63,12 @@ function Init() {
 				console.log(content);
 				LoadState(JSON.parse(content));
 			})
+			//counter = counter % 6;
+			//Read('frames/0' + (counter++) + '.json', function(content){
+			//	var frame = JSON.parse(content);
+			//	console.log(frame);
+			//	LoadState(frame);
+			//})
 		}, env.max_RTT / 4);
 
 	})
@@ -91,15 +98,16 @@ function LoadState( state ) {
 		car.check = false;
 	}
 	state.forEach(function(car){ 	//left side
-		debugger;
-		if(!car.crossing){
-			car.position += (street.bridge_length * car.side)
+		if(car.crossing){
+			car.position -= (street.bridge_length/2 * car.side)
+		} else {
+			car.position += (street.bridge_length/2 * car.side)
 		}
 		UpdateState(car);
 	});
 	for (var [key, car] of Object.entries(cars)) {
 		if(!car.check){
-			group.remove(car);
+			car.remove();
 			car = null;
 			delete cars[key];
 		}

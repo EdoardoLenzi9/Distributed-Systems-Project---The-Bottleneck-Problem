@@ -19,7 +19,6 @@ function CreateCarAsync(delay, parameters) {
                 resolve(content);
             })
         }, delay);
-  
     });
 }
   

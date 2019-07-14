@@ -14,9 +14,8 @@ class AnimatedCar extends THREE.Group {
 
     constructor( state ){
 		super( );
-		debugger;
 		// car
-		state.postion = state.position == "undefined" ? (street.length / 2) * state.side : state.position;
+		state.position = state.position == "undefined" ? (street.length / 2) * state.side : state.position;
 		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
@@ -38,7 +37,10 @@ class AnimatedCar extends THREE.Group {
 	initState(state){
 		this.state = state;
 		// update position
-		this.computePosition(state)
+
+		this.position.set((state.side * this.scaleFactor / 2), ((street.bridge_length + street.length) / 2) * this.scaleFactor * state.side, this.position.z);
+		this.TweenTo( this.computePosition(state) ).start();
+
 		// update state
 		this.setColor();
 	}
@@ -55,24 +57,14 @@ class AnimatedCar extends THREE.Group {
 
 
 	computePosition(state){
-		//debugger;
 		var pos = {
 			x: state.side * this.scaleFactor / 2,
 			y: state.position * this.scaleFactor,
 			z: this.position.z 
 		};
 
-		if((state.position * state.side > 0) && (state.position * state.side < street.bridge_lenght)){
+		if(state.crossing){
 			pos.x = 0;
-		}
-
-		if(state.state == 'stop'){
-			pos.y = ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - state.side);
-		}
-
-		if(state.state == 'sync'){
-			this.position.set(pos.x, ((street.bridge_length + street.length) / 2) * this.scaleFactor * state.side, pos.z);
-			this.initTween = this.TweenTo( pos ).start();
 		}
 
 		return pos;
@@ -90,7 +82,6 @@ class AnimatedCar extends THREE.Group {
 	* 4 dead			1
 	*/
 	updateState(state){
-		//debugger;
 		// update position
 
 		this.TweenTo( this.computePosition(state) ).start();
@@ -114,6 +105,18 @@ class AnimatedCar extends THREE.Group {
 	} 
 
 
+	remove(){
+		var pos = {	x: this.state.side * this.scaleFactor / 2, 
+				y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - this.state.side),
+				z: this.position.z 
+			  };
+		this.TweenTo( pos ).start();
+		setTimeout(() => {
+			group.remove(this);
+        }, 1000);
+	}
+
+
 	/*
 	* Mesh.clone() override to preserve the parameters
 	*/
@@ -127,7 +130,7 @@ class AnimatedCar extends THREE.Group {
 	/*
 	* Tween to the next frame 
 	*/
-	TweenTo( nextPosition){
+	TweenTo(nextPosition){
 		var tween = new TWEEN.Tween( this.position ).to( nextPosition );
 		//tween.easing( TWEEN.Easing.Elastic.InOut )
 		return tween;
