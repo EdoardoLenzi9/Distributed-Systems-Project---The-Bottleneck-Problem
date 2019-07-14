@@ -98,12 +98,14 @@ function LoadState( state ) {
 		car.check = false;
 	}
 	state.forEach(function(car){ 	//left side
-		if(car.crossing){
-			car.position -= (street.bridge_length/2 * car.side)
-		} else {
-			car.position += (street.bridge_length/2 * car.side)
+		if(car.state != "sync"){
+			if(car.crossing){
+				car.position -= (street.bridge_length/2 * car.side)
+			} else {
+				car.position += (street.bridge_length/2 * car.side)
+			}
+			UpdateState(car);
 		}
-		UpdateState(car);
 	});
 	for (var [key, car] of Object.entries(cars)) {
 		if(!car.check){

@@ -15,7 +15,7 @@ class AnimatedCar extends THREE.Group {
     constructor( state ){
 		super( );
 		// car
-		state.position = state.position == "undefined" ? (street.length / 2) * state.side : state.position;
+		debugger
 		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
@@ -56,6 +56,18 @@ class AnimatedCar extends THREE.Group {
 	}
 
 
+	setDeadColor(){
+		this.car.material.color.setHex(0xff0000);
+		this.car.material.opacity = 0.5;
+	}
+
+
+	setStopColor(){
+		this.car.material.color.setHex(0xff5400);
+		this.car.material.opacity = 0.5;
+	}
+
+
 	computePosition(state){
 		var pos = {
 			x: state.side * this.scaleFactor / 2,
@@ -88,16 +100,15 @@ class AnimatedCar extends THREE.Group {
 		
 		switch (state.state) {
 			case 'dead': 	
-				this.car.material.color.setHex(0xff0000);
-				this.car.material.opacity = 0.5;
+				this.setDeadColor();
 				break;
-			case 'create': case 'queue':		
+			case 'sync':		
 				this.setColor();
 				break;
-			case 'leader':
+			case 'normal':
 				this.setColor(0.8);
 				break;
-			case 'crossing': case 'crossed':
+			case 'leader':
 				this.setColor(1);
 				break;
 		  }
@@ -106,6 +117,7 @@ class AnimatedCar extends THREE.Group {
 
 
 	remove(){
+		this.setStopColor();
 		var pos = {	x: this.state.side * this.scaleFactor / 2, 
 				y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - this.state.side),
 				z: this.position.z 
