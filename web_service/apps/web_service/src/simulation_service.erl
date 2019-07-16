@@ -56,21 +56,6 @@ new(Entity) ->
                                     lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout]))]));
         docker -> 
             os:cmd(utils:concat([   "sudo docker run -e host='", 
-                Entity#newCarEntity.host, "' -e port='", 
-                Entity#newCarEntity.port, "' -e name='",
-                Entity#newCarEntity.name, "' -e side=",
-                lists:flatten(io_lib:format("~p", [Entity#newCarEntity.side + 1])), " -e power=",
-                lists:flatten(io_lib:format("~p", [Entity#newCarEntity.power])), " -e size=",
-                lists:flatten(io_lib:format("~p", [Entity#newCarEntity.size])), " -e bridge_capacity=",
-                lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridge_capacity])), " -e bridge_length=",
-                lists:flatten(io_lib:format("~p", [Settings#settingsEntity.bridge_length])), " -e max_speed=",
-                lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_speed])), " -e tow_truck_time=",
-                lists:flatten(io_lib:format("~p", [Settings#settingsEntity.tow_truck_time])), " -e max_RTT=",
-                lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_RTT])), " -e crash_type=",
-                lists:flatten(io_lib:format("~p", [Entity#newCarEntity.crash_type])), " -e timeout=",
-                lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
-                " -dt car:v1"])),
-            utils:log(utils:concat([   "sudo docker run -e host='", 
                                     Entity#newCarEntity.host, "' -e port='", 
                                     Entity#newCarEntity.port, "' -e name='",
                                     Entity#newCarEntity.name, "' -e side=",
@@ -84,7 +69,7 @@ new(Entity) ->
                                     lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_RTT])), " -e crash_type=",
                                     lists:flatten(io_lib:format("~p", [Entity#newCarEntity.crash_type])), " -e timeout=",
                                     lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
-                                    " -it car:v1"]))
+                                    " -dt car:v1"]))
     end,
     car_marshalling(#carEntity{ name = list_to_atom(Entity#newCarEntity.name), 
                                 side = Entity#newCarEntity.side, 
@@ -98,7 +83,9 @@ new(Entity) ->
                                 bridge_length = Settings#settingsEntity.bridge_length }).
 
 reset() ->
+    % TODO kill docker 
     os:cmd("for i in `ps -ef | grep car | awk '{print $2}'`; do echo $i; kill -9 $i; done"),
+    os:cmd("for i in `sudo docker ps | grep car | awk '{print $1}'`; do echo $i; sudo docker stop $i; done"),
     settings_repository:reset().
                        
 
