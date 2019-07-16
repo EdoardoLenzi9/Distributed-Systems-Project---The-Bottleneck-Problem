@@ -29,6 +29,7 @@ new(Entity) ->
         lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_speed])), " ",
         lists:flatten(io_lib:format("~p", [Settings#settingsEntity.tow_truck_time])), " ",
         lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_RTT])), " ",
+        lists:flatten(io_lib:format("~p", [Entity#newCarEntity.crash_type])), " ",
         lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
         "'"])]),
     os:cmd(utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -sname ", 
@@ -43,6 +44,7 @@ new(Entity) ->
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_speed])), " ",
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.tow_truck_time])), " ",
                             lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_RTT])), " ",
+                            lists:flatten(io_lib:format("~p", [Entity#newCarEntity.crash_type])), " ",
                             lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
                             "'"])),
         car_marshalling(#carEntity{ name = list_to_atom(Entity#newCarEntity.name), 
@@ -57,8 +59,9 @@ new(Entity) ->
                                     bridge_length = Settings#settingsEntity.bridge_length }).
 
 reset() ->
+    os:cmd("for i in `ps -ef | grep car | awk '{print $2}'`; do echo $i; kill -9 $i; done"),
     settings_repository:reset().
-                        
+                       
 
 %%%===================================================================
 %%% private functions

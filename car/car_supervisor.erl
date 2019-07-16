@@ -8,9 +8,9 @@
 
 
 start(Args) -> 
-    utils:log("Args: PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout"),
+    utils:log("Args: PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout"),
     utils:log("Args: ~p", [Args]),
-    [PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PTimeout] = Args,
+    [PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout] = Args,
     {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
     {Size, _ } = string:to_integer(PSize),
@@ -19,6 +19,7 @@ start(Args) ->
     {MaxSpeed, _ } = string:to_integer(PMaxSpeed),
     {TowTruckTime, _ } = string:to_integer(PTowTruckTime),
     {MaxRTT, _ } = string:to_integer(PMaxRTT),
+    {CrashType, _} = string:to_integer(PCrashType),
     {Timeout, _ } = string:to_integer(PTimeout),
     
     register(supervisor, self()),    
@@ -47,7 +48,7 @@ start(Args) ->
     utils:log("Timeout: ~p", [Timeout]),
 	if Timeout > 0 ->
         utils:log("Launch killer process with timeout"),
-        flow:launch_event(killer, [State#car_state.name, State, 1, Timeout]);
+        flow:launch_event(killer, [State#car_state.name, State, CrashType, Timeout]);
     true ->
         ok
     end,

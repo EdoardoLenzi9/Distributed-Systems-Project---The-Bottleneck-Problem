@@ -34,6 +34,7 @@
                         side,
                         power,
                         size,
+                        crash_type,
                         timeout  
                     }).
 

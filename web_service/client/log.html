@@ -4,12 +4,22 @@
 		<meta name="author" content="Talissa Dreossi">
 		<meta name="license" content="GPL-3.0">
 		<title>Log View</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="shortcut icon" type="image/png" href="../../assets/favicon.ico"/>	
-		<link href="../../node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+		<link href="log.css" rel="stylesheet" type="text/css">
+		<link href="../node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 	</head>
 	<body>
 		<div id="container">
 			<div id="message"></div>
+		</div>
+		<div id="buttons-bar">
+			<span id="expand" class="icon" onclick="OpenFullscreen()" data-toggle="tooltip" title="Full Screen">
+				<i class="grow fa fa-expand"></i>
+			</span>
+			<span id="compress" class="invisible icon" onclick="CloseFullscreen()" data-toggle="tooltip" title="Exit Full Screen">
+				<i class="grow fa fa-compress"></i>
+			</span>
 		</div>
 		<script src="../../node_modules/jquery/dist/jquery.min.js"></script>	
 		<!--Custom scripts-->

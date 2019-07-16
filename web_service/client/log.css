@@ -1,0 +1,16 @@
+#buttons-bar{
+	width: 100%;
+	justify-content: flex-end;
+	align-self: flex-end;
+	display: flex;
+}
+
+
+.visible{
+	display: block;
+}
+
+
+.invisible{
+	display: none;
+}

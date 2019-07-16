@@ -29,8 +29,8 @@ function Read( filePath, callback ){
 /*
 * Start fullscreen mode
 */
-function OpenFullscreen( ) {
-    var elem = window.parent.document.getElementById( 'simulation-view' );
+function OpenFullscreen( element ) {
+    var elem = window.parent.document.getElementById( element );
     if ( elem.requestFullscreen ) {
         elem.requestFullscreen();
     } else if ( elem.mozRequestFullScreen ) { /* Firefox */
@@ -91,4 +91,9 @@ function Unlock(){
     $( '#unlock' ).addClass( 'invisible' );
     window.parent.document.body.className = window.parent.document.body.className.replace( /stop-scrolling/g, '' );
     sceneLocked = false;
+}
+
+function OpenInNewTab(url) {
+    var win = window.open(url, '_blank');
+    win.focus();
 }

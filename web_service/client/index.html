@@ -93,6 +93,15 @@
                             <div id="left-timer-mask" class="d-none col-input full-width">
                                 <input type="number" id="left-timer" class="form-control" placeholder="Timer (0)" aria-label="Timer"
                                     aria-describedby="button-addon4">
+                                <div class="full-width btn-group dropdown vspace">
+                                    <button type="button" id="left-broken-type" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Mechanical failure
+                                    </button>
+                                    <div class="dropdown-menu full-width">
+                                        <a class="dropdown-item" onclick="$('#left-broken-type').html('Mechanical failure');">Mechanical failure</a>
+                                        <a class="dropdown-item" onclick="$('#left-broken-type').html('System failure');">System failure</a>
+                                    </div>
+                                </div>  
                             </div>
                         </div>
                         <!--Power-->
@@ -142,6 +151,15 @@
                             <div id="right-timer-mask" class="d-none col-input full-width">
                                 <input type="number" id="right-timer" class="form-control" placeholder="Timer (0)" aria-label="Timer"
                                     aria-describedby="button-addon4">
+                                <div class="full-width btn-group dropdown vspace">
+                                    <button type="button" id="right-broken-type" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Mechanical failure
+                                    </button>
+                                    <div class="dropdown-menu full-width">
+                                        <a class="dropdown-item" onclick="$('#right-broken-type').html('Mechanical failure');">Mechanical failure</a>
+                                        <a class="dropdown-item" onclick="$('#right-broken-type').html('System failure');">System failure</a>
+                                    </div>
+                                </div>  
                             </div>
                         </div>
                         <!--Power-->
@@ -199,6 +217,15 @@
                             <div id="small-timer-mask" class="d-none col-input full-width">
                                 <input type="number" id="small-timer" class="form-control" placeholder="Timer (0)" aria-label="Timer"
                                     aria-describedby="button-addon4">
+                                <div class="full-width btn-group dropdown vspace">
+                                    <button type="button" id="small-broken-type" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Mechanical failure
+                                    </button>
+                                    <div class="dropdown-menu full-width">
+                                        <a class="dropdown-item" onclick="$('#small-broken-type').html('Mechanical failure');">Mechanical failure</a>
+                                        <a class="dropdown-item" onclick="$('#small-broken-type').html('System failure');">System failure</a>
+                                    </div>
+                                </div>  
                             </div>
                         </div>
                         <!--Power-->
@@ -244,6 +271,10 @@
                     <div class="d-none" id="manual-field">
                         <button type="button" class="btn btn-primary btn-block"
                         onclick="SwitchMode()">Manual mode</button>
+                    </div> 
+                    <div id="log-field" class="vspace">
+                        <button type="button" class="btn btn-primary btn-block"
+                        onclick="OpenInNewTab('http://localhost:8090/log.html');">See logs</button> 
                     </div> 
                     <div id="random-field">
                         <button type="button" class="btn btn-primary btn-block vspace"

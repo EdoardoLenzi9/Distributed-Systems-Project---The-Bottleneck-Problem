@@ -15,6 +15,7 @@ function LoadScenario(index){
 function CreateCarAsync(delay, parameters) {
     return new Promise(resolve => {
         setTimeout(() => {
+            carIndex++;
             httpPostAsync('/simulation/new', parameters, function(content){
                 resolve(content);
             })
@@ -31,6 +32,7 @@ function CreateCar(side){
         side:       side == "left" ? -1 : 1,
         power:      $('#' + side + '-power')[0].value == "" ? 1 : parseInt($('#' + side + '-power')[0].value),
         size:       $('#' + side + '-size')[0].value == "" ? 1 : parseInt($('#' + side + '-size')[0].value),
+        crash_type: $('#' + side + '-broken-type').text().trim() == "Mechanical failure" ? 1 : 2, 
         timeout:    $('#' + side + '-timer')[0].value == "" ? 0 : parseInt($('#' + side + '-timer')[0].value),
     }
     if(side == 'small'){
@@ -100,3 +102,4 @@ function SwitchMode(){
         $( '#right-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
     }
 }
+
