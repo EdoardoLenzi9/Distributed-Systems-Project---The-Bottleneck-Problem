@@ -68,9 +68,9 @@ unmarshalling_sync([First| Rest]) ->
                 power = Power } | unmarshalling_sync(Rest)].
 
 
-unmarshalling_adj([ Back | Rest ]) ->
+unmarshalling_adj([ Front | Rest ]) ->
     utils:log("unmarshalling_adj_wrapper1"),
-    [Front] = Rest,
+    [Back] = Rest,
     #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
 
 

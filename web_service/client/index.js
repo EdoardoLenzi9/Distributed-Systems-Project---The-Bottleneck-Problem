@@ -73,6 +73,7 @@ function SimulationState(){
 
 
 function Reset(){
+    
     httpPostAsync('/simulation/reset', {}, function(content){
         console.log(content);
     })

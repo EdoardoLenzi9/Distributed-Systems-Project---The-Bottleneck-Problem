@@ -112,7 +112,7 @@ class AnimatedCar extends THREE.Group {
 			case 'leader':
 				this.setColor(1);
 				break;
-		  }
+		}
 		this.state = state;
 	} 
 
