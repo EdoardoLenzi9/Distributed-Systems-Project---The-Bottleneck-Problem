@@ -10,7 +10,6 @@ Read("environment.json", function(env){
         max_speed:          env.max_speed,
         bridge_capacity:    env.bridge_capacity,
         bridge_length:      env.bridge_length,
-        sampling_frequency: env.max_RTT / 10,
         tow_truck_time:     env.tow_truck_time,
         max_RTT:            env.max_RTT
     }

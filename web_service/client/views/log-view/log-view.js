@@ -15,7 +15,6 @@ Read("environment.json", function(env){
 	// load test state (polling)
 
 	window.setInterval(function(){
-		console.log('polling frequency ' + settings == undefined ? 1000 : settings.sampling_frequency)
 		httpPostAsync('/simulation', {}, function(content){
 			message = message + "<p>" + content + "</p>";
 			$('#message').html(message);

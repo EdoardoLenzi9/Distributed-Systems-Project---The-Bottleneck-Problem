@@ -9,13 +9,14 @@
 
 var zIndex = 0.002;
 
+
 class AnimatedCar extends THREE.Group {
     
 
-    constructor( state ){
+    constructor( state, transitionTime ){
 		super( );
+		this.transitionTime = transitionTime;
 		// car
-		debugger
 		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
@@ -142,8 +143,12 @@ class AnimatedCar extends THREE.Group {
 	/*
 	* Tween to the next frame 
 	*/
+
 	TweenTo(nextPosition){
-		var tween = new TWEEN.Tween( this.position ).to( nextPosition );
+		this.initTime = Date.now();
+		var tween = new TWEEN.Tween( this.position ).to( nextPosition, this.transitionTime ).onComplete(function() {
+			console.log('tweentime: ' + (Date.now() - this.initTime));
+		});
 		//tween.easing( TWEEN.Easing.Elastic.InOut )
 		return tween;
 	}

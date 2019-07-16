@@ -15,10 +15,11 @@ Read("environment.json", function(env){
 	// load test state (polling)
 
 	window.setInterval(function(){
-		console.log('polling frequency ' + settings == undefined ? 1000 : settings.sampling_frequency)
 		httpPostAsync('/simulation', {}, function(content){
-			message = message + "<p>" + content + "</p>";
-			$('#message').html(message);
+			if(content != "[]"){
+				message = message + "<p>" + content + "</p>";
+				$('#message').html(message);
+			} 
 		})
 		//counter = counter % 6;
 		//Read('frames/0' + (counter++) + '.json', function(content){
@@ -28,5 +29,5 @@ Read("environment.json", function(env){
 		//})
     }, env.max_RTT / 4);
     
-    LoadScenario("02");
+    //LoadScenario("02");
 })

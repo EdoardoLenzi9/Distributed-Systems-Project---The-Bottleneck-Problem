@@ -31,7 +31,7 @@ var hemiLight, dirLight;
 var street;
 var cars = {};
 var i = 0;
-
+var samplingFrequency;
 
 /*
 * Init function
@@ -55,12 +55,14 @@ function Init() {
 		var env = JSON.parse(env);
 		street = new Street(15, env.bridge_length, 10);
 		scene.add(street);
-
+		samplingFrequency = env.max_RTT / 10;
+		console.log('polling frequency ' + samplingFrequency)
 		// load test state (polling)
 		window.setInterval(function(){
-			console.log('polling frequency ' + settings == undefined ? 1000 : settings.sampling_frequency)
 			httpPostAsync('/simulation', {}, function(content){
-				console.log(content);
+				if(content != '[]'){
+					console.log(content);
+				}
 				LoadState(JSON.parse(content));
 			})
 			//counter = counter % 6;
@@ -69,8 +71,7 @@ function Init() {
 			//	console.log(frame);
 			//	LoadState(frame);
 			//})
-		}, env.max_RTT / 4);
-
+		}, samplingFrequency);
 	})
 
 
@@ -121,7 +122,7 @@ function UpdateState(carState){
 	if(cars[carState.name] != undefined){
 		cars[carState.name].updateState(carState);
 	} else {
-		var carInstance = new AnimatedCar(carState); 
+		var carInstance = new AnimatedCar(carState, samplingFrequency); 
 		group.add(carInstance);
 		cars[carState.name] = carInstance;
 	}
