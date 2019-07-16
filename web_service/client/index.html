@@ -62,10 +62,23 @@
                 <div class="col-12 col-md-4 align-self-center">
                     <!--Save Settings-->
                     <div class="row vspace-10">
-                        <div class="col">
-                        <button type="button" class="btn btn-primary btn-block"
-                            onclick="SaveSettings()">Save</button>
-                    </div> </div>
+                        <div class="col-6">
+                            <div class="full-width btn-group dropdown">
+                                <button type="button" id="process-visibility" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Detached
+                                </button>
+                                <div class="dropdown-menu full-width">
+                                    <a class="dropdown-item" onclick="$('#process-visibility').html('Detached');">Detached</a>
+                                    <a class="dropdown-item" onclick="$('#process-visibility').html('Visible');">Visible</a>
+                                    <a class="dropdown-item" onclick="$('#process-visibility').html('Docker');">Docker</a>
+                                </div>
+                            </div>
+                        </div>  
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary btn-block"
+                                onclick="SaveSettings()">Save</button>
+                        </div> 
+                    </div>
                 </div>
                 <div class="col-0 col-md-2"></div>
             </div>
@@ -235,7 +248,7 @@
                         </div>
                         <!--Size-->
                         <div class="row vspace">
-                            <input type="number" id="small-small" class="form-control col-input" placeholder="Size (1)" aria-label="Size"
+                            <input type="number" id="small-size" class="form-control col-input" placeholder="Size (1)" aria-label="Size"
                                 aria-describedby="button-addon4">
                         </div>
                         <!--Create new car-->

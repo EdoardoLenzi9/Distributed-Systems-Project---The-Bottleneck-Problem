@@ -17,6 +17,8 @@ car/environment.json
 web_service/environment.json
 web_service/client/environment.json 
 web_service/client/views/simulation-view/environment.json 
+web_service/client/views/log-view/environment.json 
 web_service/test/tmp
 jiffy/
 logs/
+*.so

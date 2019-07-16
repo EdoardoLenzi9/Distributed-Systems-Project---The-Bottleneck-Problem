@@ -31,6 +31,7 @@ binary_to_atom(Item) ->
 load_environment() ->
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,Host},
+    {<<"process_visibility">>,_ProcessVisibility},
     {<<"max_speed">>,MaxSpeed},
     {<<"bridge_capacity">>,BridgeCapacity},
     {<<"bridge_length">>,BridgeLength},

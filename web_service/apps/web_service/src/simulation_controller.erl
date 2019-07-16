@@ -59,17 +59,25 @@ state_handler() ->
 init_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
 
-	{[	{<<"max_speed">>, MaxSpeed},
+	{[	
+		{<<"process_visibility">>, ProcessVisibility},
+		{<<"max_speed">>, MaxSpeed},
 		{<<"max_RTT">>, MaxRTT},
 		{<<"tow_truck_time">>, TowTruckTime},
 		{<<"bridge_capacity">>, BridgeCapacity},
 		{<<"bridge_length">>, BridgeLength} ]} = DecodedTuple, 
-	simulation_service:init(#settingsEntity{ 	max_speed = MaxSpeed,
-												max_RTT = MaxRTT,
-												tow_truck_time = TowTruckTime,
-												bridge_capacity = BridgeCapacity, 
-												bridge_length = BridgeLength }),
+	utils:log("~n~p~n", [TowTruckTime]),
+	simulation_service:init(#settingsEntity{ 	process_visibility = list_to_atom(binary_to_list(ProcessVisibility)),
+												max_speed = binary_to_int(MaxSpeed),
+												max_RTT = binary_to_int(MaxRTT),
+												tow_truck_time = binary_to_int(TowTruckTime),
+												bridge_capacity = binary_to_int(BridgeCapacity), 
+												bridge_length = binary_to_int(BridgeLength) }),
 	jiffy:encode({[{result, success}]}). 
+
+
+binary_to_int(Bin) ->
+	list_to_integer(binary_to_list(Bin)).
 
 
 new_node_handler(Body) ->

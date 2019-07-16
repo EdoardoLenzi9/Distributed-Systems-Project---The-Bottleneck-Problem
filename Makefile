@@ -71,6 +71,7 @@ clean:
 	@rm ./web_service/client/environment.json  || true
 	@rm ./web_service/client/views/simulation-view/environment.json  || true
 	@rm ./web_service/_build/default/rel/web_service/environment.json  || true
+	@rm ./web_service/client/views/log-view/environment.json  || true
 	@echo "clean tests"
 	@rm ./car/test/tmp/* || true
 	@rm ./web_service/test/tmp/* || true
@@ -98,6 +99,7 @@ env:
 	@cp environment.json web_service/ 
 	@cp environment.json web_service/client/ 
 	@cp environment.json web_service/client/views/simulation-view/ 
+	@cp environment.json web_service/client/views/log-view/ 
 	@cp environment.json web_service/_build/default/rel/web_service/
 
 

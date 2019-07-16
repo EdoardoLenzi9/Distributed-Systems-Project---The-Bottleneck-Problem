@@ -48,11 +48,12 @@ function CreateCar(side){
 
 function SaveSettings(){
     var parameters = {
-        max_speed:           $('#max-speed')[0].value != "" ? $('#max-speed')[0].value : settings.max_speed + "",
-        max_RTT:             $('#max-RTT')[0].value != "" ? $('#max-RTT')[0].value : settings.max_RTT + "",
-        tow_truck_time:       $('#tow-truck-time')[0].value != "" ? $('#tow-truck-time')[0].value : settings.tow_truck_time + "",
-        bridge_capacity:    $('#bridge-capacity')[0].value != "" ? $('#bridge-capacity')[0].value : settings.bridge_capacity + "",
-        bridge_length:       $('#bridge-length')[0].value != "" ? $('#bridge-length')[0].value : settings.bridge_length + ""
+        process_visibility:     $('#process-visibility').text().trim().toLowerCase(),
+        max_speed:              $('#max-speed')[0].value != "" ? $('#max-speed')[0].value : settings.max_speed + "",
+        max_RTT:                $('#max-RTT')[0].value != "" ? $('#max-RTT')[0].value : settings.max_RTT + "",
+        tow_truck_time:         $('#tow-truck-time')[0].value != "" ? $('#tow-truck-time')[0].value : settings.tow_truck_time + "",
+        bridge_capacity:        $('#bridge-capacity')[0].value != "" ? $('#bridge-capacity')[0].value : settings.bridge_capacity + "",
+        bridge_length:          $('#bridge-length')[0].value != "" ? $('#bridge-length')[0].value : settings.bridge_length + "",
     }
     console.dir(parameters);
     httpPostAsync('/simulation/init', parameters, function(content){

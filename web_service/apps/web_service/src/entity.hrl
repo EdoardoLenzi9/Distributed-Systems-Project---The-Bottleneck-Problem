@@ -21,6 +21,7 @@
 
 
 -record(settingsEntity, {
+                            process_visibility,
                             max_speed,
                             max_RTT,
                             tow_truck_time,
@@ -81,7 +82,9 @@ adj_marshalling([First|Rest]) ->
 
 settings_marshalling(Settings) ->
 
-    {[  {max_speed, Settings#settingsEntity.max_speed}, 
+    {[  
+        {process_visibility, Settings#settingsEntity.process_visibility}, 
+        {max_speed, Settings#settingsEntity.max_speed}, 
         {max_RTT, Settings#settingsEntity.max_RTT}, 
         {tow_truck_time, Settings#settingsEntity.tow_truck_time}, 
         {bridge_capacity, Settings#settingsEntity.bridge_capacity}, 
