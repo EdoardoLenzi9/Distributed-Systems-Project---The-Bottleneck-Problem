@@ -23,6 +23,11 @@
 -endif.
 
 
+concat([]) ->
+    [];
+concat([First | Rest]) ->
+    string:concat(First, concat(Rest)).
+
 binary_to_atom(Item) ->
     list_to_atom(binary_to_list(Item)).
 
@@ -31,6 +36,7 @@ binary_to_atom(Item) ->
 load_environment() ->
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,Host},
+    {<<"port">>,_Port},
     {<<"process_visibility">>,_ProcessVisibility},
     {<<"max_speed">>,MaxSpeed},
     {<<"bridge_capacity">>,BridgeCapacity},

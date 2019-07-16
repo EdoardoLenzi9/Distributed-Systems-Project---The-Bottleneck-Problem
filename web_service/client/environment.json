@@ -1,5 +1,6 @@
 {
-    "host": "http://localhost:8090",
+    "host": "192.168.130.37",
+    "port": "8090",
     "process_visibility": "visible",
     "max_speed": 2,				
     "bridge_capacity": 2,				
@@ -7,4 +8,3 @@
     "tow_truck_time": 10,
     "max_RTT": 1000			
 }
- 

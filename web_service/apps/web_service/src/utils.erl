@@ -48,6 +48,7 @@ load_environment() ->
     os:cmd("echo ciao > a.txt"),
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,_Host},
+    {<<"port">>,_Port},
     {<<"process_visibility">>,ProcessVisibility},
     {<<"max_speed">>,MaxSpeed},
     {<<"bridge_capacity">>,BridgeCapacity},

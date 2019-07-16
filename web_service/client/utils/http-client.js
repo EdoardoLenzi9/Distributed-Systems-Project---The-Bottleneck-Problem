@@ -3,16 +3,7 @@ var settings;
 
 
 Read("environment.json", function(env){
-    var env = JSON.parse(env);
-    host = env.host; 
-
-    settings = {
-        max_speed:          env.max_speed,
-        bridge_capacity:    env.bridge_capacity,
-        bridge_length:      env.bridge_length,
-        tow_truck_time:     env.tow_truck_time,
-        max_RTT:            env.max_RTT
-    }
+    settings = JSON.parse(env);
 })
 
 

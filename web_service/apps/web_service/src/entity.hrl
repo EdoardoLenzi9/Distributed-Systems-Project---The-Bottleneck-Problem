@@ -31,6 +31,8 @@
 
 
 -record(newCarEntity, {
+                        host,
+                        port,
                         name,
                         side,
                         power,

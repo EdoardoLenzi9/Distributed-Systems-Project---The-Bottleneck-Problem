@@ -22,3 +22,5 @@ web_service/test/tmp
 jiffy/
 logs/
 *.so
+
+web_service/rebar3

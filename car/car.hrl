@@ -20,6 +20,7 @@
                         state,
                         % settings and bridge metadata 
                         host,
+                        port,
                         bridge_capacity,
                         bridge_length,
                         max_speed,

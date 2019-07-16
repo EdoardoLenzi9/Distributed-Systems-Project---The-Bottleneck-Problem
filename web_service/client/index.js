@@ -26,8 +26,11 @@ function CreateCarAsync(delay, parameters) {
 
 function CreateCar(side){
     carIndex++;
-    
+    var port = window.location.port;
+
     var parameters = {
+        host:       window.location.hostname,
+        port:       port,
         name:       "car" + carIndex,     
         side:       side == "left" ? -1 : 1,
         power:      $('#' + side + '-power')[0].value == "" ? 1 : parseInt($('#' + side + '-power')[0].value),

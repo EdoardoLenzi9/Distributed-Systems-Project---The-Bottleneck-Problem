@@ -3,14 +3,14 @@
 
 # public rules
 
-start: clean dependencies build env
+start: clean dependencies build build-docker env
 
 
 run:
 	@echo "make rule run"
 	@cat environment.json
 	@cd web_service ; \
-	rebar3 run
+	sudo ./rebar3 run
 
 
 test:
@@ -91,6 +91,9 @@ dependencies:
 	@echo "setup node modules"
 	@cd web_service/client ; \
 	npm install || true
+	@cd web_service ; \
+	wget https://s3.amazonaws.com/rebar3/rebar3 ; \
+	chmod +x rebar3
 
 
 env:
@@ -103,6 +106,12 @@ env:
 	@cp environment.json web_service/_build/default/rel/web_service/
 
 
+build-docker:
+	@echo "build docker"
+	@cd car ; \
+	sudo docker build -t car:v1 .
+
+
 build: 
 	@echo "make rule build"
 
@@ -110,10 +119,11 @@ build:
 	@cd car/ ; \
 	rm -rf logs ; \
 	mkdir logs
-	
+
 	@echo "build car"
 	@cd car/ ; \
 	sh ../scripts/compile-all.sh
+	
 	@echo "build web service"
 	@cd web_service ; \
-	rebar3 run || true
+	sudo ./rebar3 run || true

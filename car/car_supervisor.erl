@@ -8,9 +8,9 @@
 
 
 start(Args) -> 
-    utils:log("Args: PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout"),
+    utils:log("Args: PHost, PPort, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout"),
     utils:log("Args: ~p", [Args]),
-    [PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout] = Args,
+    [Host, Port, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout] = Args,
     {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
     {Size, _ } = string:to_integer(PSize),
@@ -23,7 +23,6 @@ start(Args) ->
     {Timeout, _ } = string:to_integer(PTimeout),
     
     register(supervisor, self()),    
-    Env = utils:load_environment(),
 
     State = #car_state{
                         name = node(), 
@@ -35,14 +34,15 @@ start(Args) ->
                         synchronized = false,
                         crash_type = 0,
                         delta = 0,
-                        adj = #adj{front_cars = http_client:get_sync(node(), Side - 1, Power), rear_cars = []}, 
+                        adj = #adj{front_cars = http_client:get_sync(node(), Side - 1, Power, Host, Port), rear_cars = []}, 
                         state = sync,
-                        host = Env#env.host,
+                        host = Host,
                         bridge_capacity = BridgeCapacity, 
                         bridge_length = BridgeLength,
                         max_speed = MaxSpeed,
                         tow_truck_time = TowTruckTime,
-                        max_RTT = MaxRTT 
+                        max_RTT = MaxRTT,
+                        port = Port 
                     },
     utils:log("Car adj ~p", [State#car_state.adj]),
     utils:log("Timeout: ~p", [Timeout]),
