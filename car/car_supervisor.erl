@@ -101,16 +101,16 @@ loop() ->
             {ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, ReqBody} = Req,
             case ReqLabel of 
                 check ->
-                    {_Result, Data} = car:check(ReqTarget),
+                    {_Result, Data} = car:check(ReqTarget, ReqBody),
                     supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data});
                 crossing ->
                     {Result, _Data} = car:crossing(Req),
                     supervisor_reply_supervisor_api:sup_reply({crossing_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
                 update_rear ->
-                    {Result, _Data} = car:update_rear(ReqSender, ReqBody),
+                    {Result, _Data} = car:update_rear(ReqTarget, ReqBody),
                     supervisor_reply_supervisor_api:sup_reply({update_rear_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
                 update_front ->
-                    {Result, _Data} = car:update_front(ReqSender, ReqBody),
+                    {Result, _Data} = car:update_front(ReqTarget, ReqBody),
                     supervisor_reply_supervisor_api:sup_reply({update_front_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result})
             end;
         {timer_reply, Reply} ->

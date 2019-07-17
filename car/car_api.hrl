@@ -54,9 +54,9 @@ timeout(Name, Target) ->
 
 % Req/reply events
 
-check(Name) ->
+check(Name, Sender) ->
     utils:log("API Check Request"),
-    gen_statem:call({global, Name}, check).
+    gen_statem:call({global, Name}, {check, Sender}).
 
 
 check_reply(Reply) ->
