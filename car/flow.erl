@@ -15,6 +15,7 @@ launch_event(Handler, Args) ->
 %%% Simulate a car crash after a given timeout
 timer(Req) ->
     {_Label, Sender, Target, RTT, Body} = Req,
+    utils:log("Start timer ~p", [RTT]),
     timer:apply_after(RTT, car_call_supervisor_api, car_call, [{wait_reply, Sender, Target, RTT, Body}]).
 
 

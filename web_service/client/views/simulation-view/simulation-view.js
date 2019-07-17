@@ -32,7 +32,7 @@ var street;
 var cars = {};
 var i = 0;
 var samplingFrequency;
-
+var maxRTT;
 /*
 * Init function
 */ 
@@ -50,12 +50,12 @@ function Init() {
 	scene.add( group );
 		
 
-	var counter = 1;
 	Read("environment.json", function(env){
 		var env = JSON.parse(env);
 		street = new Street(15, env.bridge_length, 10);
 		scene.add(street);
-		samplingFrequency = env.max_RTT / 10;
+		maxRTT = env.max_RTT;
+		samplingFrequency = maxRTT / 10;
 		console.log('polling frequency ' + samplingFrequency)
 		// load test state (polling)
 		window.setInterval(function(){
@@ -114,7 +114,7 @@ function LoadState( state ) {
 	});
 	for (var [key, car] of Object.entries(cars)) {
 		if(!car.check){
-			car.remove();
+			car.remove(maxRTT);
 			car = null;
 			delete cars[key];
 		}
@@ -126,7 +126,7 @@ function UpdateState(carState){
 	if(cars[carState.name] != undefined){
 		cars[carState.name].updateState(carState);
 	} else {
-		var carInstance = new AnimatedCar(carState, samplingFrequency); 
+		var carInstance = new AnimatedCar(carState, maxRTT); 
 		group.add(carInstance);
 		cars[carState.name] = carInstance;
 	}

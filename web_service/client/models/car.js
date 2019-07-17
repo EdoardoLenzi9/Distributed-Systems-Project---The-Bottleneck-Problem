@@ -134,7 +134,7 @@ class AnimatedCar extends THREE.Group {
 	} 
 
 
-	remove(){
+	remove(time){
 		if(this.state.crash_type > 0){
 			this.setTowTruckColor();
 			var pos = { x: this.state.side * this.scaleFactor * (3 / 2), 
@@ -148,7 +148,7 @@ class AnimatedCar extends THREE.Group {
 			this.TweenTo( pos ).chain( this.TweenTo(pos1) ).start();
 			setTimeout(() => {
 				group.remove(this);
-			}, this.transitionTime * 2);
+			}, time);
 		} else {
 			this.setStopColor();
 			var pos = {	x: this.state.side * this.scaleFactor / 2, 
@@ -158,7 +158,7 @@ class AnimatedCar extends THREE.Group {
 			this.TweenTo( pos ).start();
 			setTimeout(() => {
 				group.remove(this);
-			}, this.transitionTime * 2);
+			}, time);
 		}
 	}
 
