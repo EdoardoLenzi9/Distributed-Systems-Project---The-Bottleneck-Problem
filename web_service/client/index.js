@@ -76,7 +76,7 @@ function SaveSettings(){
 
 function SimulationState(){
     httpGetAsync(window.location.origin, function(content){
-        console.log(content);
+        //console.log(content);
     })
 }
 

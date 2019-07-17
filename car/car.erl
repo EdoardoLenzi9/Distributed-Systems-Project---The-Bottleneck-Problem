@@ -127,12 +127,13 @@ normal({call, From}, Event, Data) ->
             Position = compute_position(Data),
 
             if (Position * Data#car_state.side) =< (Data#car_state.size / 2) ->
-                NewData = Data#car_state{position = (Data#car_state.size * Data#car_state.side / 2), speed = 0, crossing = true, current_time = utils:get_timestamp()},
                 if Data#car_state.crossing ->
                     utils:log("Car: reach the end of the bridge"),
+                    NewData = Data#car_state{position = ( Data#car_state.size * Data#car_state.side / 2 ), speed = 0, current_time = utils:get_timestamp()},
                     flow:next(dead, NewData, From, {dead, NewData});
                 true ->
                     utils:log("Car: reach the bridge"),
+                    NewData = Data#car_state{position = ( (Data#car_state.bridge_length + (Data#car_state.size / 2)) * Data#car_state.side ), speed = 0, crossing = true, current_time = utils:get_timestamp()},
                     flow:next(leader, NewData, From, {leader, NewData})
                 end;
             true ->
@@ -169,13 +170,13 @@ normal({call, From}, Event, Data) ->
 
             Position = compute_position(Data),
             if (Position * Data#car_state.side) =< (Data#car_state.size / 2) ->
-                NewData = Data#car_state{position = (Data#car_state.size * Data#car_state.side / 2), speed = 0, crossing = true, current_time = utils:get_timestamp()},
                 if Data#car_state.crossing ->
                     utils:log("Car: reach the end of the bridge"),
+                    NewData = Data#car_state{position = ( Data#car_state.size * Data#car_state.side / 2 ), speed = 0, current_time = utils:get_timestamp()},
                     flow:next(dead, NewData, From, {dead, NewData});
                 true ->
-                    % if car reaches the bridge go to leader state
                     utils:log("Car: reach the bridge"),
+                    NewData = Data#car_state{position = ( (Data#car_state.bridge_length + (Data#car_state.size / 2)) * Data#car_state.side ), speed = 0, crossing = true, current_time = utils:get_timestamp()},
                     flow:next(leader, NewData, From, {leader, NewData})
                 end;
             true ->
@@ -341,7 +342,7 @@ compute_position(Data) ->
         % compute car position
         TravelTime = (utils:get_timestamp() - Data#car_state.current_time) / 1000,
         Position = round1f(Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side))),
-        utils:log("Compute position: Travel Time (s): ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position]),
+        utils:log("Compute position: Travel Time (s): ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p, Crossing ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position, Data#car_state.crossing]),
         Position.
 
 

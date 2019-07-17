@@ -63,7 +63,8 @@ adj_handler(Body) ->
 		{<<"crossing">>, Crossing},
 		{<<"arrival_time">>, ArrivalTime},
 		{<<"delta">>, Delta},
-		{<<"state">>, State} ]} = DecodedTuple, 
+		{<<"state">>, State},
+		{<<"crash_type">>, CrashType} ]} = DecodedTuple, 
 	jiffy:encode(car_service:adj(#adj_entity{ 	name = list_to_atom(binary_to_list(Name)), 
 											 	side = Side, 
 											 	power = Power, 
@@ -72,4 +73,5 @@ adj_handler(Body) ->
 												crossing = Crossing, 
 											 	arrival_time = ArrivalTime, 
 												delta = Delta, 
-												state = list_to_atom(binary_to_list(State)) })).
+												state = list_to_atom(binary_to_list(State)),
+												crash_type = CrashType })).

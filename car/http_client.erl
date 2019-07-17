@@ -23,7 +23,8 @@ get_adj(Data) ->
                     {crossing, Data#car_state.crossing},
                     {arrival_time, Data#car_state.arrival_time},
                     {delta, Data#car_state.delta},
-                    {state, Data#car_state.state}    
+                    {state, Data#car_state.state},
+                    {crash_type, Data#car_state.crash_type}    
             ]},
     http_client:call(post, Host, Port, "/car/adj", Content, car, unmarshalling_adj).
 

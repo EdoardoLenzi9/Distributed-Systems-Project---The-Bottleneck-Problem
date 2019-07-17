@@ -86,7 +86,8 @@ unmarshalling_adj_wrapper([First| Rest]) ->
         {<<"crossing">>,Crossing},
         {<<"arrival_time">>,ArrivalTime},
         {<<"delta">>,Delta},
-        {<<"state">>,State} ] } = First,
+        {<<"state">>,State},
+        {<<"crash_type">>, CrashType} ] } = First,
     utils:log("unmarshalling_adj_wrapper2"),
     [#car_state{    name = utils:binary_to_atom(Name), 
                     side = Side, 
@@ -96,4 +97,5 @@ unmarshalling_adj_wrapper([First| Rest]) ->
                     crossing = Crossing,
                     arrival_time = ArrivalTime,
                     delta = Delta,
-                    state = utils:binary_to_atom(State)} | unmarshalling_adj_wrapper(Rest)].    
+                    state = utils:binary_to_atom(State),
+                    crash_type = CrashType} | unmarshalling_adj_wrapper(Rest)].    

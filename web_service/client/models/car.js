@@ -40,7 +40,8 @@ class AnimatedCar extends THREE.Group {
 		// update position
 
 		this.position.set((state.side * this.scaleFactor / 2), ((street.bridge_length + street.length) / 2) * this.scaleFactor * state.side, this.position.z);
-		this.TweenTo( this.computePosition(state) ).start();
+		this.lastPos = this.computePosition(state);
+		this.TweenTo( this.lastPos ).start();
 
 		// update state
 		this.setColor();
@@ -63,6 +64,12 @@ class AnimatedCar extends THREE.Group {
 	}
 
 
+	setTowTruckColor(){
+		this.car.material.color.setHex(0x8b4513);
+		this.car.material.opacity = 0.5;
+	}
+
+
 	setStopColor(){
 		this.car.material.color.setHex(0xff5400);
 		this.car.material.opacity = 0.5;
@@ -76,7 +83,7 @@ class AnimatedCar extends THREE.Group {
 			z: this.position.z 
 		};
 
-		if(state.crossing){
+		if(state.crossing && state.position < street.bridge_length){
 			pos.x = 0;
 		}
 
@@ -94,14 +101,24 @@ class AnimatedCar extends THREE.Group {
 	* 3 crossing car	1
 	* 4 dead			1
 	*/
+
 	updateState(state){
 		// update position
+		var newPos = this.computePosition(state);
 
-		this.TweenTo( this.computePosition(state) ).start();
-		
+		if (JSON.stringify(newPos) != JSON.stringify(this.lastPos)){
+			console.log("\n\n tween" + JSON.stringify(newPos) + JSON.stringify(this.lastPos) + "crossing " + state.crossing);
+			this.TweenTo( newPos ).start();
+		}
+		this.lastPos = newPos;
+
 		switch (state.state) {
-			case 'dead': 	
-				this.setDeadColor();
+			case 'dead': 
+				if (state.crash_type > 0){
+					this.setDeadColor();
+				} else {
+					this.setStopColor();
+				}
 				break;
 			case 'sync':		
 				this.setColor();
@@ -118,15 +135,31 @@ class AnimatedCar extends THREE.Group {
 
 
 	remove(){
-		this.setStopColor();
-		var pos = {	x: this.state.side * this.scaleFactor / 2, 
-				y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - this.state.side),
-				z: this.position.z 
-			  };
-		this.TweenTo( pos ).start();
-		setTimeout(() => {
-			group.remove(this);
-        }, 1000);
+		if(this.state.crash_type > 0){
+			this.setTowTruckColor();
+			var pos = { x: this.state.side * this.scaleFactor * (3 / 2), 
+						 y: this.position.y,
+						 z: this.position.z 
+					   };
+			var pos1 = { x: this.state.side * this.scaleFactor * (3 / 2), 
+						 y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * this.state.side,
+						 z: this.position.z 
+					   };
+			this.TweenTo( pos ).chain( this.TweenTo(pos1) ).start();
+			setTimeout(() => {
+				group.remove(this);
+			}, this.transitionTime * 2);
+		} else {
+			this.setStopColor();
+			var pos = {	x: this.state.side * this.scaleFactor / 2, 
+					y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - this.state.side),
+					z: this.position.z 
+				};
+			this.TweenTo( pos ).start();
+			setTimeout(() => {
+				group.remove(this);
+			}, this.transitionTime * 2);
+		}
 	}
 
 
@@ -147,7 +180,7 @@ class AnimatedCar extends THREE.Group {
 	TweenTo(nextPosition){
 		this.initTime = Date.now();
 		var tween = new TWEEN.Tween( this.position ).to( nextPosition, this.transitionTime ).onComplete(function() {
-			console.log('tweentime: ' + (Date.now() - this.initTime));
+			//console.log('tweentime: ' + (Date.now() - this.initTime));
 		});
 		//tween.easing( TWEEN.Easing.Elastic.InOut )
 		return tween;

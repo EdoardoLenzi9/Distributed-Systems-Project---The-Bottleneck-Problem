@@ -7,7 +7,8 @@
                         crossing,
                         arrival_time,
                         delta,
-                        state
+                        state,
+                        crash_type
                     }).
 
 
@@ -79,7 +80,8 @@ adj_marshalling([First|Rest]) ->
         {crossing, First#adj_entity.crossing}, 
         {arrival_time, First#adj_entity.arrival_time},
         {delta, First#adj_entity.delta},
-        {state, First#adj_entity.state} ]} | adj_marshalling(Rest)].
+        {state, First#adj_entity.state},
+        {crash_type, First#adj_entity.crash_type} ]} | adj_marshalling(Rest)].
 
 
 settings_marshalling(Settings) ->

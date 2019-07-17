@@ -100,10 +100,14 @@ function LoadState( state ) {
 	}
 	state.forEach(function(car){ 	//left side
 		if(car.state != "sync"){
-			if(car.crossing){
+			if(car.crossing){ 
+				console.log(car.name + "From position: " + car.position)
 				car.position -= (street.bridge_length/2 * car.side)
+				console.log(car.name + "To position: " + car.position)
 			} else {
+				console.log(car.name + "From position: " + car.position)
 				car.position += (street.bridge_length/2 * car.side)
+				console.log(car.name + "To position: " + car.position)
 			}
 			UpdateState(car);
 		}

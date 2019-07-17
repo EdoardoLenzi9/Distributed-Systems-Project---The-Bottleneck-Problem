@@ -30,10 +30,9 @@ nickname(Name, Index) ->
 
 %%% request timer
 request_timer(Req) ->
-    utils:log("Timer: receive request"),
+    utils:log("Timer: receive request ~p", [Req]),
     {Label, Sender, Target, CurrentTime, RTT, Body} = Req,
     Nickname = nickname(lists:flatten(io_lib:format("~p", [CurrentTime])), 0),
-    utils:log("Timer: find available nickname ~p", [Nickname]),
     register(Nickname, self()),
     utils:log("Timer: send call to ~p", [Target]),
     supervisor_call_supervisor_api:timer_call({Label, Sender, Target, Nickname, CurrentTime, Body}),
@@ -55,7 +54,7 @@ request_timer(Req) ->
                 supervisor_reply_supervisor_api:timer_reply({timeout, ReplyTarget, ReplySender, ReplySendingTime, ReplyBody})
             end
     after RTT ->
-        utils:log("Timer: timeout reached"),
+        utils:log("Timer: timeout reached for ~p", [Label]),
         supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, CurrentTime, Body})
     end.
 
