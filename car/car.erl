@@ -140,14 +140,14 @@ normal({call, From}, Event, Data) ->
                 utils:log("Car: away from the bridge"),
                 Offset = ((Data#car_state.size / 2) + (Body#car_state.size / 2)) * Data#car_state.side,
                 MyPosition = if Data#car_state.crossing ->
-                    Data#car_state.position + (Data#car_state.bridge_length * Data#car_state.side);
+                    Data#car_state.position;
                 true ->
-                    Data#car_state.position
+                    Data#car_state.position + (Data#car_state.bridge_length * Data#car_state.side)
                 end,
                 YourPosition = if Body#car_state.crossing ->
-                    Body#car_state.position + (Body#car_state.bridge_length * Body#car_state.side);
+                    Body#car_state.position;
                 true ->
-                    Body#car_state.position
+                    Body#car_state.position + (Body#car_state.bridge_length * Body#car_state.side)
                 end,
                 utils:log("~p MyPosition: ~p", [Data#car_state.position, MyPosition]),
                 utils:log("~p YourPosition: ~p", [Body#car_state.position, YourPosition]),
