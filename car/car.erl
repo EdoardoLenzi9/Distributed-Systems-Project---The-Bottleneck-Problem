@@ -85,7 +85,7 @@ sync({call, From}, Event, Data) ->
         end,
         flow:keep(Data, From, {sync_default_behaviour, Data});
     Event ->
-        ignore(sync, Event, Data, From)
+        flow:ignore(sync, Event, Data, From)
     end.
 
 
@@ -197,7 +197,7 @@ normal({call, From}, Event, Data) ->
                         end;
                     % if there isn't any other car 
                     true ->
-                        utils:log("Car: there is not any other car in the front queue"),
+                        utils:log("Car: there is not any other car in the front queue ~p, ~p", [Data#car_state.max_speed, (((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / (Data#car_state.max_RTT / 1000))]),
                         Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / (Data#car_state.max_RTT / 1000)), Data#car_state.max_speed),
                         utils:log("New speed2 ~p", [Speed]),
                         car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
@@ -208,7 +208,7 @@ normal({call, From}, Event, Data) ->
                 end
             end;
         Event ->
-            ignore(normal, Event, Data, From)
+            flow:ignore(normal, Event, Data, From)
     end.
 
 
@@ -265,6 +265,7 @@ leader({call, From}, Event, Data) ->
                 flow:keep(Data, From, {leader_default_behaviour, Data});
             true ->
                 utils:log("the car can start crossing the bridge"),
+                utils:log("max speed ~p", [Data#car_state.max_speed]),
                 NewData = Data#car_state{   
                                             position = Data#car_state.bridge_length * Data#car_state.side, 
                                             crossing = true, 
@@ -276,7 +277,7 @@ leader({call, From}, Event, Data) ->
                 flow:next(normal, NewData, From, {normal, NewData})
             end;
         Event ->
-            ignore(leader, Event, Data, From)
+            flow:ignore(leader, Event, Data, From)
     end.
 
 
@@ -305,7 +306,7 @@ dead({call, From}, Event, Data) ->
                     flow:keep(Data, From, {dead_default_behaviour_2, Data})
             end;
         Event ->
-            ignore(dead, Event, Data, From)
+            flow:ignore(dead, Event, Data, From)
     end.
 
 
@@ -458,6 +459,3 @@ propagate_crossing_wrapper(Data, RearCars, Body) ->
 %    flow:next(dead, Data, From, {dead, Data}).
 
 
-ignore(State, Event, Data, From) ->
-    utils:log("Ignore unhandled events", [Event]),
-    flow:keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_ignore")), Data}).

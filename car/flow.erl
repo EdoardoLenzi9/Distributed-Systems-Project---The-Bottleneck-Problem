@@ -15,7 +15,7 @@ launch_event(Handler, Args) ->
 %%% Simulate a car crash after a given timeout
 timer(Req) ->
     {_Label, Sender, Target, RTT, Body} = Req,
-    timer:apply_after(Body, car_call_supervisor_api, car_call, [{wait_reply, Sender, Target, RTT, Body}]).
+    timer:apply_after(RTT, car_call_supervisor_api, car_call, [{wait_reply, Sender, Target, RTT, Body}]).
 
 
 nickname(Name, Index) ->
@@ -74,6 +74,11 @@ keep(Data, From, Reply) ->
     {keep_state, Data, [{reply, From, Reply}]}.
 
 
+ignore(State, Event, Data, From) ->
+    utils:log("Ignore unhandled event: ~p", [Event]),
+    keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_ignore")), Data}).
+
+
 %%% Keep the current state, and postpone an event
 postpone(Data) ->
     utils:log("KEEP STATE ~p, POSTPONE EVENT", [Data#car_state.state]),
@@ -83,7 +88,7 @@ postpone(Data) ->
 %%% Simulate a car crash after a given timeout
 killer(Name, Data, CrashType, Timeout) ->
     utils:log("KILLER ACTIVATED"),
-    NewData = Data#car_state{crash_type = CrashType},
+    %NewData = Data#car_state{crash_type = CrashType},
     timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{crash, Name, none, 0, CrashType}]).
     
 %%% Simulate a tow truck fix after a given timeout

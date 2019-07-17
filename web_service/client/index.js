@@ -16,7 +16,17 @@ function CreateCarAsync(delay, parameters) {
     return new Promise(resolve => {
         setTimeout(() => {
             carIndex++;
-            httpPostAsync('/simulation/new', parameters, function(content){
+            var car = {
+                host:       window.location.hostname,
+                port:       window.location.port,
+                name:       parameters.name, 
+                side:       parameters.side, 
+                power:      parameters.power, 
+                size:       parameters.size, 
+                crash_type: parameters.crash_type, 
+                timeout:    parameters.timeout, 
+            }
+            httpPostAsync('/simulation/new', car, function(content){
                 resolve(content);
             })
         }, delay);
@@ -26,11 +36,10 @@ function CreateCarAsync(delay, parameters) {
 
 function CreateCar(side){
     carIndex++;
-    var port = window.location.port;
 
     var parameters = {
         host:       window.location.hostname,
-        port:       port,
+        port:       window.location.port,
         name:       "car" + carIndex,     
         side:       side == "left" ? -1 : 1,
         power:      $('#' + side + '-power')[0].value == "" ? 1 : parseInt($('#' + side + '-power')[0].value),

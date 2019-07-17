@@ -68,15 +68,15 @@ init_handler(Body) ->
 		{<<"bridge_length">>, BridgeLength} ]} = DecodedTuple, 
 	utils:log("~n~p~n", [TowTruckTime]),
 	simulation_service:init(#settingsEntity{ 	process_visibility = list_to_atom(binary_to_list(ProcessVisibility)),
-												max_speed = binary_to_int(MaxSpeed),
-												max_RTT = binary_to_int(MaxRTT),
-												tow_truck_time = binary_to_int(TowTruckTime),
-												bridge_capacity = binary_to_int(BridgeCapacity), 
-												bridge_length = binary_to_int(BridgeLength) }),
+												max_speed = bin_to_int(MaxSpeed),
+												max_RTT = bin_to_int(MaxRTT),
+												tow_truck_time = bin_to_int(TowTruckTime),
+												bridge_capacity = bin_to_int(BridgeCapacity), 
+												bridge_length = bin_to_int(BridgeLength) }),
 	jiffy:encode({[{result, success}]}). 
 
 
-binary_to_int(Bin) ->
+bin_to_int(Bin) ->
 	list_to_integer(binary_to_list(Bin)).
 
 

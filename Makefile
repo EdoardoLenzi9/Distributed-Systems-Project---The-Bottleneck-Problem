@@ -107,6 +107,7 @@ env:
 
 
 build-docker:
+	@sudo docker network create ds_network
 	@echo "build docker"
 	@cd car ; \
 	sudo docker build -t car:v1 .

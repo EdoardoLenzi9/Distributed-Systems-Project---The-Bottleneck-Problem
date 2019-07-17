@@ -87,7 +87,9 @@ loop() ->
                     car:tow_truck(ReqTarget);
                 stop -> 
                     http_client:get_adj(ReqBody),
-                    car:stop(ReqTarget);
+                    car:stop(ReqTarget),
+                    utils:log("Stop supervisor"),
+                    init:stop();
                 crash ->
                     car:crash(ReqSender, ReqBody);
                 % wild-card used for: check, crossing, update_rear, update_front

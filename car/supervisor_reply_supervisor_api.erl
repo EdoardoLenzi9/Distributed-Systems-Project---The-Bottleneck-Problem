@@ -15,11 +15,11 @@ sup_reply(Response) ->
 
 
 timer_reply(Response) ->
-    utils:log("Timer reply supervisor"),
     {Label, Sender, Target, SendingTime, Body} = Response,
+    utils:log("Timer reply supervisor Target ~p, Label ~p, Body ~p", [Target, Label, Body]),
     reply_supervisor(Target, supervisor, {timer_reply, {Label, Sender, Target, SendingTime, Body}}). 
 
 
 reply_supervisor(Name, Nickname, Event) ->
-    utils:log("send event"),
+    utils:log("send event ~p", [Event]),
     {Nickname, Name} ! Event.
