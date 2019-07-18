@@ -35,6 +35,11 @@ crash(Name, CrashType) ->
 adj_reply(Name, Adj) ->
     utils:log("API Adj Reply"),
     gen_statem:call({global, Name}, {adj_reply, Adj}).
+    
+
+last_adj_reply(Name, Last) ->
+    utils:log("API Last Adj Reply"),
+    gen_statem:call({global, Name}, {last_adj_reply, Last}).
 
 
 update_front(Name, Replacement) ->

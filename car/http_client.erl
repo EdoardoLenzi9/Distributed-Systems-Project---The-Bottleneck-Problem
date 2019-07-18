@@ -29,6 +29,13 @@ get_adj(Data) ->
     http_client:call(post, Host, Port, "/car/adj", Content, car, unmarshalling_adj).
 
 
+get_last_adj(Data) -> 
+    Host = Data#car_state.host,
+    Port = Data#car_state.port,
+    Content = {[ {side, Data#car_state.side} ]},
+    http_client:call(post, Host, Port, "/car/adj/last", Content, car, unmarshalling_last_adj).
+
+
 %%%===================================================================
 %%% HTTP client
 %%%===================================================================

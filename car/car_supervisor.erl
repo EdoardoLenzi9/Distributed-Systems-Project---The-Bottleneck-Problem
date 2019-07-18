@@ -69,6 +69,9 @@ loop() ->
                 adj ->
                     Adj = http_client:get_adj(ReqBody),
                     car:adj_reply(ReqSender, Adj);
+                last_adj ->
+                    Last = http_client:get_last_adj(ReqBody),
+                    car:last_adj_reply(ReqSender, Last);
                 log_state -> 
                     http_client:get_adj(ReqBody);
                 next ->

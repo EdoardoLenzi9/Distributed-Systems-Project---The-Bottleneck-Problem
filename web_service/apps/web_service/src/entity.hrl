@@ -105,3 +105,15 @@ car_marshalling(Car) ->
     {bridge_capacity, Car#carEntity.bridge_capacity},
     {bridge_length, Car#carEntity.bridge_length},
     {timeout, Car#carEntity.timeout} ]}.
+
+
+last_adj_marshalling(Car, Side) ->
+    if Car =/= undefined ->
+        if Car#adj_entity.side == Side ->
+            {[ {name, Car#adj_entity.name} ]};
+        true ->
+            {[ {name, undefined} ]}
+        end;    
+    true ->
+        {[ {name, Car} ]}
+    end.

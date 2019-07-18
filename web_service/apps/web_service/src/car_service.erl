@@ -34,6 +34,16 @@ adj(Entity) ->
     [adj_marshalling(Front), adj_marshalling(Rear)].
 
 
+last_adj(Side) ->
+    Adj = adj_repository:get_all(),
+    Last = if Side == -1 -> 
+        utils:first_element(Adj);
+    true ->
+        utils:last_element(Adj)
+    end,    
+    last_adj_marshalling(Last, Side).
+        
+
 %%%===================================================================
 %%% private functions
 %%%===================================================================

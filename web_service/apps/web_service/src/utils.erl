@@ -32,6 +32,21 @@ first_elements([ ], _) ->
         end.
 
 
+% [1,2,3] -> 3
+last_element([ ]) ->
+    undefined;
+last_element(List) ->
+    [Pivot] = lists:nthtail(length(List)-1, List),
+    Pivot.
+
+
+% [1,2,3] -> 1    
+first_element([ ]) ->
+    undefined;
+first_element([First | _ ]) ->
+    First.
+
+
 get_timestamp() ->
     {Mega, Seconds, Ms} = os:timestamp(),
     (Mega*1000000 + Seconds)*1000 + erlang:round(Ms/1000).     

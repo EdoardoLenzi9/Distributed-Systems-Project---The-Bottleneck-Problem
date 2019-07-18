@@ -99,3 +99,9 @@ unmarshalling_adj_wrapper([First| Rest]) ->
                     delta = Delta,
                     state = utils:binary_to_atom(State),
                     crash_type = CrashType} | unmarshalling_adj_wrapper(Rest)].    
+
+
+unmarshalling_last_adj(Last) ->
+    utils:log("unmarshalling_last_adj"),
+    { [ {<<"name">>, Name} ] } = Last,
+    utils:binary_to_atom(Name).

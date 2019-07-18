@@ -37,57 +37,66 @@ sync({call, From}, Event, Data) ->
         crossing(sync, Body, Data, From);
     {check_reply, Reply} ->
         utils:log("EVENT check_reply"),
-        % berkeley
         {_Sender, _Target, SendingTime, RTT, Body} = Reply,
-        if Data#car_state.delta == 0 ->
-            utils:log("RTT ~p", [RTT]),
+
+        NewData = if Data#car_state.delta == 0 ->
+            utils:log("Compute berkeley with RTT ~p", [RTT]),
             CurrentTime = SendingTime, 
             PivotTime = Body#car_state.current_time,
             Delta = CurrentTime - (PivotTime + RTT / 2),
-            NewData = Data#car_state{delta = Delta, arrival_time = Data#car_state.arrival_time + Delta},
-            car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
-            flow:keep(NewData, From, {sync_check_reply, NewData});
+            Data#car_state{delta = Delta};
         true ->
-            [Rear | _Rest] = Body#car_state.adj#adj.rear_cars,
-            if Rear#car_state.name == Data#car_state.name ->
-                utils:log("Car: No race conflict during sync"),
-                Position = Body#car_state.position + (((Data#car_state.size / 2) + (Body#car_state.size / 2)) * Data#car_state.side), 
-                utils:log("initial position: ~p", [Position]),
-                NewData = Data#car_state{speed = 0, position = Position, current_time = utils:get_timestamp(), synchronized = true},
-                flow:next(normal, NewData, From, {normal, NewData});
+            Data 
+        end,
+
+        [Rear | _Rest] = Body#car_state.adj#adj.rear_cars,
+        if Rear#car_state.name == NewData#car_state.name ->
+            utils:log("Car: No race conflict during sync"),
+            if Body#car_state.position == undefined -> 
+                utils:log("Car: Behind not sync car"),
+                NewData2 = NewData#car_state{adj = NewData#car_state.adj#adj{front_cars = [Rear]}},
+                car_call_supervisor_api:car_call({last_adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+                flow:keep(NewData2, From, {sync_check_reply, NewData2});
             true ->
-                utils:log("Car: Looses race during sync"),
-                NewData = Data#car_state{adj = Data#car_state.adj#adj{front_cars = [Rear]}},
-                car_call_supervisor_api:car_call({adj, Data#car_state.name, none, Data#car_state.max_RTT, Data}),
-                flow:keep(NewData, From, {sync_check_reply, NewData})
-            end
+                Position = Body#car_state.position + (((NewData#car_state.size / 2) + (Body#car_state.size / 2)) * NewData#car_state.side), 
+                NewData2 = NewData#car_state{speed = 0, position = Position, arrival_time = utils:get_timestamp(), current_time = utils:get_timestamp(), synchronized = true},
+                NewData3 = if Body#car_state.arrival_time > (NewData2#car_state.arrival_time + NewData2#car_state.delta) ->
+                    utils:log("Car: bad Berkley sync"),
+                    NewData2#car_state{delta = 0};
+                true ->
+                    utils:log("Car: right Berkley sync"),
+                    NewData2
+                end,
+                utils:log("initial position: ~p, arrival time ~p, delta ~p", [Position, NewData3#car_state.arrival_time, NewData3#car_state.delta]),
+                flow:next(normal, NewData3, From, {normal, NewData3})
+            end;
+        true ->
+            utils:log("Car: Looses race during sync"),
+            NewData2 = Data#car_state{adj = Data#car_state.adj#adj{front_cars = [Rear]}, arrival_time = utils:get_timestamp()},
+            car_call_supervisor_api:car_call({last_adj, Data#car_state.name, none, Data#car_state.max_RTT, Data}),
+            flow:keep(NewData2, From, {sync_check_reply, NewData2})
         end;
-    {adj_reply, Adj} ->
-        utils:log("EVENT adj_reply"),
-        NewData = Data#car_state{adj = Adj},
-        utils:log("~p", [NewData]),
-        if length(NewData#car_state.adj#adj.front_cars) > 0 ->
-            [First | _Rest] = NewData#car_state.adj#adj.front_cars,
-            utils:log("Macchina davanti: ~p ~p", [First, First#car_state.position]),
+    {last_adj_reply, Last} ->
+        utils:log("EVENT last_adj_reply ~p", [Last]),
+        if Last =/= undefined ->
             car_call_supervisor_api:car_call({  check, 
                                                 Data#car_state.name, 
-                                                First#car_state.name, 
+                                                Last, 
                                                 Data#car_state.max_RTT, 
                                                 Data
                                             }),
-            flow:keep(Data, From, {sync_adj_reply, Data});
+            flow:keep(Data, From, {sync_last_adj_reply, Data});
         true -> 
-            Position = NewData#car_state.side * NewData#car_state.size, 
-            utils:log("initial position: ~p", [Position]),
-            NewData2 = NewData#car_state{speed = 0, position = Position, current_time = utils:get_timestamp(), synchronized = true},
-            flow:next(normal, NewData2, From, {normal, NewData2})
+            Position = Data#car_state.side,
+            NewData = Data#car_state{speed = 0, position = Position, arrival_time = utils:get_timestamp(), current_time = utils:get_timestamp(), synchronized = true},
+            utils:log("initial position: ~p, arrival time ~p", [Position, NewData#car_state.arrival_time]),
+            flow:next(normal, NewData, From, {normal, NewData})
         end;
     default_behaviour ->
         utils:log("EVENT default_behaviour"),
         FrontCars = Data#car_state.adj#adj.front_cars,
         if length(FrontCars) > 0 ->
             [Pivot | _Rest] = FrontCars,
-            utils:log("Start call"),
             car_call_supervisor_api:car_call({  check, 
                                                 Data#car_state.name, 
                                                 Pivot#car_state.name, 
@@ -96,7 +105,7 @@ sync({call, From}, Event, Data) ->
                                             }),
             flow:keep(Data, From, {sync_default_behaviour, Data});
         true ->
-            car_call_supervisor_api:car_call({adj, Data#car_state.name, none, Data#car_state.max_RTT, Data})
+            car_call_supervisor_api:car_call({last_adj, Data#car_state.name, none, Data#car_state.max_RTT, Data})
         end,
         flow:keep(Data, From, {sync_default_behaviour, Data});
     Event ->
