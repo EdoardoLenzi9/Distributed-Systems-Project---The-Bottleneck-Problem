@@ -42,7 +42,8 @@ start(Args) ->
                         max_speed = MaxSpeed,
                         tow_truck_time = TowTruckTime,
                         max_RTT = MaxRTT,
-                        port = Port 
+                        port = Port,
+                        last_RTT = 0
                     },
     utils:log("Car adj ~p", [State#car_state.adj]),
     utils:log("Timeout: ~p", [Timeout]),

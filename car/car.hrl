@@ -18,6 +18,7 @@
                         current_time,
                         adj,
                         state,
+                        last_RTT,
                         % settings and bridge metadata 
                         host,
                         port,

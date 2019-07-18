@@ -83,7 +83,7 @@ class AnimatedCar extends THREE.Group {
 			z: this.position.z 
 		};
 
-		if(state.crossing && state.position < street.bridge_length){
+		if(state.crossing && (state.position * state.side) < (street.bridge_length / 2)){
 			pos.x = 0;
 		}
 

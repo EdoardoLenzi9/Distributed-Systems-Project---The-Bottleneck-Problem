@@ -44,9 +44,9 @@ sync({call, From}, Event, Data) ->
             CurrentTime = SendingTime, 
             PivotTime = Body#car_state.current_time,
             Delta = CurrentTime - (PivotTime + RTT / 2),
-            Data#car_state{delta = Delta};
+            Data#car_state{delta = Delta, last_RTT = RTT};
         true ->
-            Data 
+            Data#car_state{last_RTT = RTT} 
         end,
 
         [Rear | _Rest] = Body#car_state.adj#adj.rear_cars,
@@ -55,7 +55,7 @@ sync({call, From}, Event, Data) ->
             if Body#car_state.position == undefined -> 
                 utils:log("Car: Behind not sync car"),
                 NewData2 = NewData#car_state{adj = NewData#car_state.adj#adj{front_cars = [Rear]}},
-                car_call_supervisor_api:car_call({last_adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+                car_call_supervisor_api:car_call({last_adj, NewData2#car_state.name, none, NewData2#car_state.max_RTT, NewData2}),
                 flow:keep(NewData2, From, {sync_check_reply, NewData2});
             true ->
                 Position = Body#car_state.position + (((NewData#car_state.size / 2) + (Body#car_state.size / 2)) * NewData#car_state.side), 
@@ -68,12 +68,13 @@ sync({call, From}, Event, Data) ->
                     NewData2
                 end,
                 utils:log("initial position: ~p, arrival time ~p, delta ~p", [Position, NewData3#car_state.arrival_time, NewData3#car_state.delta]),
-                flow:next(normal, NewData3, From, {normal, NewData3})
+                car_call_supervisor_api:car_call({adj, NewData3#car_state.name, none, NewData3#car_state.max_RTT, NewData3}),
+                flow:keep(NewData3, From, {sync_check_reply, NewData3})
             end;
         true ->
             utils:log("Car: Looses race during sync"),
-            NewData2 = Data#car_state{adj = Data#car_state.adj#adj{front_cars = [Rear]}, arrival_time = utils:get_timestamp()},
-            car_call_supervisor_api:car_call({last_adj, Data#car_state.name, none, Data#car_state.max_RTT, Data}),
+            NewData2 = NewData#car_state{adj = NewData#car_state.adj#adj{front_cars = [Rear]}, arrival_time = utils:get_timestamp()},
+            car_call_supervisor_api:car_call({last_adj, NewData2#car_state.name, none, NewData2#car_state.max_RTT, NewData2}),
             flow:keep(NewData2, From, {sync_check_reply, NewData2})
         end;
     {last_adj_reply, Last} ->
@@ -90,8 +91,14 @@ sync({call, From}, Event, Data) ->
             Position = Data#car_state.side,
             NewData = Data#car_state{speed = 0, position = Position, arrival_time = utils:get_timestamp(), current_time = utils:get_timestamp(), synchronized = true},
             utils:log("initial position: ~p, arrival time ~p", [Position, NewData#car_state.arrival_time]),
-            flow:next(normal, NewData, From, {normal, NewData})
+            car_call_supervisor_api:car_call({adj, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
+            flow:keep(NewData, From, {sync_last_adj_reply, NewData})
         end;
+    {adj_reply, Adj} ->
+        utils:log("EVENT adj_reply"),
+        utils:log("~p", [Adj]),
+        NewData = Data#car_state{adj = Adj},
+        flow:next(normal, NewData, From, {normal, NewData});
     default_behaviour ->
         utils:log("EVENT default_behaviour"),
         FrontCars = Data#car_state.adj#adj.front_cars,
@@ -131,18 +138,29 @@ normal({call, From}, Event, Data) ->
             check(normal, Sender, Data, From);
         {check_reply, Reply} ->
             utils:log("EVENT check_reply"),
-            {_Sender, _Target, _SendingTime, _RTT, Body} = Reply,
+            {_Sender, _Target, _SendingTime, RTT, Body} = Reply,
 
             Position = compute_position(Data),
 
             if (Position * Data#car_state.side) =< (Data#car_state.size / 2) ->
                 if Data#car_state.crossing ->
                     utils:log("Car: reach the end of the bridge"),
-                    NewData = Data#car_state{position = ( Data#car_state.size * Data#car_state.side / 2 ), speed = 0, current_time = utils:get_timestamp()},
+                    utils:log("Car: lastRTT ~p", [Data#car_state.last_RTT]),
+                    NewData = Data#car_state{ position = ( Data#car_state.size * Data#car_state.side / 2 ), 
+                                              speed = 0, 
+                                              current_time = utils:get_timestamp(),
+                                              last_RTT = (Data#car_state.last_RTT + RTT) / 2},
+                    utils:log("Car: lastRTT ~p", [NewData#car_state.last_RTT]),
                     flow:next(dead, NewData, From, {dead, NewData});
                 true ->
                     utils:log("Car: reach the bridge"),
-                    NewData = Data#car_state{position = ( (Data#car_state.bridge_length + (Data#car_state.size / 2)) * Data#car_state.side ), speed = 0, crossing = true, current_time = utils:get_timestamp()},
+                    utils:log("Car: lastRTT ~p", [Data#car_state.last_RTT]),
+                    NewData = Data#car_state{ position = ( (Data#car_state.bridge_length + (Data#car_state.size / 2)) * Data#car_state.side ), 
+                                              speed = 0, 
+                                              crossing = true, 
+                                              current_time = utils:get_timestamp(),
+                                              last_RTT = (Data#car_state.last_RTT + RTT) / 2},
+                    utils:log("Car: lastRTT ~p", [NewData#car_state.last_RTT]),
                     flow:next(leader, NewData, From, {leader, NewData})
                 end;
             true ->
@@ -161,15 +179,17 @@ normal({call, From}, Event, Data) ->
                 utils:log("~p MyPosition: ~p", [Data#car_state.position, MyPosition]),
                 utils:log("~p YourPosition: ~p", [Body#car_state.position, YourPosition]),
                 Distance = (MyPosition - YourPosition - Offset) * Data#car_state.side,
-                Speed = Distance  / (Data#car_state.max_RTT / 1000),
+                Speed = Distance  / ((Data#car_state.max_RTT) / 1000),
                 
-                utils:log("Car: travel with position ~p, speed ~p, distance ~p, offset ~p", [Position, Speed, Distance, Offset]),
+                utils:log("Car: travel with position ~p, speed ~p, distance ~p, offset ~p, lastRTT ~p", [Position, Speed, Distance, Offset, Data#car_state.last_RTT]),
                 
                 % continue polling
             
-                NewData = Data#car_state{position = Position, speed = Speed, current_time = utils:get_timestamp() },
+                utils:log("Car: lastRTT ~p", [Data#car_state.last_RTT]),
+                NewData = Data#car_state{position = Position, speed = Speed, current_time = utils:get_timestamp(), last_RTT = RTT },
+                utils:log("Car: lastRTT ~p", [NewData#car_state.last_RTT]),
                 car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
-                car_call_supervisor_api:car_call({wait, Data#car_state.name, none, Data#car_state.max_RTT, Data#car_state.max_RTT}),
+                car_call_supervisor_api:car_call({wait, NewData#car_state.name, none, NewData#car_state.max_RTT - NewData#car_state.last_RTT * 2, NewData#car_state.max_RTT - NewData#car_state.last_RTT * 2}),
                 flow:keep(NewData, From, {normal_check_reply, NewData})
             end;
         default_behaviour ->
@@ -206,20 +226,20 @@ normal({call, From}, Event, Data) ->
                         flow:keep(NewData, From, {normal_default_behaviour, NewData});
                     true ->
                         utils:log("Car: there is only a car on the opposite side of the bridge"),
-                        Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / (Data#car_state.max_RTT / 1000)), Data#car_state.max_speed),
+                        Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / ((Data#car_state.max_RTT) / 1000)), Data#car_state.max_speed),
                         utils:log("New speed ~p", [Speed]),
                         NewData = Data#car_state{speed = Speed, position = Position, current_time = utils:get_timestamp()},
                         car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
-                        car_call_supervisor_api:car_call({wait, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData#car_state.max_RTT}),
+                        car_call_supervisor_api:car_call({wait, NewData#car_state.name, none, NewData#car_state.max_RTT - NewData#car_state.last_RTT * 2, NewData#car_state.max_RTT - NewData#car_state.last_RTT * 2}),
                         flow:keep(NewData, From, {normal_default_behaviour, NewData})
                     end;
                 true ->
                     utils:log("Car: there is not any other car in the front queue"),
-                    Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / (Data#car_state.max_RTT / 1000)), Data#car_state.max_speed),
+                    Speed = erlang:min((((Data#car_state.position * Data#car_state.side) - (Data#car_state.size / 2)) / ((Data#car_state.max_RTT) / 1000)), Data#car_state.max_speed),
                     utils:log("New speed2 ~p", [Speed]),
                     NewData = Data#car_state{speed = Speed, position = Position, current_time = utils:get_timestamp()},
                     car_call_supervisor_api:car_call({log_state, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData}),
-                    car_call_supervisor_api:car_call({wait, NewData#car_state.name, none, NewData#car_state.max_RTT, NewData#car_state.max_RTT}),
+                    car_call_supervisor_api:car_call({wait, NewData#car_state.name, none, NewData#car_state.max_RTT - NewData#car_state.last_RTT * 2, NewData#car_state.max_RTT - NewData#car_state.last_RTT * 2}),
                     flow:keep(NewData, From, {normal_default_behaviour, NewData})
                 end
             end;
@@ -358,13 +378,13 @@ notify_dead_and_stop(Data) ->
 compute_position(Data) ->
         % compute car position
         TravelTime = (utils:get_timestamp() - Data#car_state.current_time) / 1000,
-        Position = round1f(Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side))),
+        Position = Data#car_state.position + (Data#car_state.speed * TravelTime * (-1 * Data#car_state.side)),
         utils:log("Compute position: Travel Time (s): ~p, Speed: ~p, OldPosition: ~p, CurrentPosition: ~p, Crossing ~p", [TravelTime, Data#car_state.speed, Data#car_state.position, Position, Data#car_state.crossing]),
         Position.
 
 
-round1f(Float) ->
-    round(Float * 10)/10. 
+%round1f(Float) ->
+%    round(Float * 10)/10. 
 
 
 timeout(State, Target, Data, From) ->
