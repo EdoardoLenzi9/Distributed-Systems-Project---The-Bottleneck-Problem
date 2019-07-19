@@ -2,17 +2,7 @@
     {
         "delay": 0,
         "parameters": { "name": "car1",
-                        "side": -1,
-                        "power":  1,
-                        "size": 1,
-                        "crash_type": 0,
-                        "timeout": 0
-                    }
-    },
-    {
-        "delay": 0,
-        "parameters": { "name": "car2",
-                        "side": -1,
+                        "side": 1,
                         "power":  1,
                         "size": 1,
                         "crash_type": 2,
@@ -20,8 +10,8 @@
                     }
     },
     {
-        "delay": 0,
-        "parameters": { "name": "car3",
+        "delay": 2000,
+        "parameters": { "name": "car2",
                         "side": -1,
                         "power":  1,
                         "size": 1,

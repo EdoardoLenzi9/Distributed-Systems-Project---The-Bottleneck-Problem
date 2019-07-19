@@ -96,7 +96,7 @@ loop() ->
                     init:stop();
                 crash ->
                     car:crash(ReqSender, ReqBody);
-                % wild-card used for: check, crossing, update_rear, update_front
+                % wild-card used for: check, one_way_check, crossing, update_rear, update_front
                 _ ->
                     flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, CurrentTime, ReqRTT, ReqBody}])
             end;
@@ -107,6 +107,9 @@ loop() ->
                 check ->
                     {_Result, Data} = car:check(ReqTarget, ReqBody),
                     supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data});
+                one_way_check ->
+                    {Result, _Data} = car:check(ReqTarget, ReqBody),
+                    supervisor_reply_supervisor_api:sup_reply({one_way_check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
                 crossing ->
                     {Result, _Data} = car:crossing(Req),
                     supervisor_reply_supervisor_api:sup_reply({crossing_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});

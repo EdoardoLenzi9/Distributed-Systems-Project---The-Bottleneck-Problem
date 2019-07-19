@@ -57,6 +57,136 @@
 
 
 %%%===================================================================
+%%% Getter and setter
+%%%===================================================================
+
+name( Data, Value ) ->
+    Data#car_state{ name = Value }.
+name( Data ) ->
+    Data#car_state.name.
+
+
+side( Data ) ->
+    Data#car_state.side.
+
+
+power( Data ) ->
+    Data#car_state.power.
+
+
+car_size( Data ) ->
+    Data#car_state.size.
+
+
+speed( Data, Value ) ->
+    Data#car_state{ speed = Value }.
+speed( Data ) ->
+    Data#car_state.speed.
+
+
+position( Data, Value ) ->
+    Data#car_state{ position = Value }.
+position( Data ) ->
+    Data#car_state.position.
+
+
+crossing( Data, Value ) ->
+    Data#car_state{ crossing = Value }.
+crossing( Data ) ->
+    Data#car_state.crossing.
+
+
+synchronized( Data, Value ) ->
+    Data#car_state{ synchronized = Value }.
+synchronized( Data ) ->
+    Data#car_state.synchronized.
+
+
+crash_type( Data, Value ) ->
+    Data#car_state{ crash_type = Value }.
+crash_type( Data ) ->
+    Data#car_state.crash_type.
+
+
+delta( Data, Value ) ->
+    Data#car_state{ delta = Value }.
+delta( Data ) ->
+    Data#car_state.delta.
+
+
+arrival_time( Data, Value ) ->
+    Data#car_state{ arrival_time = Value }.
+arrival_time( Data ) ->
+    Data#car_state.arrival_time.
+
+
+current_time( Data, Value ) ->
+    Data#car_state{ current_time = Value }.
+current_time( Data ) ->
+    Data#car_state.current_time.
+
+
+adj( Data, Value ) ->
+    Data#car_state{ adj = Value }.
+adj( Data ) ->
+    Data#car_state.adj.
+
+
+front_cars( Data, Value ) ->
+    Data#car_state{ adj = Data#car_state.adj#adj{ front_cars = Value } }.
+front_cars( Data ) ->
+    Data#car_state.adj#adj.front_cars.
+
+
+rear_cars( Data, Value ) ->
+    Data#car_state{ adj = Data#car_state.adj#adj{ rear_cars = Value } }.
+rear_cars( Data ) ->
+    Data#car_state.adj#adj.rear_cars.
+
+
+state( Data, Value ) ->
+    Data#car_state{ state = Value }.
+state( Data ) ->
+    Data#car_state.state.
+
+
+last_RTT( Data, Value ) ->
+    Data#car_state{ last_RTT = Value }.
+last_RTT( Data ) ->
+    Data#car_state.last_RTT.
+
+
+host( Data ) ->
+    Data#car_state.host.
+
+
+port( Data ) ->
+    Data#car_state.port.
+
+
+bridge_capacity( Data, Value ) ->
+    Data#car_state{ bridge_capacity = Value }.
+bridge_capacity( Data ) ->
+    Data#car_state.bridge_capacity.
+
+
+bridge_length( Data ) ->
+    Data#car_state.bridge_length.
+
+
+max_speed( Data ) ->
+    Data#car_state.max_speed.
+
+
+tow_truck_time( Data ) ->
+    Data#car_state.tow_truck_time.
+
+
+max_RTT( Data ) ->
+    Data#car_state.max_RTT.
+
+
+%%%===================================================================
 %%% Unmarshalling mappers (Dto -> Entity)
 %%%===================================================================
 
