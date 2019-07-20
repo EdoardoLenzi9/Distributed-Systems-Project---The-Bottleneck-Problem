@@ -36,9 +36,9 @@
 \contentsline {section}{\numberline {5.1}Tools}{21}
 \contentsline {subsection}{Language}{21}
 \contentsline {subsection}{Web service}{21}
-\contentsline {subsubsection}{Patterns and best practices}{21}
+\contentsline {subsubsection}{Patterns and best practices}{22}
 \contentsline {subsection}{UI}{22}
-\contentsline {subsection}{Car}{22}
+\contentsline {subsection}{Car}{23}
 \contentsline {section}{\numberline {5.2}Docker}{23}
 \contentsline {section}{\numberline {5.3}Data structures}{24}
 \contentsline {subsection}{Environment}{24}
@@ -51,3 +51,4 @@
 \contentsline {section}{\numberline {6.2}Non functional requirements}{30}
 \contentsline {chapter}{\chapternumberline {7}Conclusions}{31}
 \contentsline {appendix}{\chapternumberline {A}Appendix}{33}
+\contentsline {chapter}{Bibliography}{35}
