@@ -11,15 +11,16 @@ The system will be able to:
         that it can be crossed only in one way per turn. 
         So it never happens that two cars crossing the bridge at the same time, 
         in opposite ways.
-    \item \textbf{Avoid} any kind of \textbf{accident}.
+    \item \textbf{Avoid} any kind of \textbf{accident} (also between enqueued cars).
     \item The maximum amount of cars that can cross the bridge at the same time, 
-        in the same direction (a \textbf{block}), is equivalent at its capacity $c$.
+        in the same direction (a \textbf{block}), is equivalent to its capacity $c$.
     \item The decision of who can cross the bridge will be taken by the cars 
         themselves through a communication (\textbf{agreement}) that they 
         instaurate without any human help.
-    \item If a car is broken (it can’t communicate and/or move any more) 
-        it will be removed by a tow truck.
-    \item provide a \textbf{UI} in order to monitoring the \textbf{simulation}.
+    \item If a car is broken (it can't communicate and/or move any more) 
+        it will be removed by a \textbf{tow truck}.
+    \item provide a \textbf{UI} in order to monitoring the \textbf{simulation} 
+        and manage \textbf{settings}.
     \item generate new cars.
 \end{itemize}
 
@@ -33,14 +34,18 @@ We can distinguish the non functional requirements in the following macro areas:
         In fact it ensures that the bridge can be crossed only by cars that are moving 
         in the same direction. 
         Notice that we are not excluding the possibility of a car to break down 
-        (the cause of crashing is something that doesn’t belong to the task of the system).
+        (the cause of crashing is something that doesn't belong to the task of the system).
     \item \textbf{Security}: (bonus requirement, not necessary) 
         the system avoids man in the middle attacks using HTTPS.
-    \item \textbf{Strength}: the system can work also in particular cases that is when a 
-        car breaks down and so it needs to be removed. 
+    \item \textbf{Strength}: the system can work also in particular cases such as 
+        when a car breaks down and needs to be removed. 
         This situation does not lead to an accident because the other cars can find out 
         if a car is broken.
-    \item \textbf{Scalability}: cars, clients and web services.
+    \item \textbf{Scalability}: cars, clients and web services. The project requires that
+        cars can scale arbitrarily and there is a single web service; 
+        anyway our architecture can be easily modified in order to have an arbitrary number 
+        of web services (cause we use Mnesia~\cite{1}, a distributed database and cars are 
+        bounded to a particular web service dynamically).
     \item \textbf{Consistency}: due to the relative point of view of each process this 
     requirement is not guarantee at all.
     \item \textbf{Starvation}: if a car requires to cross the bridge, 
@@ -48,4 +53,8 @@ We can distinguish the non functional requirements in the following macro areas:
     it will never happen that a car waits for its turn forever.
     \item \textbf{Fairness}: if a car $A$ has arrived before car $B$, 
         then car $A$ will be the first one who cross the bridge (\textbf{FIFO ordering}).
+        Such as consistency there are scenarios in which, due to concurrency, the simulation 
+        generates two or more cars in the same instant and the requests arrive 
+        at the web service in random order (this isn't a huge issue cause in the reality 
+        two cars cannot be spawned in the scene in the same instant).
 \end{itemize}

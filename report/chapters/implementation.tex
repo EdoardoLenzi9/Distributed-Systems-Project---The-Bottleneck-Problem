@@ -1,25 +1,152 @@
 \chapter{Implementation}\label{ch:implementation}
-In this chapter we will explain how the system was implemented, so we will analize the languages, the data structures that were used
-and something more, inherent to that.
 
-\section{Language}
-To implement the project Erlang language was used. The decision was made due to the nature of the language itself.\\
-In fact, Erlang allows to handle concurrency and distributed programming: programs that can handle several threads of execution at the same time. 
-Actually each processo only swaps between jobs so fast, so it only gives the illusion of running them all at the same time. 
-What is great about Erlang is that it make it easy to create parallel threads of execution and it also permits these
-threads (called process because they do not share data) to communicate with each other.\\
-Furthermore Erlang can models finite state machine thanks to the $gen_statem$ behaviour and that fitted perfectly
-with the nature of the problem.\\ \\
-The standard data interchange format used is JSON. The main reason of this decision is that it is used 
-for transmitting data between a web application and a server. 
-Moreover JSON files are lightweight, text-based and human-readable, so we tought that would be good for our goal.
+In this chapter we will explain how the system was implemented, so we will describe 
+technologies/languages, data structures, patterns and best practices used.
 
-\section{TODO-- ?docker?}
-Details about the implementation: every choice about platforms, languages, software/hardware, middlewares, which has not been decided in the requirements.
+
+\section{Tools}
+
+
+\subsection{Language}
+
+
+The best choice between the languages exposed during the course seems to be 
+\textbf{Erlang}~\cite{3}; 
+in fact \textbf{Erlang OTP} allows to handle concurrency and distributed programming
+moreover provides some \textbf{behaviours} really useful for this project:
+\begin{itemize}
+    \item \textbf{gen$\_$statem behaviour} allows to create a \textbf{finite state machine} 
+        based on events (that fits perfectly with the nature of the problem);
+    \item \textbf{gen$\_$server behaviour} allows to create a \textbf{web server}; 
+        anyway for the web service implementation we prefer to use a more 
+        rich and well documented \textbf{web framework} called \textbf{Cowboy}~\cite{4}  
+\end{itemize}
+
+
+\subsection{Web service}
+
+Thanks to Cowboy we were able to implement a web service that exposes a \textbf{RESTful API}  
+for both cars and simulation clients; we use \textbf{JSON}~\cite{6} as standard data interchange 
+format for any interaction with the web service APIs.
+
+The main reason of this decision is that it is, nowadays, a standard de facto and also 
+versatile/\textbf{independent from the language} used 
+(we use a library called \textbf{Jiffy}~\cite{5} for serialization/deserialization of data).
+
+
+\subsubsection{Patterns and best practices}
+
+The web service architecture follows the idea on the base of the \textbf{MVC pattern}; 
+views, models and controllers were splitted and located in different files. 
+
+The \textbf{front-end tier} is structured in views, stored in the same folder of the 
+back-end code (for scope reasons). 
+Each view can calls the server calling \textit{http-client.js} 
+functions that use \textbf{AJAX}~\cite{12} for HTTP calls. 
+
+The \textbf{back-end tier} follows also the \textbf{repository pattern} and 
+\textbf{CRUD}~\cite{13} logic 
+for what concerns the interaction with Mnesia. We decide to use the repository pattern 
+in order to feel free, at any time, to change DBMS/connect with more than one DB without 
+rewrite business logic code.
+
+Mnesia is a no-SQL DBMS that basically works in a functional way (it is written in Erlang)
+with tuples so it \textbf{isn't necessary any kind of ORM}~\cite{7} in order 
+to map query results with Erlang data structures (and also avoid some issues of SQL 
+like \lq\lq hard-coded\rq\rq\ queries and SQL-injection~\cite{8}).
+
+Moreover every query, in particular \textbf{commands} (non idempotent query defined in 
+CQRS~\cite{14} pattern), is made with a \textbf{transaction} so concurrency 
+doesn't constitue an issue for this architecture.\\
+
+\noindent
+An HTTP call flow is really simple and clear; it starts from the \textbf{routing module} 
+\textit{web$\_$service$\_$app.erl} that forwards the request to the right 
+\textbf{controller}. In this passage we can also interpone some \textbf{middlewares} 
+but the project doesn't require any.
+
+\textbf{Controllers} are responsible for data unmarshalling and 
+call \textbf{business logic routines}. 
+
+The entire logic of the web service is 
+stored into the \textbf{service layer} that has the duty to interact with 
+the database using the interfaces exponed by the repositories and returns to 
+the controller the expected results. For this reason in order to \textbf{test} 
+the business logic is enough to test the utility functions used and exponed 
+by the services.  
+
+The module dependencies are: \textit{cowboy}, \textit{jiffy} and \textit{rebar3$\_$run} 
+plugin; \textbf{dependency management} was delegated to \textbf{rebar3}~\cite{17} 
+that uses internally HEX~\cite{18} package manger.
+
+
+\subsection{UI}
+
+UI is implemented using some famous front-end libraries collected with 
+\textbf{npm}~\cite{16} package manager. 
+
+Client UI can be used in any context so must have a \textbf{responsive layout} in order 
+to fit any screen size; we use \textbf{Bootstrap}~\cite{19} and JQuery~\cite{20} 
+in order to create a fluid layout. 
+
+Moreover we though that the aesthetics of the simulation could be more appealing 
+using \textbf{ThreeJS}~\cite{21} so we have injected in the main view a \textbf{3D canvas} 
+where cars are rendered as blocks on a 2D street plane.
+
+
+\subsection{Car}
+
+Car is structured as a \textbf{finite state machine} with events, 
+it has a \textbf{supervisor} that initializes the FSM and manages the interactions 
+with the other cars and with the web service. 
+
+The initial idea was to exclude the supervisor and call another car directly sending 
+a message; this idea fails cause $gen\_statem$ behaviour doesn't allow to send/receive 
+messages such as a normal node. 
+
+So the behavior forces to \textbf{use the supervisor as an interface} with the FSM 
+moreover we want to realize an asynchronous system for message exchange also 
+capable to keep track of message RTT and other parameters. 
+
+The solution was the creation of a little \textbf{timer subprocess} that manages the 
+message exchange; this way was applicable but also a little complex because 
+a message between two cars requires 8 hops (4 hops for the request and 4 hops for 
+the response) so we implement a \textbf{pseudo multi-layer encapsulation} in order 
+to create a generic asynchronous communication infrastructure.    
+
+\begin{center}
+    \includegraphics[scale=0.3]{assets/request-track.png}
+    \captionof{figure}{Message exchange between two cars}
+\end{center}
+\begin{center}
+    \includegraphics[scale=0.3]{assets/request-timeout.png}
+    \captionof{figure}{A message without any reply triggers a timeout event}
+\end{center}
+
+
+\section{Docker}
+
+At the end of the implementation the Erlang scripts were builded inside a docker image 
+ready to be instantiated in a new container. 
+
+Cars aren't aware, at compile time, of the \textbf{parameters} that characterize them 
+(size, power, global settings, web server IP, etc.) so we exploit 
+the docker feature to pass arguments with the \textit{run} call in order to 
+\textbf{initialize the car}.  
+
+Now the web service is sandboxed in a Docker container so in order to be able to launch 
+bash commands (ie. to raise a new car instance) outside its scope we set up an 
+\textbf{SSH tunnel}~\cite{15} toward the target host.
+
 
 \section{Data structures}
-As described in chaper 1, cars and bridge must be aware about some of their characteristics.
-In order to do that we decided to implement the car with a new data structure as follows:
+
+As described in Chaper 1, cars and bridge must be aware about their characteristics.
+
+In order to do that we have decided to create an environment file 
+(\textit{environment.json}) that collects the default environment settings,
+flanked by the UI that allows to update some settings.   
+
 
 \subsection{Environment}
 

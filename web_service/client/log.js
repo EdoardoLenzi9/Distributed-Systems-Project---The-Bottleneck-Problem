@@ -29,5 +29,5 @@ Read("environment.json", function(env){
 		//})
     }, env.max_RTT / 10);
     
-    //LoadScenario("02");
+    //LoadScenery("02");
 })

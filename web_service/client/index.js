@@ -2,9 +2,9 @@ var manualGeneration = false;
 var carIndex = 0;
 
 
-function LoadScenario(index){
-    Read( "/assets/scenery/" + index + ".json", function(scenario){
-        JSON.parse(scenario).forEach(async element => {
+function LoadScenery(index){
+    Read( "/assets/scenarios/" + index + ".json", function(scenery){
+        JSON.parse(scenery).forEach(async element => {
             console.log(element);   
             await CreateCarAsync(element.delay, element.parameters);
         });

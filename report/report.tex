@@ -1,4 +1,6 @@
 \documentclass{memoir}
+\usepackage{amssymb}
+\usepackage{caption}
 \usepackage{tikz}
 \usepackage[english, american]{babel}
 
@@ -14,8 +16,12 @@
 \begin{document}
 
 \maketitle
-
 \input{chapters/abstract.tex}
+
+\newpage
+\tableofcontents
+\newpage
+
 \input{chapters/introduction.tex}
 \input{chapters/analysis.tex}
 \input{chapters/project.tex}
