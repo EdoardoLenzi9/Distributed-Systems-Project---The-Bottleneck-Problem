@@ -1,47 +1,53 @@
 \select@language {american}
 \contentsline {chapter}{Contents}{2}
-\contentsline {chapter}{\chapternumberline {1}Introduction}{3}
-\contentsline {section}{\numberline {1.1}The Problem}{3}
-\contentsline {section}{\numberline {1.2}Requirements}{4}
-\contentsline {chapter}{\chapternumberline {2}Analysis}{5}
-\contentsline {section}{\numberline {2.1}Functional requirements}{5}
-\contentsline {section}{\numberline {2.2}Non functional requirements}{5}
-\contentsline {chapter}{\chapternumberline {3}Project}{7}
-\contentsline {section}{\numberline {3.1}Logical architecture}{7}
-\contentsline {section}{\numberline {3.2}Protocols and algorithms}{8}
-\contentsline {subsection}{Starvation/deadlock and order method}{8}
-\contentsline {subsection}{Solution}{8}
-\contentsline {section}{\numberline {3.3}Syncronization problem}{8}
-\contentsline {subsection}{Solution}{8}
-\contentsline {section}{\numberline {3.4}Agreement}{8}
-\contentsline {subsection}{Solution}{9}
-\contentsline {section}{\numberline {3.5}Failures}{9}
-\contentsline {subsection}{Solution}{9}
-\contentsline {section}{\numberline {3.6}MIM attack}{10}
+\contentsline {chapter}{\chapternumberline {1}Introduction}{5}
+\contentsline {section}{\numberline {1.1}The Problem}{5}
+\contentsline {section}{\numberline {1.2}Requirements}{6}
+\contentsline {chapter}{\chapternumberline {2}Analysis}{7}
+\contentsline {section}{\numberline {2.1}Functional requirements}{7}
+\contentsline {section}{\numberline {2.2}Non functional requirements}{7}
+\contentsline {chapter}{\chapternumberline {3}Project}{9}
+\contentsline {section}{\numberline {3.1}Logical architecture}{9}
+\contentsline {section}{\numberline {3.2}Protocols and algorithms}{10}
+\contentsline {subsection}{Starvation/deadlock and order method}{10}
 \contentsline {subsection}{Solution}{10}
-\contentsline {section}{\numberline {3.7}Scalability}{10}
+\contentsline {section}{\numberline {3.3}Syncronization problem}{10}
 \contentsline {subsection}{Solution}{10}
-\contentsline {section}{\numberline {3.8}SPOF}{11}
+\contentsline {section}{\numberline {3.4}Agreement}{10}
 \contentsline {subsection}{Solution}{11}
-\contentsline {subsection}{Algorithms}{13}
-\contentsline {section}{\numberline {3.9}Physical architecture and deployment}{14}
-\contentsline {section}{\numberline {3.10}Development plan}{14}
-\contentsline {chapter}{\chapternumberline {4}Implementation}{15}
-\contentsline {section}{\numberline {4.1}Tools}{15}
-\contentsline {subsection}{Language}{15}
-\contentsline {subsection}{Web service}{15}
-\contentsline {subsubsection}{Patterns and best practices}{15}
-\contentsline {subsection}{UI}{16}
-\contentsline {subsection}{Car}{16}
-\contentsline {section}{\numberline {4.2}Docker}{17}
-\contentsline {section}{\numberline {4.3}Data structures}{18}
-\contentsline {subsection}{Environment}{18}
-\contentsline {subsection}{Car}{18}
-\contentsline {subsubsection}{Communication}{21}
-\contentsline {subsection}{Adj}{22}
-\contentsline {chapter}{\chapternumberline {5}Validation}{23}
-\contentsline {subsection}{Tests}{23}
-\contentsline {section}{\numberline {5.1}Functional requirements}{23}
-\contentsline {section}{\numberline {5.2}Non functional requirements}{24}
-\contentsline {chapter}{\chapternumberline {6}Conclusions}{25}
-\contentsline {appendix}{\chapternumberline {A}Appendix}{27}
+\contentsline {section}{\numberline {3.5}Failures}{11}
+\contentsline {subsection}{Solution}{11}
+\contentsline {section}{\numberline {3.6}MIM attack}{12}
+\contentsline {subsection}{Solution}{12}
+\contentsline {section}{\numberline {3.7}Scalability}{12}
+\contentsline {subsection}{Solution}{12}
+\contentsline {section}{\numberline {3.8}SPOF}{13}
+\contentsline {subsection}{Solution}{13}
+\contentsline {subsection}{Algorithms}{15}
+\contentsline {section}{\numberline {3.9}Physical architecture and deployment}{16}
+\contentsline {section}{\numberline {3.10}Development plan}{16}
+\contentsline {chapter}{\chapternumberline {4}The Idea}{17}
+\contentsline {section}{\numberline {4.1}Init}{18}
+\contentsline {section}{\numberline {4.2}Sync}{19}
+\contentsline {section}{\numberline {4.3}Normal}{19}
+\contentsline {section}{\numberline {4.4}Leader}{20}
+\contentsline {section}{\numberline {4.5}Dead}{20}
+\contentsline {chapter}{\chapternumberline {5}Implementation}{21}
+\contentsline {section}{\numberline {5.1}Tools}{21}
+\contentsline {subsection}{Language}{21}
+\contentsline {subsection}{Web service}{21}
+\contentsline {subsubsection}{Patterns and best practices}{21}
+\contentsline {subsection}{UI}{22}
+\contentsline {subsection}{Car}{22}
+\contentsline {section}{\numberline {5.2}Docker}{23}
+\contentsline {section}{\numberline {5.3}Data structures}{24}
+\contentsline {subsection}{Environment}{24}
+\contentsline {subsection}{Car}{24}
+\contentsline {subsubsection}{Communication}{27}
+\contentsline {subsection}{Adj}{28}
+\contentsline {chapter}{\chapternumberline {6}Validation}{29}
+\contentsline {subsection}{Tests}{29}
+\contentsline {section}{\numberline {6.1}Functional requirements}{29}
+\contentsline {section}{\numberline {6.2}Non functional requirements}{30}
+\contentsline {chapter}{\chapternumberline {7}Conclusions}{31}
+\contentsline {appendix}{\chapternumberline {A}Appendix}{33}

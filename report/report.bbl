@@ -1,0 +1,84 @@
+\begin{thebibliography}{Lam78}
+
+\bibitem[Boo]{19}
+Bootstrap.
+\newblock https://getbootstrap.com/.
+
+\bibitem[Cow]{4}
+\textbf{Cowboy Web Framework}.
+\newblock \url{https://ninenines.eu/}.
+
+\bibitem[CQR]{14}
+\textbf{CQRS}.
+\newblock \url{https://medium.com/eleven-labs/cqrs-pattern-c1d6f8517314}.
+
+\bibitem[CRU]{13}
+\textbf{CRUD}.
+\newblock \url{https://en.wikipedia.org/wiki/Create,_read,_update_and_delete}.
+
+\bibitem[Erl]{3}
+\textbf{Erlang}.
+\newblock \url{http://erlang.org/doc/}.
+
+\bibitem[Git]{2}
+\textbf{GitHub}.
+\newblock \url{https://github.com/}.
+
+\bibitem[HEX]{18}
+Hex.
+\newblock https://hex.pm/.
+
+\bibitem[Jif]{5}
+\textbf{Jiffy library}.
+\newblock \url{https://hex.pm/packages/jiffy}.
+
+\bibitem[JQu]{20}
+Jquery.
+\newblock https://jquery.com/.
+
+\bibitem[JSO]{6}
+\textbf{JSON}.
+\newblock \url{https://www.json.org/}.
+
+\bibitem[Lam78]{Lamport:1978}
+Leslie Lamport.
+\newblock Time, clocks, and the, ordering of events in a distributed system.
+\newblock 1978.
+
+\bibitem[Men]{1}
+\textbf{Mensia}.
+\newblock \url{http://erlang.org/doc/man/mnesia.html}.
+
+\bibitem[npm]{16}
+npm.
+\newblock https://www.npmjs.com/.
+
+\bibitem[ORM]{7}
+\textbf{ORM}.
+\newblock \url{https://en.wikipedia.org/wiki/Object-relational_mapping}.
+
+\bibitem[reb]{17}
+rebar3.
+\newblock https://www.rebar3.org/.
+
+\bibitem[RES]{9}
+\textbf{REST}.
+\newblock \url{https://en.wikipedia.org/wiki/Representational_State_Transfer}.
+
+\bibitem[SQL]{8}
+\textbf{SQL Injection}.
+\newblock \url{https://en.wikipedia.org/wiki/SQL_injection}.
+
+\bibitem[SSH]{15}
+\textbf{SSH}.
+\newblock \url{https://en.wikipedia.org/wiki/Secure_Shell}.
+
+\bibitem[TDD]{10}
+\textbf{TDD}.
+\newblock \url{https://en.wikipedia.org/wiki/Test_driven_development}.
+
+\bibitem[Thr]{21}
+Threejs.
+\newblock https://threejs.org/.
+
+\end{thebibliography}
