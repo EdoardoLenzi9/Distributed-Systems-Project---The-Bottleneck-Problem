@@ -32,6 +32,8 @@ start(Args) ->
                         speed = 0,
                         obstacle_position = Size / 2 * (Side - 1), 
                         position = Side - 1, 
+                        last_position = Side - 1,
+                        last_crossing = false,
                         crossing = false,
                         synchronized = false,
                         crash_type = 0,

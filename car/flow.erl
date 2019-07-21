@@ -64,7 +64,11 @@ request_timer(Req) ->
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     utils:log("State: ~p", [Data]),
-    NewData = Data#car_state{state = NextState, current_time = utils:get_timestamp()},
+    NewData = Data#car_state{   
+                              state = NextState, 
+                              current_time = utils:get_timestamp(),
+                              synchronized = true
+                            },
     car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, NewData}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
@@ -87,7 +91,7 @@ postpone(Data) ->
 
 
 %%% Simulate a car crash after a given timeout
-killer(Name, Data, CrashType, Timeout) ->
+killer(Name, _Data, CrashType, Timeout) ->
     utils:log("KILLER ACTIVATED"),
     %NewData = Data#car_state{crash_type = CrashType},
     timer:apply_after(Timeout, car_call_supervisor_api, car_call, [{crash, Name, none, 0, CrashType}]).

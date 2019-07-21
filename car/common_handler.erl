@@ -51,12 +51,13 @@ notify_dead_and_stop( Data ) ->
       	ok
 	end,
 	
+	NewData = state(Data, stop),
     car_call_supervisor_api:car_call( { 
                                         stop, 
-                                        name( Data ), 
-                                        name( Data ), 
-                                        max_RTT( Data ), 
-                                        state( Data, stop ) 
+                                        name( NewData ), 
+                                        name( NewData ), 
+                                        max_RTT( NewData ), 
+                                        state( NewData, stop ) 
                                   	} ).
 
 

@@ -19,6 +19,8 @@
                         adj,
                         state,
                         last_RTT,
+                        last_position,
+                        last_crossing,
                         obstacle_position,
                         % settings and bridge metadata 
                         host,
@@ -89,6 +91,22 @@ position( Data, Value ) ->
     Data#car_state{ position = Value }.
 position( Data ) ->
     Data#car_state.position.
+
+
+update_last_position( Data ) ->
+    Data#car_state{ last_position = Data#car_state.position, last_crossing = Data#car_state.crossing }.
+
+
+last_position( Data, Value ) ->
+    Data#car_state{ last_position = Value }.
+last_position( Data ) ->
+    Data#car_state.last_position.
+
+
+last_crossing( Data, Value ) ->
+    Data#car_state{ last_crossing = Value }.
+last_crossing( Data ) ->
+    Data#car_state.last_crossing.
 
 
 crossing( Data, Value ) ->

@@ -13,7 +13,7 @@ delete(Item) ->
 
 
 select(Entity, MatchHead, Guard, Result) ->
-    F = fun() -> db_manager:select(Entity,[{MatchHead, Guard, Result}]) end,
+    F = fun() -> db_manager:select(Entity, MatchHead, Guard, Result) end,
     {atomic, Data} = mnesia:transaction(F),
     Data.
 
