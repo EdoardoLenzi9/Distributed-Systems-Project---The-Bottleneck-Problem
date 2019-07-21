@@ -64,14 +64,15 @@ request_timer(Req) ->
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     utils:log("State: ~p", [Data]),
-    NewData = Data#car_state{state = NextState},
+    NewData = Data#car_state{state = NextState, current_time = utils:get_timestamp()},
     car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, NewData}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
 %%% Keep the current state, send a Reply to the event sender
 keep(Data, From, Reply) ->
     utils:log("KEEP STATE ~p", [Data#car_state.state]),
-    {keep_state, Data, [{reply, From, Reply}]}.
+    NewData = Data#car_state{current_time = utils:get_timestamp()},
+    {keep_state, NewData, [{reply, From, Reply}]}.
 
 
 ignore(State, Event, Data, From) ->

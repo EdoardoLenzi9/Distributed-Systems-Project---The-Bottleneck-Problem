@@ -8,14 +8,14 @@
 %%%===================================================================
 
 add(Entity) ->
-    db_manager:add(Entity).
+    repository_helper:add(Entity).
 
 
 delete(Entity) ->
-    db_manager:delete(Entity).
+        repository_helper:delete(Entity).
 
 get_all() ->
-    order(db_manager:get_all(adj_entity)).
+    order(repository_helper:get_all(adj_entity)).
 
 
 %%%===================================================================

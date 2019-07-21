@@ -49,4 +49,4 @@ leader( { call, From }, Event, Data ) ->
 
 dead( { call, From }, Event, Data ) -> 
     utils:log( "STATE Dead" ),
-    dead_handler:leader( From, Event, Data ).
+    dead_handler:dead( From, Event, Data ).

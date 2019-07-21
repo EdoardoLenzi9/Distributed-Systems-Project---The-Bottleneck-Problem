@@ -30,6 +30,8 @@ start(Args) ->
                         power = Power, 
                         size = Size,
                         speed = 0,
+                        obstacle_position = Size / 2 * (Side - 1), 
+                        position = Side - 1, 
                         crossing = false,
                         synchronized = false,
                         crash_type = 0,

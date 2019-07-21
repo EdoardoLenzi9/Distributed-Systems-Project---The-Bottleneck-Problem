@@ -49,40 +49,31 @@ sync( From, Event, Data ) ->
                             };
             true ->
                 utils:log( "Car: yet synchronized" ),
-                last_RTT(Data, RTT ) 
+                Data#car_state{ 
+                                obstacle_position = position(Body), 
+                                last_RTT = RTT
+                              }
             end,
 
-            [ Rear | _Rest ] = rear_cars( Body ),
-            if Rear#car_state.name == SyncData#car_state.name ->
-                utils:log( "Car: No race conflict during sync" ),
+            if Body#car_state.synchronized ->
+                utils:log( "Car: Front car is synchronized with WS" ),
 
-                if Body#car_state.position == undefined -> 
-                    utils:log( "Car: Behind not sync car" ),
-                    NewData = front_cars( SyncData, [ Rear ] ),
-                    car_call_supervisor_api:car_call( { 
-                                                        last_adj, 
-                                                        name( NewData ), 
-                                                        undefined, 
-                                                        max_RTT( NewData ), 
-                                                        NewData 
-                                                    } ),
-                flow:keep( NewData, From, { sync_check_reply, NewData } );
-            true ->
                 Position = position(Body) + ( ( ( car_size(SyncData) / 2 ) + ( car_size(Body) / 2 ) ) * side(SyncData) ), 
                 NewData = SyncData#car_state{ 
                                                 speed = 0, 
                                                 position = Position, 
                                                 arrival_time = utils:get_timestamp(), 
-                                                current_time = utils:get_timestamp(), 
-                                                synchronized = true 
+                                                current_time = utils:get_timestamp()
                                             },
+
                 NewData2 = if Body#car_state.arrival_time > ( NewData#car_state.arrival_time + NewData#car_state.delta ) ->
-                    utils:log( "Car: bad Berkley sync" ),
+                    utils:log( "Car: reset bad Berkley sync" ),
                     delta( NewData, 0 );
                 true ->
                     utils:log( "Car: right Berkley sync" ),
                     NewData
                 end,
+                
                 utils:log( "initial position: ~p, arrival time ~p, delta ~p", [ Position, arrival_time(NewData2), delta(NewData2) ] ),
                 car_call_supervisor_api:car_call( { 
                                                     adj, 
@@ -91,54 +82,17 @@ sync( From, Event, Data ) ->
                                                     max_RTT(NewData2), 
                                                     NewData2 
                                                 } ),
-                flow:keep( NewData2, From, { sync_check_reply, NewData2 } )
-            end;
+                flow:keep( NewData2, From, { sync_check_reply, NewData2 } );
             true ->
-                utils:log( "Car: Looses race during sync" ),
-                NewData = SyncData#car_state{ 
-                                            adj = SyncData#car_state.adj#adj{ front_cars = [ Rear ] }, 
-                                            arrival_time = utils:get_timestamp() 
-                                            },
-                car_call_supervisor_api:car_call( { 
-                                                    last_adj, 
-                                                    name(NewData), 
-                                                    undefined, 
-                                                    max_RTT(NewData), 
-                                                    NewData 
-                                                } ),
-                flow:keep( NewData, From, { sync_check_reply, NewData } )
-            end;
-
-
-        { last_adj_reply, Last } ->
-            utils:log( "EVENT last_adj_reply ~p", [ Last ] ),
-            if Last =/= undefined ->
+                utils:log( "Car: Front car is not synchronized with WS" ),
                 car_call_supervisor_api:car_call( { 
                                                     check, 
-                                                    name(Data), 
-                                                    Last, 
-                                                    max_RTT(Data), 
-                                                    Data
+                                                    name(SyncData), 
+                                                    name(Body), 
+                                                    max_RTT(SyncData), 
+                                                    SyncData 
                                                 } ),
-                flow:keep( Data, From, { sync_last_adj_reply, Data } );
-            true -> 
-                Position = side(Data),
-                NewData = Data#car_state{ 
-                                        speed = 0, 
-                                        position = Position, 
-                                        arrival_time = utils:get_timestamp(), 
-                                        current_time = utils:get_timestamp(), 
-                                        synchronized = true 
-                                        },
-                utils:log( "initial position: ~p, arrival time ~p", [ Position, arrival_time(NewData) ] ),
-                car_call_supervisor_api:car_call( { 
-                                                    adj, 
-                                                    name(NewData), 
-                                                    undefined, 
-                                                    max_RTT(NewData), 
-                                                    NewData 
-                                                } ),
-                flow:keep( NewData, From, { sync_last_adj_reply, NewData } )
+                flow:keep( SyncData, From, { sync_check_reply, SyncData } )
             end;
 
 
@@ -164,7 +118,7 @@ sync( From, Event, Data ) ->
             true ->
                 utils:log( "Car: there is not any other car in the front queue" ),
                 car_call_supervisor_api:car_call( { 
-                                                    last_adj, 
+                                                    adj, 
                                                     name(Data), 
                                                     undefined, 
                                                     max_RTT(Data), 

@@ -49,11 +49,10 @@ sync_handler(Body) ->
 	{[	{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power} ]} = DecodedTuple, 
-	jiffy:encode(car_service:sync(#sync_entity{	name = list_to_atom(binary_to_list(Name)), 
-												side = Side, 
-												power = Power,
-												timeStamp = utils:get_timestamp() })).
-
+		jiffy:encode(car_service:sync(#sync_entity{	name = list_to_atom(binary_to_list(Name)), 
+													side = Side, 
+													power = Power
+												  })).
 
 adj_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),

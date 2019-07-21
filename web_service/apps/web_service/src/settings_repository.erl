@@ -8,11 +8,11 @@
 
 add(Entity) ->
     db_manager:clear(settingsEntity),
-    db_manager:add(Entity).
+    repository_helper:add(Entity).
 
 
 get_all() ->
-    db_manager:get_all(settingsEntity).
+    repository_helper:get_all(settingsEntity).
 
 
 reset() ->

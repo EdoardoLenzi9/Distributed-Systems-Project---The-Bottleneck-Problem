@@ -74,4 +74,3 @@ crossing(Req) ->
     utils:log("API Crossing Request"),
     {_Label, _Sender, Target, _Nickname, _SendingTime, Body} = Req,
     gen_statem:call({global, Target}, {crossing, Body}).
-        

@@ -19,6 +19,7 @@
                         adj,
                         state,
                         last_RTT,
+                        obstacle_position,
                         % settings and bridge metadata 
                         host,
                         port,
@@ -156,6 +157,12 @@ last_RTT( Data ) ->
     Data#car_state.last_RTT.
 
 
+obstacle_position( Data, Value ) ->
+    Data#car_state{ obstacle_position = Value }.
+obstacle_position( Data ) ->
+    Data#car_state.obstacle_position.
+
+
 host( Data ) ->
     Data#car_state.host.
 
@@ -192,15 +199,15 @@ max_RTT( Data ) ->
 
 unmarshalling_sync([]) ->
     [];
-unmarshalling_sync([First| Rest]) ->
+unmarshalling_sync([First]) ->
     { [ {<<"name">>, Name},{<<"side">>,Side},{<<"power">>,Power} ] } = First,
-    [#car_state{ name = utils:binary_to_atom(Name), 
-                side = Side, 
-                power = Power } | unmarshalling_sync(Rest)].
+    [ #car_state{ name = utils:binary_to_atom(Name), 
+                  side = Side, 
+                  power = Power } ].
 
 
 unmarshalling_adj([ Front | Rest ]) ->
-    utils:log("unmarshalling_adj_wrapper1"),
+    utils:log("unmarshalling_adj_wrapper"),
     [Back] = Rest,
     #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
 
@@ -208,7 +215,7 @@ unmarshalling_adj([ Front | Rest ]) ->
 unmarshalling_adj_wrapper([]) ->
     [];
 unmarshalling_adj_wrapper([First| Rest]) ->
-    utils:log("unmarshalling_adj_wrapper1"),
+    utils:log("unmarshalling_adj_wrapper"),
     { [ {<<"name">>, Name}, 
         {<<"side">>,Side},
         {<<"power">>,Power},

@@ -9,7 +9,7 @@
 
 get_sync(Name, Side, Power, Host, Port) -> 
     Content = {[{name, Name}, {side, Side}, {power, Power}]},
-    http_client:call(post, Host, Port, "/car/sync", Content, car, unmarshalling_sync).
+    http_client:call(post, Host, Port, "/car/sync", Content, http_client, unmarshalling_sync).
 
 
 get_adj(Data) -> 
@@ -26,14 +26,14 @@ get_adj(Data) ->
                     {state, Data#car_state.state},
                     {crash_type, Data#car_state.crash_type}    
             ]},
-    http_client:call(post, Host, Port, "/car/adj", Content, car, unmarshalling_adj).
+    http_client:call(post, Host, Port, "/car/adj", Content, http_client, unmarshalling_adj).
 
 
 get_last_adj(Data) -> 
     Host = Data#car_state.host,
     Port = Data#car_state.port,
     Content = {[ {side, Data#car_state.side} ]},
-    http_client:call(post, Host, Port, "/car/adj/last", Content, car, unmarshalling_last_adj).
+    http_client:call(post, Host, Port, "/car/adj/last", Content, http_client, unmarshalling_last_adj).
 
 
 %%%===================================================================

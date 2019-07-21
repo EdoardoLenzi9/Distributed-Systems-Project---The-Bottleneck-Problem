@@ -17,7 +17,8 @@
                         side,
                         power,
                         size,
-                        timeStamp             
+                        time_stamp,
+                        chained             
                     }).
 
 
@@ -63,10 +64,10 @@
 
 sync_marshalling([]) ->
     [];
-sync_marshalling([First|Rest]) ->
+sync_marshalling(First) ->
     [{[ {name, First#sync_entity.name}, 
         {side, First#sync_entity.side}, 
-        {power, First#sync_entity.power} ]} | sync_marshalling(Rest)].
+        {power, First#sync_entity.power} ]}].
 
 
 adj_marshalling([]) ->

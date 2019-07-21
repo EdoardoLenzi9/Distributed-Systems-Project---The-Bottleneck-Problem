@@ -8,13 +8,9 @@
 %%%===================================================================
 
 sync(Entity) ->
-    Sync = if Entity#sync_entity.side == -1 -> 
-        utils:first_elements( sync_repository:get_all(), Entity#sync_entity.power);
-    Entity#sync_entity.side == 1 ->
-        lists:reverse(utils:last_elements( sync_repository:get_all(), Entity#sync_entity.power))
-    end,    
-    sync_repository:add(Entity),
-    sync_marshalling(Sync).
+    Res = sync_repository:add(Entity),
+    utils:log("SYNC ~p", [Res]),
+    sync_marshalling(Res).
 
 
 adj(Entity) ->

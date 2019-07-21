@@ -17,6 +17,8 @@ state() ->
 
 new(Entity) ->
     [Settings] = settings_repository:get_all(),
+    utils:log("Result ~p", [Settings]),
+    
     utils:log("Visibility ~p", [Settings#settingsEntity.process_visibility]),
     case Settings#settingsEntity.process_visibility of 
         visible ->
@@ -36,7 +38,7 @@ new(Entity) ->
                                     lists:flatten(io_lib:format("~p", [Settings#settingsEntity.max_RTT])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#newCarEntity.crash_type])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#newCarEntity.timeout])),
-                                    "'"]));
+                                    "' || true"]));
         detached -> 
             os:cmd(utils:concat([   "cd ../../../../../car;erl -detached -sname ", 
                                     Entity#newCarEntity.name, 
