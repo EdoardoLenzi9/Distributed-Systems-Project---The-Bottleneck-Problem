@@ -211,7 +211,99 @@ with a peer to peer layer of web services and some istances of a
 \end{center}
 
 
-\subsection{Algorithms}
+\section{Algorithms}
+
+\subsection{Assumptions and observations}
+Starting from the instantiation of a new car process we will describe the main aspects 
+of a \textbf{car life-cycle}. 
+\noindent
+We have to define new variables and notations; first of all we define a first layer cars as
+ the set of car processes, this layer sends periodically updates to a second layer of web service and 
+database. Finally a third layer of clients make polling on the second layer.
+
+As we will show, we model a car as a \textbf{finite state machine} 
+with the following main states: sync, normal, leader, dead.\\
+
+\noindent
+One of the main problems of the project task is that there are some non trivial aspects 
+that do not emerge in the initial analysis but are of fundamental importance; 
+this happens cause the analysis takes into consideration only the problem 
+that is located on an higher level with respect to the implementation and the 
+architecture proposed.
+
+First of all from the problem analysis is clear that the bridge is a shared resource 
+so the problem can be solved with the solution exposed by Lamport in its 
+article~\cite{Lamport:1978} about total ordering and synchronization. 
+
+But this isn't the best choice cause total ordering requires a huge exchange of 
+messages and, for this problem, is more than necessary; we decide to implement a 
+custom algorithm based on the idea of locks.
+
+Also leader election/distribute agreement algorithms are superfluous cause bridge 
+access isn't contended by every car in a certain instant but, at most, 
+by two concurrent cars on the opposite side; so a simple message exchange 
+will be enough for the leader election. \\
+
+\subsection{Concurrency}
+Due to the asyncronicity, concurrency and time drifting is really hard 
+to keep consistent the state of the cars layer with the simulation 
+on the client layer. 
+One way to keep an exact consistency can be to structure the algorithm on 
+turns and only at the end of the turn, after the reaching of a global agreement,
+launch a transactional update on the database layer. 
+This way is for sure really safe but implies the implementation of some logic 
+and a huge message exchange that overloads the network.
+
+A simpler and less expensive idea (greedy) can be to leave a temporal inconsistency between 
+layers state but avoid anomalous behaviours on the simulation side. \\
+
+\noindent
+Denote with $A \rightarrow B$ the partial order relation\footnote{
+    To be precise $\rightarrow$ isn't a partial order relation cause it isn't 
+    reflexive (a car cannot be behind itself) but only transitive and antisymmetric.
+} between two cars $A$ and $B$ that are running from left to right and $A$ 
+\textbf{is behind} $B$. 
+
+So assume that in a certain instant $t_0$ 
+(measured from an external and omniscient point of view) 
+$A$ is in position $p_{A0}$ and B in $p_{B0}$ and 
+the database layer state is consistent with the car layer state:
+
+\begin{equation}\begin{split}
+    state_{DB} = state_{Car}
+\end{split}\end{equation} 
+
+\noindent
+Now before the next instant $t_1$ car $A$ moves forward of one block and car $B$
+do the same after a while; we said after a while cause, as described by Lamport,
+time is a continuous measure but clocks have a finite precision so 
+ticks are discretizations of the time concept. 
+
+For this reason if we consider a turn/tick 
+of one second between $t_0$ and $t_1$ we realize that in this interval some 
+actions can be made so consider the case in which A and B before $t_1$ 
+have send two messages to the DB layer $A:p_{A1}$ and $B:p_{B1}$.
+
+Now from the point of view of the database layer we cannot made any assumption 
+about the incoming messages cause one or both of them can be lost and/or the 
+arrival order can be different from the sending order. 
+
+The more the third layer cannot have a consistent vision and, for example, 
+can render the movement of $B$ before the transition of $A$ causing 
+a visual crash (never happened).\\
+
+\begin{tcolorbox}
+\textbf{I)} Anomalous behaviours like that can easily be avoided ensuring that 
+for each car must hold an order relation $\rightarrow$ and both movements 
+and updates must be send respecting this relation.\\
+
+In this way it is possible 
+that the simulation renders $A$ in position $p_{A1}$ and $B$ in position 
+$p_{B0}$ but this isn't a huge issue cause doesn't led to a crash so 
+can be overlooked.
+\end{tcolorbox}
+
+\subsection{Berkeley}
 
 We have used the Berkeley algorithm in order to syncronize new spawned car processes.
 
