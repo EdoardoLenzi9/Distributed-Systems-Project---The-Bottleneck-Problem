@@ -3,7 +3,7 @@
 
 # public rules
 
-start: clean dependencies build build-docker env cred
+start: clean dependencies build env cred setup-docker
 
 
 run:
@@ -115,16 +115,27 @@ cred:
 	@cp credentials/credentials.json web_service/_build/default/rel/web_service/ || true
 
 
-build-docker:
+setup-docker: build-docker-erlssh build-docker-car build-docker-ws
+	@echo "docker setup"
+
+
+build-docker-erlssh: 
+	@echo "create docker network"
 	@sudo docker network create ds_network || true
-	@echo "build docker"
+	@echo "build docker erlssh"
+	@sudo docker build -t erlssh:v1 .
+
+
+build-docker-car:
+	@echo "build docker car"
 	@cd car ; \
 	sudo docker build -t car:v1 .
 
 
-build-erlssh:
-	@echo "build docker erlssh"
-	@sudo docker build -t erlssh:v1 .
+build-docker-ws:
+	@echo "build docker ws"
+	@cd web_service ; \
+	sudo docker build -t webservice:v1 .
 
 
 build: 

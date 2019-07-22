@@ -91,10 +91,12 @@ decode_credentials([], Result) ->
     utils:log("Result: ~p", [Result]),
     Result;
 decode_credentials([First | Rest], Result) ->
-    {[{<<"host">>,Host},
+    {[{<<"id">>,Id},
+    {<<"host">>,Host},
     {<<"ip">>,Ip},
     {<<"password">>,Password}]} = First,
     decode_credentials(Rest, [ #host_entity{
+                                                id = Id,
                                                 host = binary_to_list(Host),
                                                 ip = binary_to_list(Ip),
                                                 password = binary_to_list(Password),

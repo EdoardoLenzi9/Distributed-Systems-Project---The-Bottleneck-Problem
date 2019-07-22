@@ -24,7 +24,9 @@
                         obstacle_position,
                         % settings and bridge metadata 
                         host,
-                        port,
+                        ip,
+                        ws_host,
+                        ws_port,
                         bridge_capacity,
                         bridge_length,
                         max_speed,
@@ -181,12 +183,20 @@ obstacle_position( Data ) ->
     Data#car_state.obstacle_position.
 
 
+ws_host( Data ) ->
+    Data#car_state.ws_host.
+
+
+ws_port( Data ) ->
+    Data#car_state.ws_port.
+
+
 host( Data ) ->
     Data#car_state.host.
 
 
-port( Data ) ->
-    Data#car_state.port.
+ip( Data ) ->
+    Data#car_state.ip.
 
 
 bridge_capacity( Data, Value ) ->
@@ -235,6 +245,8 @@ unmarshalling_adj_wrapper([]) ->
 unmarshalling_adj_wrapper([First| Rest]) ->
     utils:log("unmarshalling_adj_wrapper"),
     { [ {<<"name">>, Name}, 
+        {<<"host">>,Host},
+        {<<"ip">>,Ip},
         {<<"side">>,Side},
         {<<"power">>,Power},
         {<<"size">>,Size},
@@ -246,6 +258,8 @@ unmarshalling_adj_wrapper([First| Rest]) ->
         {<<"crash_type">>, CrashType} ] } = First,
     utils:log("unmarshalling_adj_wrapper2"),
     [#car_state{    name = utils:binary_to_atom(Name), 
+                    host = binary_to_list(Host),
+                    ip = binary_to_list(Ip),
                     side = Side, 
                     power = Power,
                     size = Size,

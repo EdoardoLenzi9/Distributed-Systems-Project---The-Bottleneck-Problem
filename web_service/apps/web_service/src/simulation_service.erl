@@ -34,6 +34,8 @@ new(Entity) ->
                                     " -run car_supervisor start ",
                                     Entity#new_car_entity.host, " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.port])), " ",
+                                    SelectedHost#host_entity.host, " ",
+                                    SelectedHost#host_entity.ip, " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.side + 1])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.power])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.size])), " ",
@@ -52,6 +54,8 @@ new(Entity) ->
                                     " -run car_supervisor start ",
                                     Entity#new_car_entity.host, " ",
                                     Entity#new_car_entity.port, " ",
+                                    SelectedHost#host_entity.host, " ",
+                                    SelectedHost#host_entity.ip, " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.side + 1])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.power])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.size])), " ",
@@ -63,9 +67,18 @@ new(Entity) ->
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.crash_type])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.timeout]))]));
         docker -> 
-            utils:log(utils:concat([   "sudo docker run --net ds_network -e host='", 
-                                        Entity#new_car_entity.host, "' -e port='", 
-                                        Entity#new_car_entity.port, "' -e name='",
+            utils:log(utils:concat([   
+                                        "sshpass -p '", 
+                                        SelectedHost#host_entity.password, 
+                                        "' ssh ",
+                                        SelectedHost#host_entity.host, 
+                                        "@",
+                                        SelectedHost#host_entity.ip, 
+                                        " \"sudo docker run --net ds_network -e ws_host='", 
+                                        Entity#new_car_entity.host, "' -e ws_port='", 
+                                        Entity#new_car_entity.port, "' -e host='",
+                                        SelectedHost#host_entity.host, "' -e ip='",
+                                        SelectedHost#host_entity.ip, "' -e name='",
                                         Entity#new_car_entity.name, "' -e side=",
                                         lists:flatten(io_lib:format("~p", [Entity#new_car_entity.side + 1])), " -e power=",
                                         lists:flatten(io_lib:format("~p", [Entity#new_car_entity.power])), " -e size=",
@@ -77,7 +90,7 @@ new(Entity) ->
                                         lists:flatten(io_lib:format("~p", [Settings#settings_entity.max_RTT])), " -e crash_type=",
                                         lists:flatten(io_lib:format("~p", [Entity#new_car_entity.crash_type])), " -e timeout=",
                                         lists:flatten(io_lib:format("~p", [Entity#new_car_entity.timeout])),
-                                        " -dt car:v1"]))
+                                        " -dt car:v1\""]))
     end,
     car_marshalling(#car_entity{ name = list_to_atom(Entity#new_car_entity.name), 
                                 side = Entity#new_car_entity.side, 

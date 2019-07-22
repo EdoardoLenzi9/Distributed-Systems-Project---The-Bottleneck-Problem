@@ -56,7 +56,9 @@ sync_handler(Body) ->
 
 adj_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
-	{[	{<<"name">>, Name},
+	{[	{<<"host">>, Host},
+		{<<"ip">>, Ip},
+		{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power},
 		{<<"size">>, Size},
@@ -66,7 +68,10 @@ adj_handler(Body) ->
 		{<<"delta">>, Delta},
 		{<<"state">>, State},
 		{<<"crash_type">>, CrashType} ]} = DecodedTuple, 
-	jiffy:encode(car_service:adj(#adj_entity{ 	name = list_to_atom(binary_to_list(Name)), 
+	jiffy:encode(car_service:adj(#adj_entity{ 	
+												name = list_to_atom(binary_to_list(Name)), 
+												host = list_to_atom(binary_to_list(Host)), 
+												ip = list_to_atom(binary_to_list(Ip)), 
 											 	side = Side, 
 											 	power = Power, 
 												size = Size, 

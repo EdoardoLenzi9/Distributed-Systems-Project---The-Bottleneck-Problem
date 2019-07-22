@@ -8,9 +8,9 @@
 
 
 start(Args) -> 
-    utils:log("Args: PHost, PPort, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout"),
+    utils:log("Args: WSHost, WSPort, Host, Ip, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout"),
     utils:log("Args: ~p", [Args]),
-    [Host, Port, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout] = Args,
+    [WSHost, WSPort, Host, Ip, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, PMaxSpeed, PTowTruckTime, PMaxRTT, PCrashType, PTimeout] = Args,
     {Side, _} = string:to_integer(PSide),
     {Power, _ } = string:to_integer(PPower),
     {Size, _ } = string:to_integer(PSize),
@@ -38,15 +38,17 @@ start(Args) ->
                         synchronized = false,
                         crash_type = 0,
                         delta = 0,
-                        adj = #adj{front_cars = http_client:get_sync(node(), Side - 1, Power, Host, Port), rear_cars = []}, 
+                        adj = #adj{front_cars = http_client:get_sync(node(), Side - 1, Power, WSHost, WSPort), rear_cars = []}, 
                         state = sync,
-                        host = Host,
+                        host = list_to_atom(Host),
+                        ip = list_to_atom(Ip),
+                        ws_host = WSHost,
+                        ws_port = WSPort,
                         bridge_capacity = BridgeCapacity, 
                         bridge_length = BridgeLength,
                         max_speed = MaxSpeed,
                         tow_truck_time = TowTruckTime,
                         max_RTT = MaxRTT,
-                        port = Port,
                         last_RTT = 0
                     },
     utils:log("Car adj ~p", [State#car_state.adj]),

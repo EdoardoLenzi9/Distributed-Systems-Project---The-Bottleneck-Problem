@@ -1,5 +1,7 @@
 -record(adj_entity, {         
                         name,
+                        host,
+                        ip,
                         side,
                         power,
                         size,
@@ -23,6 +25,7 @@
 
 
 -record(host_entity, {              
+                        id,
                         host,
                         ip,
                         password,
