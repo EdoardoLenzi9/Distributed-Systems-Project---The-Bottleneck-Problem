@@ -97,7 +97,7 @@ sync_check_timeout_test_() ->
     test_fixture:listen(timeout, fun(_ReplyLabel, ReplySender, ReplyTarget, _ReplySendingTime, _ReplyBody) -> 
         car:timeout(ReplySender, ReplyTarget)
     end),
-    test_fixture:listen(call_tow_truck, fun(_ReqLabel, ReqSender, ReqTarget, _ReqRTT, ReqBody) -> 
+    test_fixture:listen(tow_truck_request, fun(_ReqLabel, ReqSender, ReqTarget, _ReqRTT, ReqBody) -> 
         flow:launch_event(tow_truck, [ReqBody, ReqTarget]),
         utils:log("Test: call car crash (will be postponed)"),
         car:crash(ReqTarget, 2),

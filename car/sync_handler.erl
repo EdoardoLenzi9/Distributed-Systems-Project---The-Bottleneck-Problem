@@ -38,6 +38,16 @@ sync( From, Event, Data ) ->
             utils:log( "EVENT check_reply" ),
             { _Sender, _Target, SendingTime, RTT, Body } = Reply,
 
+            ObstaclePosition = erlang:max( 
+                                            ( last_position( Body ) + ( car_size( Body)  / 2 * side( Body ) ) -
+                                              ( bridge_length( Body ) * utils:bool_to_int(last_crossing( Body ) ) * side( Body ) ) 
+                                            ) * side( Body ),
+                                            
+                                            car_size(Data) / 2
+                                         ) * side(Data),
+
+            utils:log( "Car: Obstacle position ~p", [ObstaclePosition] ),
+            
             SyncData = if Data#car_state.delta == 0 ->
                 utils:log( "Car: compute berkeley with RTT ~p", [ RTT ] ),
                 CurrentTime = SendingTime, 
@@ -45,12 +55,14 @@ sync( From, Event, Data ) ->
                 Delta = CurrentTime - ( PivotTime + RTT / 2 ),
                 Data#car_state{ 
                                 delta = Delta, 
-                                last_RTT = RTT
+                                last_RTT = RTT,
+                                obstacle_position = ObstaclePosition
                             };
             true ->
                 utils:log( "Car: yet synchronized" ),
+
                 Data#car_state{ 
-                                obstacle_position = position(Body), 
+                                obstacle_position = ObstaclePosition,
                                 last_RTT = RTT
                               }
             end,
@@ -58,7 +70,7 @@ sync( From, Event, Data ) ->
             if Body#car_state.synchronized ->
                 utils:log( "Car: Front car is synchronized with WS" ),
 
-                Position = position(Body) + ( ( ( car_size(SyncData) / 2 ) + ( car_size(Body) / 2 ) ) * side(SyncData) ), 
+                Position = obstacle_position(SyncData) + (car_size(SyncData) / 2 * side(SyncData)), 
                 NewData = SyncData#car_state{ 
                                                 speed = 0, 
                                                 position = Position, 

@@ -88,7 +88,7 @@ dead_state_1_test_() ->
     end),
 
     test_fixture:skip_next(),
-    test_fixture:listen(call_tow_truck, fun(_ReqLabel, _ReqSender, ReqTarget, _ReqRTT, ReqBody) -> 
+    test_fixture:listen(tow_truck_request, fun(_ReqLabel, _ReqSender, ReqTarget, _ReqRTT, ReqBody) -> 
         flow:launch_event(tow_truck, [ReqBody, ReqTarget])
     end),
     test_fixture:listen(tow_truck, fun(_ReqLabel, _ReqSender, ReqTarget, _ReqRTT, _ReqBody) -> 

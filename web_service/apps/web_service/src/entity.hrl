@@ -22,7 +22,15 @@
                     }).
 
 
--record(settingsEntity, {
+-record(host_entity, {              
+                        host,
+                        ip,
+                        password,
+                        number_of_cars
+}).
+
+
+-record(settings_entity, {
                             process_visibility,
                             max_speed,
                             max_RTT,
@@ -32,7 +40,7 @@
                         }).
 
 
--record(newCarEntity, {
+-record(new_car_entity, {
                         host,
                         port,
                         name,
@@ -44,7 +52,7 @@
                     }).
 
 
--record(carEntity, {
+-record(car_entity, {
                         name,
                         side,
                         power,
@@ -88,24 +96,24 @@ adj_marshalling([First|Rest]) ->
 settings_marshalling(Settings) ->
 
     {[  
-        {process_visibility, Settings#settingsEntity.process_visibility}, 
-        {max_speed, Settings#settingsEntity.max_speed}, 
-        {max_RTT, Settings#settingsEntity.max_RTT}, 
-        {tow_truck_time, Settings#settingsEntity.tow_truck_time}, 
-        {bridge_capacity, Settings#settingsEntity.bridge_capacity}, 
-        {bridge_length, Settings#settingsEntity.bridge_length} ]}.
+        {process_visibility, Settings#settings_entity.process_visibility}, 
+        {max_speed, Settings#settings_entity.max_speed}, 
+        {max_RTT, Settings#settings_entity.max_RTT}, 
+        {tow_truck_time, Settings#settings_entity.tow_truck_time}, 
+        {bridge_capacity, Settings#settings_entity.bridge_capacity}, 
+        {bridge_length, Settings#settings_entity.bridge_length} ]}.
 
 
 car_marshalling(Car) ->
-    {[ {name, Car#carEntity.name}, 
-    {side, Car#carEntity.side}, 
-    {power, Car#carEntity.power}, 
-    {max_speed, Car#carEntity.max_speed},
-    {max_RTT, Car#carEntity.max_RTT},
-    {tow_truck_time, Car#carEntity.tow_truck_time},
-    {bridge_capacity, Car#carEntity.bridge_capacity},
-    {bridge_length, Car#carEntity.bridge_length},
-    {timeout, Car#carEntity.timeout} ]}.
+    {[ {name, Car#car_entity.name}, 
+    {side, Car#car_entity.side}, 
+    {power, Car#car_entity.power}, 
+    {max_speed, Car#car_entity.max_speed},
+    {max_RTT, Car#car_entity.max_RTT},
+    {tow_truck_time, Car#car_entity.tow_truck_time},
+    {bridge_capacity, Car#car_entity.bridge_capacity},
+    {bridge_length, Car#car_entity.bridge_length},
+    {timeout, Car#car_entity.timeout} ]}.
 
 
 last_adj_marshalling(Car, Side) ->

@@ -30,7 +30,7 @@ start(Args) ->
                         power = Power, 
                         size = Size,
                         speed = 0,
-                        obstacle_position = Size / 2 * (Side - 1), 
+                        obstacle_position = 0, 
                         position = Side - 1, 
                         last_position = Side - 1,
                         last_crossing = false,
@@ -85,14 +85,17 @@ loop() ->
                 wait ->
                     flow:launch_event(timer, [Req]);
                 wait_reply ->
-                    car:default_behaviour(ReqSender);
+                    case ReqBody of 
+                        default_behaviour ->
+                            car:default_behaviour(ReqSender);
+                        tow_truck ->
+                            car:tow_truck(ReqSender)
+                    end;
                 default_behaviour ->
                     car:default_behaviour(ReqSender);
-                call_tow_truck ->
+                tow_truck_request ->
                     utils:log("TOW TRUCK CALLED"),
-                    car:tow_truck(ReqSender);
-                tow_truck -> 
-                    car:tow_truck(ReqTarget);
+                    flow:launch_event(tow_truck_request, [{ReqLabel, ReqSender, ReqTarget, CurrentTime, ReqRTT, ReqBody}]);
                 stop -> 
                     http_client:get_adj(ReqBody),
                     car:stop(ReqTarget),
@@ -109,20 +112,47 @@ loop() ->
             {ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, ReqBody} = Req,
             case ReqLabel of 
                 check ->
-                    {_Result, Data} = car:check(ReqTarget, ReqBody),
-                    supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data});
+                    {Result, Data} = car:check(ReqTarget, ReqBody),
+                    if Result =/= dead_ignore -> 
+                        supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data});
+                    true ->
+                        ignore
+                    end;
                 one_way_check ->
                     {Result, _Data} = car:check(ReqTarget, ReqBody),
-                    supervisor_reply_supervisor_api:sup_reply({one_way_check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    if Result =/= dead_ignore -> 
+                        supervisor_reply_supervisor_api:sup_reply({one_way_check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    true ->
+                        ignore
+                    end;
                 crossing ->
                     {Result, _Data} = car:crossing(Req),
-                    supervisor_reply_supervisor_api:sup_reply({crossing_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    if Result =/= dead_ignore -> 
+                        supervisor_reply_supervisor_api:sup_reply({crossing_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    true ->
+                        ignore
+                    end;
                 update_rear ->
                     {Result, _Data} = car:update_rear(ReqTarget, ReqBody),
-                    supervisor_reply_supervisor_api:sup_reply({update_rear_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    if Result =/= dead_ignore -> 
+                        supervisor_reply_supervisor_api:sup_reply({update_rear_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    true ->
+                        ignore
+                    end;
                 update_front ->
                     {Result, _Data} = car:update_front(ReqTarget, ReqBody),
-                    supervisor_reply_supervisor_api:sup_reply({update_front_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result})
+                    if Result =/= dead_ignore -> 
+                        supervisor_reply_supervisor_api:sup_reply({update_front_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    true ->
+                        ignore
+                    end;
+                tow_truck_request -> 
+                    {Result, _Data} = car:tow_truck(ReqTarget),
+                    if Result =/= dead_ignore -> 
+                        supervisor_reply_supervisor_api:sup_reply({tow_truck_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Result});
+                    true ->
+                        ignore
+                    end
             end;
         {timer_reply, Reply} ->
             utils:log("Supervisor: receive timer_reply ~p ", [Reply]),

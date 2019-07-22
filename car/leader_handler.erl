@@ -39,8 +39,14 @@ leader( From, Event, Data ) ->
 
             if Body#car_state.arrival_time > Data#car_state.arrival_time ->
                 utils:log( "Car: can start crossing the bridge" ),
-                common_handler:propagate_crossing( Data, Body ),
-                flow:next( normal, Data, From, { normal, Data } );
+                NewData = Data#car_state{  
+                                            obstacle_position = 0,
+                                            position = bridge_length(Data) * side(Data), 
+                                            crossing = true, 
+                                            speed = max_speed(Data)
+                                        },
+                common_handler:propagate_crossing( NewData, Body ),
+                flow:next( normal, NewData, From, { normal, NewData } );
 
             true->
                 utils:log( "Car: must wait ( has arrived after )" ),
@@ -49,7 +55,7 @@ leader( From, Event, Data ) ->
                                                     name(Data), 
                                                     undefied, 
                                                     max_RTT(Data), 
-                                                    max_RTT(Data) 
+                                                    default_behaviour 
                                                 } ),
                 flow:keep( Data, From, default_behaviour )
             end;
@@ -73,7 +79,7 @@ leader( From, Event, Data ) ->
             true ->
                 utils:log( "Car: can start crossing the bridge" ),
                 NewData = Data#car_state{  
-                                            obstacle_position = car_size(Data) / 2 * side(Data),
+                                            obstacle_position = 0,
                                             position = bridge_length(Data) * side(Data), 
                                             crossing = true, 
                                             speed = max_speed(Data)

@@ -60,28 +60,63 @@ request_timer(Req) ->
     end.
 
 
+%%% request tow truck
+tow_truck_request(Req) ->
+    utils:log("Tow Truck: receive request ~p", [Req]),
+    {Label, Sender, Target, CurrentTime, RTT, Body} = Req,
+    Nickname = nickname(lists:flatten(io_lib:format("~p", [CurrentTime])), 0),
+    register(Nickname, self()),
+    utils:log("Tow Truck: send call to ~p", [Target]),
+    supervisor_call_supervisor_api:timer_call({Label, Sender, Target, Nickname, CurrentTime, Body}),
+    receive
+        {sup_reply, Reply} ->
+            utils:log("Tow Truck: receive reply"),
+            {ReplyLabel, ReplySender, ReplyTarget, _ReplyNickname, ReplySendingTime, ReplyBody} = Reply,
+            if ReplyBody == ignore -> 
+                utils:log("Tow Truck: car is not in crash");
+            true ->
+                utils:log("Tow Truck: car is in crash type 1")
+                %supervisor_reply_supervisor_api:timer_reply({ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody});
+            end
+    after RTT ->
+        utils:log("Tow Truck: timeout reached, car is in crash type 2 or just removed"),
+        % TODO SSH
+        os:cmd(utils:concat(["sh ../scripts/kill-erlang-node.sh \"$(cut -d'@' -f1 <<<\"", atom_to_list(Target), "\")"])),
+        supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, CurrentTime, Body})
+    end.
+
+
 %%% Change state to NextState, send a Reply to the event sender
 next(NextState, Data, From, Reply) ->
     utils:log("STATE TRANSITION -> ~p", [NextState]),
     utils:log("State: ~p", [Data]),
     NewData = Data#car_state{   
                               state = NextState, 
+                              last_position = position(Data),
+                              last_crossing = crossing(Data),
                               current_time = utils:get_timestamp(),
                               synchronized = true
                             },
+    utils:log("Car: update last position ~p ~p", [position(NewData), crossing(NewData)]),
     car_call_supervisor_api:car_call({next, Data#car_state.name, none, Data#car_state.max_RTT, NewData}),
     {next_state, NextState, NewData, [{reply, From, Reply}]}.
         
+
 %%% Keep the current state, send a Reply to the event sender
-keep(Data, From, Reply) ->
-    utils:log("KEEP STATE ~p", [Data#car_state.state]),
-    NewData = Data#car_state{current_time = utils:get_timestamp()},
-    {keep_state, NewData, [{reply, From, Reply}]}.
+keep( Data, From, Reply ) ->
+    utils:log( "KEEP STATE ~p", [ Data#car_state.state ] ),
+    NewData = Data#car_state{ current_time = utils:get_timestamp() },
+    { keep_state, NewData, [ { reply, From, Reply } ] }.
 
 
-ignore(State, Event, Data, From) ->
-    utils:log("Ignore unhandled event: ~p", [Event]),
-    keep(Data, From, {list_to_atom(string:concat(atom_to_list(State),"_ignore")), Data}).
+%%% Keep the current state, ignore event
+ignore( State, Event, Data, From ) ->
+    utils:log( "Ignore unhandled event: ~p", [ Event ] ),
+    if State == dead ->
+        keep( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_ignore" ) ), Data } );
+    true ->
+        keep( Data, From, { ignore, Data } )
+    end.
 
 
 %%% Keep the current state, and postpone an event

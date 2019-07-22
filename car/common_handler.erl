@@ -68,14 +68,14 @@ notify_dead_and_stop( Data ) ->
 timeout( State, Target, Data, From ) ->
 	utils:log( "EVENT timeout" ), 
 	car_call_supervisor_api:car_call( { 
-										call_tow_truck, 
+										tow_truck_request, 
 										name( Data ), 
 										Target, 
 										max_RTT( Data ), 
 										tow_truck_time( Data ) 
 									} ),
 	flow:keep( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_timeout" ) ), Data } ).
-
+		
 
 update_front( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_front" ), 

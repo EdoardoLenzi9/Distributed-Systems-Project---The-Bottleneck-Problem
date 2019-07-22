@@ -46,6 +46,18 @@ dead( From, Event, Data ) ->
         end;
         
 
+    tow_truck_request ->
+        utils:log( "EVENT tow_truck_request" ),
+        car_call_supervisor_api:car_call( { 
+                                            wait, 
+                                            name(Data), 
+                                            undefied, 
+                                            tow_truck_time(Data), 
+                                            tow_truck
+                                        } ),
+        flow:keep( Data, From, { dead_tow_truck_request, Data } );
+
+
     tow_truck ->
         utils:log( "EVENT tow_truck" ),
         common_handler:notify_dead_and_stop( Data ),
@@ -62,7 +74,7 @@ dead( From, Event, Data ) ->
             
             1 -> 
                 car_call_supervisor_api:car_call( { 
-                                                    call_tow_truck, 
+                                                    tow_truck_request, 
                                                     name(Data), 
                                                     name(Data), 
                                                     max_RTT(Data), 

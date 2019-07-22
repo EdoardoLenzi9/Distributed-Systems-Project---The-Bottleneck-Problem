@@ -3,7 +3,7 @@
 
 # public rules
 
-start: clean dependencies build build-docker env
+start: clean dependencies build build-docker env cred
 
 
 run:
@@ -72,6 +72,9 @@ clean:
 	@rm ./web_service/client/views/simulation-view/environment.json  || true
 	@rm ./web_service/_build/default/rel/web_service/environment.json  || true
 	@rm ./web_service/client/views/log-view/environment.json  || true
+	@echo "clean credential"
+	@rm ./web_service/_build/default/rel/web_service/credentials.json  || true
+	@rm ./car/credentials.json  || true
 	@echo "clean tests"
 	@rm ./car/test/tmp/* || true
 	@rm ./web_service/test/tmp/* || true
@@ -106,11 +109,22 @@ env:
 	@cp environment.json web_service/_build/default/rel/web_service/
 
 
+cred:
+	@echo "make rule credential"
+	@cp credentials/credentials.json car/ || true
+	@cp credentials/credentials.json web_service/_build/default/rel/web_service/ || true
+
+
 build-docker:
-	@sudo docker network create ds_network
+	@sudo docker network create ds_network || true
 	@echo "build docker"
 	@cd car ; \
 	sudo docker build -t car:v1 .
+
+
+build-erlssh:
+	@echo "build docker erlssh"
+	@sudo docker build -t erlssh:v1 .
 
 
 build: 
