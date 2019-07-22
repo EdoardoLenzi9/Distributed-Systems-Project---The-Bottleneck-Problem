@@ -27,3 +27,4 @@ web_service/rebar3
 
 # credentials
 credentials/credentials.json
+car/credentials\.json
