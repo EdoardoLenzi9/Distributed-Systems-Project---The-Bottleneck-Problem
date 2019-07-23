@@ -67,14 +67,14 @@ new(Entity) ->
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.crash_type])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.timeout]))]));
         docker -> 
-            utils:log(utils:concat([   
+            Command = utils:concat([   
                                         "sshpass -p '", 
                                         SelectedHost#host_entity.password, 
-                                        "' ssh ",
+                                        "' ssh -o \"StrictHostKeyChecking=no\" ",
                                         SelectedHost#host_entity.host, 
                                         "@",
                                         SelectedHost#host_entity.ip, 
-                                        " \"sudo docker run --net ds_network -e ws_host='", 
+                                        " \"nohup sudo docker run --net ds_network -e ws_host='", 
                                         Entity#new_car_entity.host, "' -e ws_port='", 
                                         Entity#new_car_entity.port, "' -e host='",
                                         SelectedHost#host_entity.host, "' -e ip='",
@@ -90,7 +90,10 @@ new(Entity) ->
                                         lists:flatten(io_lib:format("~p", [Settings#settings_entity.max_RTT])), " -e crash_type=",
                                         lists:flatten(io_lib:format("~p", [Entity#new_car_entity.crash_type])), " -e timeout=",
                                         lists:flatten(io_lib:format("~p", [Entity#new_car_entity.timeout])),
-                                        " -dt car:v1\""]))
+                                        " -dt car:v1 &\""
+                                    ]),
+            utils:log(Command),
+            os:cmd(Command)
     end,
     car_marshalling(#car_entity{ name = list_to_atom(Entity#new_car_entity.name), 
                                 side = Entity#new_car_entity.side, 
@@ -102,6 +105,7 @@ new(Entity) ->
                                 tow_truck_time = Settings#settings_entity.tow_truck_time,
                                 bridge_capacity = Settings#settings_entity.bridge_capacity,
                                 bridge_length = Settings#settings_entity.bridge_length }).
+    
 
 reset() ->
     % TODO kill docker 

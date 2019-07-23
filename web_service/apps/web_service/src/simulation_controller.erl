@@ -37,7 +37,7 @@ handler(Req, State) ->
 		<<"">>
 	end,
 	{_HTTP, _Domain, Path, _, _Qs} = mochiweb_util:urlsplit(binary_to_list(URL)),
-	utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
+	%utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
 	ResponseBody = case Path of 
 		"/simulation" ->
 			state_handler();
