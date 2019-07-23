@@ -48,15 +48,19 @@ dead( From, Event, Data ) ->
 
     tow_truck_request ->
         utils:log( "EVENT tow_truck_request" ),
-        car_call_supervisor_api:car_call( { 
-                                            wait, 
-                                            name(Data), 
-                                            undefied, 
-                                            tow_truck_time(Data), 
-                                            tow_truck
-                                        } ),
-        flow:keep( Data, From, { dead_tow_truck_request, Data } );
-
+        if Data#car_state.crash_type == 2 ->
+            flow:ignore( dead, Event, Data, From );
+        true ->
+            car_call_supervisor_api:car_call( { 
+                                                wait, 
+                                                name(Data), 
+                                                undefied, 
+                                                tow_truck_time(Data), 
+                                                tow_truck
+                                            } ),
+            flow:keep( Data, From, { dead_tow_truck_request, Data } )
+        end;
+        
 
     tow_truck ->
         utils:log( "EVENT tow_truck" ),
@@ -65,7 +69,7 @@ dead( From, Event, Data ) ->
 
 
     default_behaviour ->
-        utils:log( "EVENT Dead_default_behaviour" ),
+        utils:log( "EVENT Dead_default_behaviour ~p", [ crash_type( Data ) ] ),
         case Data#car_state.crash_type of 
             
             0 -> 

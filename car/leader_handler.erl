@@ -9,7 +9,7 @@ leader( From, Event, Data ) ->
 
 
         { crash, CrashType } ->
-            NewData = Data#car_state{ crash_type = CrashType },
+            NewData = crash_type( Data, CrashType ),
             flow:next( dead, NewData, From, { dead, NewData } );
 
 
@@ -41,7 +41,7 @@ leader( From, Event, Data ) ->
                 utils:log( "Car: can start crossing the bridge" ),
                 NewData = Data#car_state{  
                                             obstacle_position = 0,
-                                            position = bridge_length(Data) * side(Data), 
+                                            position = ((car_size(Data) / 2) + bridge_length(Data)) * side(Data), 
                                             crossing = true, 
                                             speed = max_speed(Data)
                                         },
@@ -66,7 +66,7 @@ leader( From, Event, Data ) ->
 
             if length( FrontCars ) > 0 ->
                 utils:log( "Car: There is a car on the opposite side of the bridge" ),
-                [ Pivot|_Rest ] = FrontCars,
+                [ Pivot | _Rest ] = FrontCars,
                 car_call_supervisor_api:car_call( {     
                                                     check, 
                                                     name(Data), 

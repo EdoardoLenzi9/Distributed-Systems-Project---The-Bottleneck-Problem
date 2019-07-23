@@ -37,13 +37,13 @@ normal( From, Event, Data ) ->
             utils:log( "EVENT check_reply" ),
             { _Sender, _Target, _SendingTime, _RTT, Body } = Reply,
 
-            ObstaclePosition = erlang:max( 
+            ObstaclePosition = round1f(erlang:max( 
                                             ( last_position( Body ) + ( car_size( Body)  / 2 * side( Body ) ) -
                                               ( bridge_length( Body ) * utils:bool_to_int(last_crossing( Body ) ) * utils:bool_to_int( not crossing( Data ) ) * side( Body ) ) 
                                             ) * side( Body ),
                                             
                                             0
-                                         ) * side(Data),
+                                         ) * side(Data)),
 
             utils:log("Car: body last position ~p ~p, obstacle position: ~p", [last_position(Body), last_crossing(Body), ObstaclePosition]),
 
@@ -79,12 +79,12 @@ normal( From, Event, Data ) ->
 
         TravelTime = ( utils:get_timestamp() - current_time(Data) ) / 1000,
 
-        Distance = erlang:min( ( TravelTime * max_speed( Data ) ), 
+        Distance = round1f(erlang:min( ( TravelTime * max_speed( Data ) ), 
                              ( ( position(Data) - obstacle_position( Data ) ) * side(Data) - (car_size(Data) / 2)) 
-                             ) * side(Data),
+                             ) * side(Data)),
 
         utils:log("Current position ~p, TravelTime ~p, Distance ~p", [position(Data), TravelTime, Distance]),
-        NewData = position(Data, position(Data) - Distance),
+        NewData = position(Data, round1f(position(Data) - Distance)),
         utils:log("Jump to new position ~p", [position(NewData)]),
 
         if Data#car_state.crash_type > 0 ->
@@ -175,3 +175,5 @@ normal( From, Event, Data ) ->
     end.
 
 
+round1f( Float ) ->
+  round( Float * 10 )/10. 

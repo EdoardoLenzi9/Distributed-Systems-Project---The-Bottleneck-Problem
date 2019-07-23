@@ -111,6 +111,7 @@ sync( From, Event, Data ) ->
         { adj_reply, Adj } ->
             utils:log( "EVENT adj_reply: ~p", [ Adj ] ),
             NewData = adj( Data, Adj ),
+            utils:log( "Arrival Time: ~p", [ arrival_time(NewData) ] ),
             flow:next( normal, NewData, From, { normal, NewData } );
 
 

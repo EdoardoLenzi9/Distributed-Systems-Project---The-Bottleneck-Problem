@@ -26,14 +26,25 @@ notify_dead_and_stop( Data ) ->
 	end,
 	
     if FrontCar =/= [ ] ->
-      	utils:log( "Send update rear to front car ~p with body ~p ~n", [ name( FrontCar ), RearCar ] ),
-      	car_call_supervisor_api:car_call( { 
-											update_rear, 
-											name( Data ), 
-											name( FrontCar ), 
-											max_RTT( Data ), 
-											RearCar 
-										} );
+		if FrontCar#car_state.side == Data#car_state.side ->
+	      	utils:log( "Send update rear to front car ~p with body ~p ~n", [ name( FrontCar ), RearCar ] ),
+    	  	car_call_supervisor_api:car_call( { 
+												update_rear, 
+												name( Data ), 
+												name( FrontCar ), 
+												max_RTT( Data ), 
+												RearCar 
+											} );
+		true ->
+			utils:log( "Send update front to front car ~p with body ~p ~n", [ name( FrontCar ), RearCar ] ),
+			car_call_supervisor_api:car_call( { 
+											  update_front, 
+											  name( Data ), 
+											  name( FrontCar ), 
+											  max_RTT( Data ), 
+											  RearCar 
+										  } )
+		end;
     true ->
       	ok
     end,
@@ -61,10 +72,6 @@ notify_dead_and_stop( Data ) ->
                                   	} ).
 
 
-%round1f( Float ) ->
-%  round( Float * 10 )/10. 
-
-
 timeout( State, Target, Data, From ) ->
 	utils:log( "EVENT timeout" ), 
 	car_call_supervisor_api:car_call( { 
@@ -74,12 +81,16 @@ timeout( State, Target, Data, From ) ->
 										max_RTT( Data ), 
 										tow_truck_time( Data ) 
 									} ),
-	flow:keep( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_timeout" ) ), Data } ).
+	flow:keep_ignore( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_timeout" ) ), Data } ).
 		
 
 update_front( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_front" ), 
-	NewData = front_cars( Data, Replacement ),
+	NewData = if Replacement == [] ->
+		front_cars( Data, [ ] );
+	true -> 
+		front_cars( Data, [ Replacement ] )
+	end,
 	car_call_supervisor_api:car_call( { 
 										default_behaviour, 
 										name( Data ),
@@ -87,12 +98,22 @@ update_front( State, Replacement, Data, From ) ->
 										max_RTT( Data ), 
 										{ } 
 									} ),
-  	flow:keep( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_front" ) ), NewData } ).
+	NewData2 = obstacle_position(NewData, safe_obstacle_position(NewData)),
+  	flow:keep_ignore( NewData2, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_front" ) ), NewData2 } ).
+
+
+safe_obstacle_position(Data) ->
+	utils:log("Apply Safe Obstacle Position"),
+	position(Data) - ( car_size( Data ) / 2 * side( Data ) ).
 
 
 update_rear( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_rear" ), 
-	NewData = rear_cars( Data, Replacement ),
+	NewData = if Replacement == [] ->
+		rear_cars( Data, [ ] );
+	true -> 
+		rear_cars( Data, [ Replacement ] )
+	end,
 	car_call_supervisor_api:car_call( { 
 										default_behaviour, 
 										name( Data ),
@@ -100,18 +121,24 @@ update_rear( State, Replacement, Data, From ) ->
 										max_RTT( Data ), 
 										{ } 
 									} ),
-	flow:keep( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_rear" ) ), NewData } ).
+	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_rear" ) ), NewData } ).
 
 
 check( State, Sender, Data, From ) -> 
 	utils:log( "EVENT check" ), 
 
-	NewData = if length( Data#car_state.adj#adj.rear_cars ) > 0 ->
-		[ Rear | _Rest ] = rear_cars( Data ),
+	TargetQueue = if Sender#car_state.side == Data#car_state.side ->
+		lists:reverse(rear_cars(Data));
+	true ->
+		front_cars(Data)
+	end,
+
+	NewData = if length( TargetQueue ) > 0 ->
+		[ First | _Rest ] = TargetQueue,
 		
-		if Rear#car_state.name == Sender#car_state.name ->
+		if First#car_state.name == Sender#car_state.name ->
 			utils:log( "Car: Rear adj unchanged" ),
-			current_time( Data, utils:get_timestamp() );
+			Data;
 
 		true ->
 		
@@ -125,11 +152,16 @@ check( State, Sender, Data, From ) ->
 			end
 		end;
 	true ->
-		utils:log( "Car: Rear adj update from [ ] to ~p", [ Sender ] ),
-		rear_cars( Data, [ Sender ] )
+		if Sender#car_state.side == Data#car_state.side ->
+			utils:log( "Car: Rear adj update from [ ] to ~p", [ Sender ] ),
+			rear_cars( Data, [ Sender ] );
+		true ->
+			utils:log( "Car: Front adj update from [ ] to ~p", [ Sender ] ),
+			front_cars( Data, [ Sender ] )
+		end
 	end,
 
-	flow:keep( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_check" ) ), NewData } ).
+	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_check" ) ), NewData } ).
 
 
 crossing( State, Body, Data, From ) ->
@@ -140,14 +172,18 @@ crossing( State, Body, Data, From ) ->
 		propagate_crossing( Data, Body ),
 	
 		if Data#car_state.crossing ->
-			flow:keep( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_crossing" ) ), Data } );
+			flow:keep_ignore( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_crossing" ) ), Data } );
 		true ->
+			Position = position( Data ) + ( bridge_length( Data ) * side( Data ) ),
 			NewData = Data#car_state{ 
 									  crossing = true, 
-									  position = position( Data ) + ( bridge_length( Data ) * side( Data ) )
+									  position = Position
 									},
-			flow:keep( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_crossing" ) ), NewData } )
-		end
+			NewData2 = obstacle_position(NewData, safe_obstacle_position(NewData)),
+			flow:keep_ignore( NewData2, From, { list_to_atom( string:concat( atom_to_list( State ),"_crossing" ) ), NewData2 } )
+		end;
+	true ->
+		flow:keep_ignore( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_crossing" ) ), Data } )
 	end.
 
 

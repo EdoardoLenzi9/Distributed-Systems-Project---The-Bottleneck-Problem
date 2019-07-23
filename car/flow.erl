@@ -109,6 +109,12 @@ keep( Data, From, Reply ) ->
     { keep_state, NewData, [ { reply, From, Reply } ] }.
 
 
+%%% Keep the current state, send a Reply to the event sender
+keep_ignore( Data, From, Reply ) ->
+    utils:log( "KEEP IGNORE STATE ~p", [ Data#car_state.state ] ),
+    { keep_state, Data, [ { reply, From, Reply } ] }.
+
+
 %%% Keep the current state, ignore event
 ignore( State, Event, Data, From ) ->
     utils:log( "Ignore unhandled event: ~p", [ Event ] ),

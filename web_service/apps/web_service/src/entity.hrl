@@ -85,6 +85,8 @@ adj_marshalling([]) ->
     [];
 adj_marshalling([First|Rest]) ->
     [{[ {name, First#adj_entity.name}, 
+        {host, First#adj_entity.host}, 
+        {ip, First#adj_entity.ip}, 
         {side, First#adj_entity.side}, 
         {power, First#adj_entity.power}, 
         {size, First#adj_entity.size}, 
