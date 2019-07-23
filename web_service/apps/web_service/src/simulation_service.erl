@@ -28,7 +28,7 @@ new(Entity) ->
     utils:log("Visibility ~p", [Settings#settings_entity.process_visibility]),
     case Settings#settings_entity.process_visibility of 
         visible ->
-            os:cmd(utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -sname ", 
+            Command = utils:concat([   "cd ../../../../../car;gnome-terminal -e 'erl -sname ", 
                                     Entity#new_car_entity.name, 
                                     " -setcookie distributed-system-project"
                                     " -run car_supervisor start ",
@@ -46,7 +46,9 @@ new(Entity) ->
                                     lists:flatten(io_lib:format("~p", [Settings#settings_entity.max_RTT])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.crash_type])), " ",
                                     lists:flatten(io_lib:format("~p", [Entity#new_car_entity.timeout])),
-                                    "' || true"]));
+                                    "' || true"]),
+            os:cmd(Command),
+            utils:log(Command);
         detached -> 
             os:cmd(utils:concat([   "cd ../../../../../car;erl -detached -sname ", 
                                     Entity#new_car_entity.name, 

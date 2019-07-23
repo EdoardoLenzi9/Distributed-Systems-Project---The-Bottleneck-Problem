@@ -40,6 +40,33 @@ last_adj(Side) ->
     last_adj_marshalling(Last, Side).
         
 
+kill(Car) ->
+    SelectedCars = adj_repository:select(Car),
+
+    if length(SelectedCars) == 1 -> 
+        [SelectedCar] = SelectedCars,
+        SelectedCar#adj_entity.name,
+        SelectedCar#adj_entity.host,
+        SelectedCar#adj_entity.ip,
+        utils:log("Selected Car: ~p", [SelectedCar]),
+        Hosts = host_repository:select(SelectedCar),
+
+        utils:log("Selected Hosts: ~p", [Hosts]),
+        if length(Hosts) == 1 -> 
+            [Host] = Hosts,
+            Host#host_entity.host,
+            Host#host_entity.ip,
+            Host#host_entity.password,
+            %TODO
+            os:cmd(utils:concat(["cd ../../../../;sudo sh kill-erlang-node.sh \"", atom_to_list(SelectedCar#adj_entity.name), "\""])),
+            ok;
+        true ->
+            host_undefined
+        end;
+    true ->
+        car_undefined
+    end.    
+
 %%%===================================================================
 %%% private functions
 %%%===================================================================

@@ -38,7 +38,9 @@ handler(Req, State) ->
 		"/car/adj" ->
 			adj_handler(Body);
 		"/car/adj/last" ->
-			last_adj_handler(Body)
+			last_adj_handler(Body);
+		"/car/kill" ->
+			kill_handler(Body)
 	end,
 	Req3 = cowboy_req:set_resp_body(ResponseBody, Req),
 	{true, Req3, State}.
@@ -87,3 +89,9 @@ last_adj_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
 	{[	{<<"side">>, Side} ]} = DecodedTuple, 
 	jiffy:encode(car_service:last_adj(Side)).										
+
+
+kill_handler(Body) ->
+	DecodedTuple = jiffy:decode(Body),
+	{[	{<<"name">>, Name} ]} = DecodedTuple, 
+		jiffy:encode(car_service:kill(#adj_entity{	name = list_to_atom(binary_to_list(Name)) })).

@@ -14,10 +14,24 @@ add(Entity) ->
 delete(Entity) ->
         repository_helper:delete(Entity).
 
+
 get_all() ->
     order(repository_helper:get_all(adj_entity)).
 
 
+select(Car) ->
+    F = fun() -> 
+        SelectResult = db_manager:select(adj_entity, #adj_entity{name = Car#adj_entity.name, _='_'}, [], ['$_']),
+        if length(SelectResult) == 1 ->
+            [SelectedCar] = SelectResult,
+            db_manager:delete(SelectedCar),
+            SelectResult;
+        true ->
+            []
+        end
+    end,
+    {atomic, Res} = mnesia:transaction(F),
+    Res.
 %%%===================================================================
 %%% private functions
 %%%===================================================================

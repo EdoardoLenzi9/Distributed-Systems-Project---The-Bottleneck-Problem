@@ -10,6 +10,7 @@ add_range(Range) ->
     db_manager:clear(host_entity),
     add_range_wrapper(Range).    
 
+
 add_range_wrapper([]) ->
     ok;
 add_range_wrapper([First | Rest]) ->
@@ -27,6 +28,14 @@ get_all() ->
 
 reset() ->
     db_manager:start().
+
+
+select(Car) ->
+    F = fun() -> 
+        db_manager:select(host_entity, #host_entity{host = atom_to_list(Car#adj_entity.host), ip = atom_to_list(Car#adj_entity.ip), _='_'}, [], ['$_'])
+    end,
+    {atomic, Res} = mnesia:transaction(F),
+    Res.
 
 
 order(List) ->
