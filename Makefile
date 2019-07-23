@@ -101,12 +101,12 @@ dependencies:
 
 env:
 	@echo "make rule env"
-	@cp environment.json car/ 
-	@cp environment.json web_service/ 
-	@cp environment.json web_service/client/ 
-	@cp environment.json web_service/client/views/simulation-view/ 
-	@cp environment.json web_service/client/views/log-view/ 
-	@cp environment.json web_service/_build/default/rel/web_service/
+	@cp environment.json car/ || true
+	@cp environment.json web_service/ || true 
+	@cp environment.json web_service/client/ || true
+	@cp environment.json web_service/client/views/simulation-view/ || true 
+	@cp environment.json web_service/client/views/log-view/ || true
+	@cp environment.json web_service/_build/default/rel/web_service/ || true
 
 
 cred:
