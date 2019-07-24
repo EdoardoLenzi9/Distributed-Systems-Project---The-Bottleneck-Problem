@@ -11,7 +11,7 @@
 \contentsline {section}{\numberline {3.2}Protocols and algorithms}{10}
 \contentsline {subsection}{Starvation/deadlock and order method}{10}
 \contentsline {subsection}{Solution}{10}
-\contentsline {section}{\numberline {3.3}Syncronization problem}{10}
+\contentsline {section}{\numberline {3.3}Synchronization problem}{10}
 \contentsline {subsection}{Solution}{10}
 \contentsline {section}{\numberline {3.4}Agreement}{10}
 \contentsline {subsection}{Solution}{11}
@@ -24,33 +24,33 @@
 \contentsline {section}{\numberline {3.8}SPOF}{13}
 \contentsline {subsection}{Solution}{13}
 \contentsline {section}{\numberline {3.9}Algorithms}{15}
-\contentsline {subsection}{Assumptions and observations}{15}
-\contentsline {subsection}{Concurrency}{16}
-\contentsline {subsection}{Berkeley}{17}
+\contentsline {subsection}{Concurrency}{15}
+\contentsline {subsection}{Berkeley}{16}
 \contentsline {section}{\numberline {3.10}Physical architecture and deployment}{17}
-\contentsline {section}{\numberline {3.11}Development plan}{18}
+\contentsline {section}{\numberline {3.11}Development plan}{17}
 \contentsline {chapter}{\chapternumberline {4}Implementation}{19}
-\contentsline {section}{\numberline {4.1}Tools}{19}
-\contentsline {subsection}{Language}{19}
-\contentsline {subsection}{Web service}{19}
+\contentsline {section}{\numberline {4.1}Assumptions and observations}{19}
+\contentsline {section}{\numberline {4.2}Tools}{20}
+\contentsline {subsection}{Language}{20}
+\contentsline {subsection}{Web service}{20}
 \contentsline {subsubsection}{Patterns and best practices}{20}
-\contentsline {subsection}{UI}{20}
+\contentsline {subsection}{UI}{21}
 \contentsline {subsection}{Car}{21}
-\contentsline {section}{\numberline {4.2}Docker}{21}
-\contentsline {section}{\numberline {4.3}Data structures}{22}
-\contentsline {subsection}{Environment}{22}
-\contentsline {subsection}{Car}{22}
+\contentsline {section}{\numberline {4.3}Docker}{22}
+\contentsline {section}{\numberline {4.4}Data structures}{22}
+\contentsline {subsection}{Environment}{23}
+\contentsline {subsection}{Car}{23}
+\contentsline {subsubsection}{Adj}{24}
 \contentsline {subsection}{Init}{24}
 \contentsline {subsection}{Sync}{24}
 \contentsline {subsection}{Normal}{25}
-\contentsline {subsection}{Leader}{26}
+\contentsline {subsection}{Leader}{25}
 \contentsline {subsection}{Dead}{26}
 \contentsline {subsubsection}{Communication}{26}
-\contentsline {subsection}{Adj}{26}
-\contentsline {chapter}{\chapternumberline {5}Validation}{29}
-\contentsline {subsection}{Tests}{29}
-\contentsline {section}{\numberline {5.1}Functional requirements}{29}
-\contentsline {section}{\numberline {5.2}Non functional requirements}{30}
+\contentsline {chapter}{\chapternumberline {5}Validation}{27}
+\contentsline {subsection}{Tests}{27}
+\contentsline {section}{\numberline {5.1}Functional requirements}{27}
+\contentsline {section}{\numberline {5.2}Non functional requirements}{28}
 \contentsline {chapter}{\chapternumberline {6}Conclusions}{31}
 \contentsline {appendix}{\chapternumberline {A}Appendix}{33}
 \contentsline {chapter}{Bibliography}{35}

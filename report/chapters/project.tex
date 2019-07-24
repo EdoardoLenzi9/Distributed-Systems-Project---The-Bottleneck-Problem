@@ -14,7 +14,7 @@ The logical architecture is composed by the following component:
         for the clients.
     \item \textbf{Client} a simple web page used to monitoring the simulation state
         and manage simulation settings; uses the web service APIs to render a 
-        graphic interface that must be constantly syncronized (polling).
+        graphic interface that must be constantly synchronized (polling).
     \item \textbf{Car} a process that is the abstraction/simulation of a real car; 
         \begin{itemize}
             \item[$\rhd$] it can become a leader in order to schedule the crossing 
@@ -22,7 +22,7 @@ The logical architecture is composed by the following component:
             \item[$\rhd$] it must check the health state and position of the other adjacent cars 
                 (calls the tow truck in case of failure)
             \item[$\rhd$] it can see environment details calling a web service 
-            \item[$\rhd$] it have to syncronize its local timing using Berkeley algorithm
+            \item[$\rhd$] it has to synchronize its local timing using Berkeley algorithm
         \end{itemize}
     \item \textbf{Distributed DBMS}, an instance of Mnesia DBMS paired 
         with the web service instance 
@@ -54,8 +54,8 @@ reach the agreement).
 
 \subsection{Solution}
 
-In order to avoid \textbf{starvation} in a first stage cars syncronize themselves 
-(for the syncronization process we follow the \textbf{Berkeley algorithm})
+In order to avoid \textbf{starvation} in a first stage cars synchronize themselves 
+(for the synchronization process we follow the \textbf{Berkeley algorithm})
 in terms of local timinig and in a second stage there will be a \textbf{leader election} 
 and the leader decides the crossing order. 
 
@@ -67,20 +67,20 @@ present a lower arrival time wrt. the car on the opposite side (if present);
 once the current leader cross the bridge there is a new election.\\
 
 
-\section{Syncronization problem}
+\section{Synchronization problem}
 
-Every car has a \textbf{local timing} that can \textbf{drifts} out from the 
+Every car has a \textbf{local timing} that can \textbf{drift} out from the 
 global timing. 
 
 
 \subsection{Solution}
 
-So we need to syncronize the incoming cars using the \textbf{Berkeley algorithm}.
+So we need to synchronize the incoming cars using the \textbf{Berkeley algorithm}.
 
 A new incoming car calls the \textit{environment:get$\_$adjacent$\_$cars(p)} 
 method in order to get the name of the adjacent cars. 
 The new car $c$ sends a message to the nearest car $n$ in order to get the current time 
-(we assume that $n$ was already syncronized). 
+(we assume that $n$ was already synchronized). 
 
 With this information $c$ is concious of the RTT and its local drift from the global time;
 so basically the global timing is the timing of the first leader. 
@@ -94,9 +94,10 @@ this decision.
 \subsection{Solution}
 
 Before crossing the bridge, the leader $A$ propagates a message to 
-the first $n$ cars behind him (where $n$ is the capacity of the bridge) 
-telling them to cross the bridge if their arrival times are lower than the 
-arrival time of $B$, the car on the opposite side (if present).
+the first $n$ cars behind him (where $n$ is the capacity of the bridge). The message that is received 
+tells them to cross the bridge if their arrival times are lower than the 
+arrival time of $B$, the car on the opposite side (if present). It could be possible that only a part
+of them will pass the bridge while some other have to wait for their turn.
 
 Each car, who receives the message, checks if its arrival time is less then $B$'s: 
 if so then the car can cross the bridge too, otherwise waits for its turn.\\
@@ -107,13 +108,14 @@ which is not a leader and hasn't the permission to cross, arrives on the bridge 
 
 At that point $A$ checks if there are any other car in front of her:
 \begin{itemize}
-\item if there is a car and whose arrival time is greater then $A$'s then A 
+\item if there is a car whose arrival time is greater then $A$'s then A 
     is the new leader;
 \item if there isn't any car, A is the new leader.
 \end{itemize}
 
 \begin{center}
     \includegraphics[scale=0.6]{assets/ds2019_3.png}
+    \captionof{figure}{Agreement}
 \end{center}
 
 
@@ -129,7 +131,7 @@ itself can call the \textbf{tow truck}.
 
 Each car recursively checks if other reachable cars are safe; if a check message
 hasn't any response within a certain \textbf{timeout} (depends on the $max\_RTT$ allowed) 
-it is assumed that the receiver has a failure (and so the tow truck will be call). 
+it is assumed that the receiver has a failure (and so the tow truck will be called). 
 
 Once the car was removed the tow truck notifies the adjacent cars; anyway if the car
 is able to send messages notifies autonomously its removal to the adjacent cars.
@@ -137,6 +139,7 @@ is able to send messages notifies autonomously its removal to the adjacent cars.
 
 \begin{center}
     \includegraphics[scale=0.9]{assets/ds2019_4.png}
+    \captionof{figure}{Car crash type 1 (engine only)}
 \end{center}
 
 
@@ -175,6 +178,7 @@ Can be also designed an embedded load balancer in order to avoid the web service
 
 \begin{center}
     \includegraphics[scale=0.6]{assets/ds2019_2.png}
+    \captionof{figure}{Load balance}
 \end{center}
 
 
@@ -200,52 +204,24 @@ with a peer to peer layer of web services and some istances of a
 
 \begin{center}
     \includegraphics[scale=0.8]{assets/ds2019_1.png}
+    \captionof{figure}{Creation of a new car}
 \end{center}
 
 \begin{center}
     \includegraphics[scale=0.6]{assets/newCarclient.png}
+    \captionof{figure}{Client request of new car}
 \end{center}
 
 \begin{center}
     \includegraphics[scale=0.6]{assets/newCarRnd.png}
+    \captionof{figure}{Random creation of new cars}
 \end{center}
 
 
 \section{Algorithms}
 
-\subsection{Assumptions and observations}
-Starting from the instantiation of a new car process we will describe the main aspects 
-of a \textbf{car life-cycle}. 
-\noindent
-We have to define new variables and notations; first of all we define a first layer cars as
- the set of car processes, this layer sends periodically updates to a second layer of web service and 
-database. Finally a third layer of clients make polling on the second layer.
-
-As we will show, we model a car as a \textbf{finite state machine} 
-with the following main states: sync, normal, leader, dead.\\
-
-\noindent
-One of the main problems of the project task is that there are some non trivial aspects 
-that do not emerge in the initial analysis but are of fundamental importance; 
-this happens cause the analysis takes into consideration only the problem 
-that is located on an higher level with respect to the implementation and the 
-architecture proposed.
-
-First of all from the problem analysis is clear that the bridge is a shared resource 
-so the problem can be solved with the solution exposed by Lamport in its 
-article~\cite{Lamport:1978} about total ordering and synchronization. 
-
-But this isn't the best choice cause total ordering requires a huge exchange of 
-messages and, for this problem, is more than necessary; we decide to implement a 
-custom algorithm based on the idea of locks.
-
-Also leader election/distribute agreement algorithms are superfluous cause bridge 
-access isn't contended by every car in a certain instant but, at most, 
-by two concurrent cars on the opposite side; so a simple message exchange 
-will be enough for the leader election. \\
-
 \subsection{Concurrency}
-Due to the asyncronicity, concurrency and time drifting is really hard 
+Due to the asynchronicity, concurrency and time drifting is really hard 
 to keep consistent the state of the cars layer with the simulation 
 on the client layer. 
 One way to keep an exact consistency can be to structure the algorithm on 
@@ -262,7 +238,7 @@ Denote with $A \rightarrow B$ the partial order relation\footnote{
     To be precise $\rightarrow$ isn't a partial order relation cause it isn't 
     reflexive (a car cannot be behind itself) but only transitive and antisymmetric.
 } between two cars $A$ and $B$ that are running from left to right and $A$ 
-\textbf{is behind} $B$. 
+\textbf{is immediately behind} $B$. 
 
 So assume that in a certain instant $t_0$ 
 (measured from an external and omniscient point of view) 
@@ -305,10 +281,11 @@ can be overlooked.
 
 \subsection{Berkeley}
 
-We have used the Berkeley algorithm in order to syncronize new spawned car processes.
+We have used the Berkeley algorithm in order to synchronize new spawned car processes.
 
 \begin{center}
     \includegraphics[scale=0.6, width=\linewidth]{assets/berkeley.png}
+    \captionof{figure}{Berkeley algorithm}
 \end{center}
 
 \section{Physical architecture and deployment}
