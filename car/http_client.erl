@@ -39,6 +39,16 @@ get_last_adj( Data ) ->
     http_client:call( post, Host, Port, "/car/adj/last", Content, http_client, unmarshalling_last_adj ).
 
 
+kill( Data, Name ) -> 
+    Host = Data#car_state.ws_host,
+    Port = Data#car_state.ws_port,
+    Content = { [ 
+                    {  name, Data#car_state.name }, 
+                    {  target, Name } 
+              ] },
+    http_client:call( post, Host, Port, "/car/kill", Content, http_client, unmarshalling_kill ).
+    
+
 %%%===================================================================
 %%% HTTP client
 %%%===================================================================

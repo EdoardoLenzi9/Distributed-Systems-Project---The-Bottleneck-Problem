@@ -234,6 +234,10 @@ unmarshalling_sync([First]) ->
                   power = Power } ].
 
 
+unmarshalling_kill(Content) ->
+    utils:log("unmarshalling_kill ~p", [Content]).
+
+
 unmarshalling_adj([ Front | Rest ]) ->
     utils:log("unmarshalling_adj_wrapper"),
     [Back] = Rest,

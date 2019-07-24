@@ -102,3 +102,17 @@ decode_credentials([First | Rest], Result) ->
                                                 password = binary_to_list(Password),
                                                 number_of_cars = 0
                                             } | Result ]).
+
+
+ssh_command(Host, Command) ->
+        SSHCommand = utils:concat( [ "sshpass -p '", 
+                                      Host#host_entity.password, 
+                                      "' ssh -T -o \"StrictHostKeyChecking=no\" ",
+                                      Host#host_entity.host, 
+                                      "@",
+                                      Host#host_entity.ip, 
+                                      " <<'EOF'\nnohup ", 
+                                      Command,
+                                      " & \nEOF" ] ),
+        log(SSHCommand),
+        os:cmd(SSHCommand).

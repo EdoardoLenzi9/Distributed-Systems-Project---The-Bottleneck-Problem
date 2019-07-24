@@ -40,11 +40,15 @@ last_adj(Side) ->
     last_adj_marshalling(Last, Side).
         
 
-kill(Car) ->
-    SelectedCars = adj_repository:select(Car),
+kill(Name, Target) ->
+    SelectedCars = adj_repository:select(Target),
 
     if length(SelectedCars) == 1 -> 
         [SelectedCar] = SelectedCars,
+
+        adj_repository:delete(SelectedCar),
+        sync_repository:delete(#sync_entity{name = SelectedCar#adj_entity.name, side = SelectedCar#adj_entity.side, power = SelectedCar#adj_entity.power}),
+        
         SelectedCar#adj_entity.name,
         SelectedCar#adj_entity.host,
         SelectedCar#adj_entity.ip,
@@ -57,14 +61,26 @@ kill(Car) ->
             Host#host_entity.host,
             Host#host_entity.ip,
             Host#host_entity.password,
-            %TODO
-            os:cmd(utils:concat(["cd ../../../../;sudo sh kill-erlang-node.sh \"", atom_to_list(SelectedCar#adj_entity.name), "\""])),
-            ok;
+            utils:ssh_command( utils:concat( [ 
+                                                "NAME=$(echo \"", 
+                                                atom_to_list( SelectedCar#adj_entity.name ), 
+                                                "\" | cut -d \"@\" -f 1);", 
+                                                "for i in `ps -ef | grep $NAME | awk '{print $2}'`; do echo $i; kill -9 $i; done; ;",
+                                                "for i in `sudo docker ps | grep $NAME | awk '{print $1}'`; do echo $i; sudo docker stop $i; done"
+                                            ] ) );        
         true ->
             host_undefined
         end;
     true ->
         car_undefined
+    end,
+    SelectedCars2 = adj_repository:select(Name),
+    
+    if length(SelectedCars2) == 1 -> 
+        [Caller] = SelectedCars2,
+        adj(Caller);
+    true ->
+        [[],[]]
     end.    
 
 %%%===================================================================

@@ -81,8 +81,8 @@ tow_truck_request(Req) ->
     after RTT ->
         utils:log("Tow Truck: timeout reached, car is in crash type 2 or just removed"),
         % TODO SSH
-        os:cmd(utils:concat(["sh ../scripts/kill-erlang-node.sh \"$(cut -d'@' -f1 <<<\"", atom_to_list(Target), "\")"])),
-        supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, CurrentTime, Body})
+        Adj = http_client:kill(Body, Target),
+        supervisor_reply_supervisor_api:timer_reply({update_adj, Sender, Target, CurrentTime, Adj})
     end.
 
 

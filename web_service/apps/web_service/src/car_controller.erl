@@ -93,5 +93,6 @@ last_adj_handler(Body) ->
 
 kill_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
-	{[	{<<"name">>, Name} ]} = DecodedTuple, 
-		jiffy:encode(car_service:kill(#adj_entity{	name = list_to_atom(binary_to_list(Name)) })).
+	{[	{<<"name">>, Name},
+		{<<"target">>, Target} ]} = DecodedTuple, 
+		jiffy:encode(car_service:kill(Name, Target)).

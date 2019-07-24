@@ -33,6 +33,10 @@ leader( From, Event, Data ) ->
             common_handler:check( leader, Sender, Data, From );
 
 
+        { adj_reply, Adj } ->
+            common_handler:adj_reply( leader, Adj, Data, From );
+
+
         { check_reply, Reply } ->
             utils:log( "EVENT check_reply" ),
             { _Sender, _Target, _SendingTime, _RTT, Body } = Reply, 

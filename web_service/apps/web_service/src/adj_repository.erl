@@ -12,19 +12,17 @@ add(Entity) ->
 
 
 delete(Entity) ->
-        repository_helper:delete(Entity).
+    repository_helper:delete(Entity).
 
 
 get_all() ->
     order(repository_helper:get_all(adj_entity)).
 
 
-select(Car) ->
+select(Name) ->
     F = fun() -> 
-        SelectResult = db_manager:select(adj_entity, #adj_entity{name = Car#adj_entity.name, _='_'}, [], ['$_']),
+        SelectResult = db_manager:select(adj_entity, #adj_entity{name = Name, _='_'}, [], ['$_']),
         if length(SelectResult) == 1 ->
-            [SelectedCar] = SelectResult,
-            db_manager:delete(SelectedCar),
             SelectResult;
         true ->
             []

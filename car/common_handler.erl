@@ -78,8 +78,8 @@ timeout( State, Target, Data, From ) ->
 										tow_truck_request, 
 										name( Data ), 
 										Target, 
-										max_RTT( Data ), 
-										tow_truck_time( Data ) 
+										tow_truck_time( Data ), 
+										Data 
 									} ),
 	flow:keep_ignore( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_timeout" ) ), Data } ).
 		
@@ -162,6 +162,12 @@ check( State, Sender, Data, From ) ->
 	end,
 
 	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_check" ) ), NewData } ).
+
+
+adj_reply( State, Adj, Data, From ) ->
+	utils:log( "EVENT adj_reply" ), 
+	NewData = adj( Data, Adj ),
+	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_adj_reply" ) ), NewData } ).
 
 
 crossing( State, Body, Data, From ) ->

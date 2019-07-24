@@ -46,8 +46,12 @@ dead( From, Event, Data ) ->
         end;
         
 
+    { adj_reply, Adj } ->
+        common_handler:adj_reply( dead, Adj, Data, From );
+
+
     tow_truck_request ->
-        utils:log( "EVENT tow_truck_request" ),
+        utils:log( "EVENT tow_truck_request ~p", [Data#car_state.crash_type]),
         if Data#car_state.crash_type == 2 ->
             flow:ignore( dead, Event, Data, From );
         true ->
@@ -64,8 +68,12 @@ dead( From, Event, Data ) ->
 
     tow_truck ->
         utils:log( "EVENT tow_truck" ),
-        common_handler:notify_dead_and_stop( Data ),
-        flow:keep( Data, From, { dead_tow_truck, Data } );
+        if Data#car_state.crash_type == 2 ->
+            flow:ignore( dead, Event, Data, From );
+        true ->
+            common_handler:notify_dead_and_stop( Data ),
+            flow:keep( Data, From, { dead_tow_truck, Data } )
+        end;
 
 
     default_behaviour ->
@@ -81,8 +89,8 @@ dead( From, Event, Data ) ->
                                                     tow_truck_request, 
                                                     name(Data), 
                                                     name(Data), 
-                                                    max_RTT(Data), 
-                                                    tow_truck_time(Data) 
+                                                    tow_truck_time(Data), 
+                                                    Data
                                                 } ),
                 flow:keep( Data, From, { dead_default_behaviour_1, Data } );
 
