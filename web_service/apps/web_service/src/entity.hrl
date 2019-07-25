@@ -99,7 +99,6 @@ adj_marshalling([First|Rest]) ->
 
 
 settings_marshalling(Settings) ->
-
     {[  
         {process_visibility, Settings#settings_entity.process_visibility}, 
         {max_speed, Settings#settings_entity.max_speed}, 

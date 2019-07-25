@@ -116,3 +116,15 @@ ssh_command(Host, Command) ->
                                       " & \nEOF" ] ),
         log(SSHCommand),
         os:cmd(SSHCommand).
+
+
+kill_car(Host, Car) ->
+    CarName = lists:sublist(atom_to_list(Car#adj_entity.name), 1, string:rstr(atom_to_list(Car#adj_entity.name), "@") - 1),
+    kill(Host, CarName).
+
+
+kill(Host, Name) ->
+    ssh_command( Host, concat(["sudo kill $(ps -ef | grep ", Name, " | awk '{print $2}') 2> /dev/null || true" ])),
+    ssh_command( Host, concat(["sudo docker stop $(sudo docker ps | grep ", Name, " | awk '{print $1}')" ])).    
+    %ssh_command( First, "for i in `ps -ef | grep car | awk '{print $2}'`; do echo $i; kill -9 $i; done" ),
+    %ssh_command( First, "for i in `sudo docker ps | grep car | awk '{print $1}'`; do echo $i; sudo docker stop $i; done" ),

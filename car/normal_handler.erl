@@ -70,7 +70,7 @@ normal( From, Event, Data ) ->
             car_call_supervisor_api:car_call( { 
                                                 wait, 
                                                 name(NewData2), 
-                                                undefied, 
+                                                undefined, 
                                                 max_RTT(NewData2), 
                                                 default_behaviour
                                             } ),
@@ -149,7 +149,7 @@ normal( From, Event, Data ) ->
                 car_call_supervisor_api:car_call( { 
                                                     wait, 
                                                     name(NewData), 
-                                                    undefied, 
+                                                    undefined, 
                                                     max_RTT(NewData), 
                                                     default_behaviour 
                                                 } ),

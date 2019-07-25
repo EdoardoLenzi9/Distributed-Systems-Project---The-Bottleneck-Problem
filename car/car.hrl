@@ -235,7 +235,8 @@ unmarshalling_sync([First]) ->
 
 
 unmarshalling_kill(Content) ->
-    utils:log("unmarshalling_kill ~p", [Content]).
+    utils:log("unmarshalling_kill ~p", [Content]),
+    unmarshalling_adj(Content).
 
 
 unmarshalling_adj([ Front | Rest ]) ->

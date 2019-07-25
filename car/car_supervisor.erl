@@ -93,8 +93,6 @@ loop() ->
                         tow_truck ->
                             car:tow_truck(ReqSender)
                     end;
-                default_behaviour ->
-                    car:default_behaviour(ReqSender);
                 tow_truck_request ->
                     utils:log("TOW TRUCK CALLED"),
                     flow:launch_event(tow_truck_request, [{ReqLabel, ReqSender, ReqTarget, CurrentTime, ReqRTT, ReqBody}]);

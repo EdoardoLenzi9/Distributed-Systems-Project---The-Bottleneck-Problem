@@ -42,6 +42,20 @@ delete(Entity) ->
     end.
         
 
+
+select(Name) ->
+    F = fun() -> 
+        SelectResult = db_manager:select(sync_entity, #sync_entity{name = Name, _='_'}, [], ['$_']),
+        if length(SelectResult) == 1 ->
+            SelectResult;
+        true ->
+            []
+        end
+    end,
+    {atomic, Res} = mnesia:transaction(F),
+    Res.
+
+
 get_all() ->
     order(repository_helper:get_all(sync_entity)).
 

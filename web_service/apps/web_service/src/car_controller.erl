@@ -95,4 +95,7 @@ kill_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
 	{[	{<<"name">>, Name},
 		{<<"target">>, Target} ]} = DecodedTuple, 
-		jiffy:encode(car_service:kill(Name, Target)).
+		jiffy:encode( car_service:kill( 
+										list_to_atom(binary_to_list( Name ) ), 
+										list_to_atom(binary_to_list( Target ) )
+									  ) ).

@@ -57,7 +57,7 @@ leader( From, Event, Data ) ->
                 car_call_supervisor_api:car_call( { 
                                                     wait, 
                                                     name(Data), 
-                                                    undefied, 
+                                                    undefined, 
                                                     max_RTT(Data), 
                                                     default_behaviour 
                                                 } ),

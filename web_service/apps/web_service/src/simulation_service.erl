@@ -115,11 +115,8 @@ reset() ->
 reset_host( [] ) ->
     settings_repository:reset();
 reset_host( [ First | Rest ] ) ->
-    utils:log("Reset Host ~p", [First]),
-    utils:ssh_command( First, "sudo kill $(ps -ef | grep car | awk '{print $2}') 2> /dev/null || true" ),
-    utils:ssh_command( First, "sudo docker stop $(sudo docker ps | grep car | awk '{print $1}')" ),
-    %utils:ssh_command( First, "for i in `ps -ef | grep car | awk '{print $2}'`; do echo $i; kill -9 $i; done" ),
-    %utils:ssh_command( First, "for i in `sudo docker ps | grep car | awk '{print $1}'`; do echo $i; sudo docker stop $i; done" ),
+    utils:log( "Reset Host ~p", [ First ]),
+    utils:kill( First, "car" ),
     reset_host( Rest ).
     
 %%%===================================================================

@@ -92,11 +92,11 @@ update_front( State, Replacement, Data, From ) ->
 		front_cars( Data, [ Replacement ] )
 	end,
 	car_call_supervisor_api:car_call( { 
-										default_behaviour, 
+										wait, 
 										name( Data ),
 										name( Data ),
-										max_RTT( Data ), 
-										{ } 
+										0, 
+										default_behaviour 
 									} ),
 	NewData2 = obstacle_position(NewData, safe_obstacle_position(NewData)),
   	flow:keep_ignore( NewData2, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_front" ) ), NewData2 } ).
@@ -115,11 +115,11 @@ update_rear( State, Replacement, Data, From ) ->
 		rear_cars( Data, [ Replacement ] )
 	end,
 	car_call_supervisor_api:car_call( { 
-										default_behaviour, 
+										wait, 
 										name( Data ),
 										name( Data ),
-										max_RTT( Data ), 
-										{ } 
+										0, 
+										default_behaviour 
 									} ),
 	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_rear" ) ), NewData } ).
 
@@ -165,9 +165,17 @@ check( State, Sender, Data, From ) ->
 
 
 adj_reply( State, Adj, Data, From ) ->
-	utils:log( "EVENT adj_reply" ), 
+	utils:log( "EVENT adj_reply ~p", [ Adj ] ), 
 	NewData = adj( Data, Adj ),
-	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_adj_reply" ) ), NewData } ).
+	NewData2 = obstacle_position(NewData, safe_obstacle_position(NewData)),
+	car_call_supervisor_api:car_call( { 
+										wait, 
+										name( NewData2 ),
+										name( NewData2 ),
+										0, 
+										default_behaviour 
+									} ),
+	flow:keep_ignore( NewData2, From, { list_to_atom( string:concat( atom_to_list( State ),"_adj_reply" ) ), NewData2 } ).
 
 
 crossing( State, Body, Data, From ) ->

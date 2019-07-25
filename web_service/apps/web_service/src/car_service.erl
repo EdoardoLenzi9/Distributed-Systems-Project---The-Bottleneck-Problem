@@ -41,33 +41,22 @@ last_adj(Side) ->
         
 
 kill(Name, Target) ->
+    utils:log("Kill ~p", [Target]),
     SelectedCars = adj_repository:select(Target),
-
+    utils:log("Kill ~p", [SelectedCars]),
     if length(SelectedCars) == 1 -> 
         [SelectedCar] = SelectedCars,
 
         adj_repository:delete(SelectedCar),
         sync_repository:delete(#sync_entity{name = SelectedCar#adj_entity.name, side = SelectedCar#adj_entity.side, power = SelectedCar#adj_entity.power}),
         
-        SelectedCar#adj_entity.name,
-        SelectedCar#adj_entity.host,
-        SelectedCar#adj_entity.ip,
         utils:log("Selected Car: ~p", [SelectedCar]),
         Hosts = host_repository:select(SelectedCar),
 
         utils:log("Selected Hosts: ~p", [Hosts]),
         if length(Hosts) == 1 -> 
             [Host] = Hosts,
-            Host#host_entity.host,
-            Host#host_entity.ip,
-            Host#host_entity.password,
-            utils:ssh_command( utils:concat( [ 
-                                                "NAME=$(echo \"", 
-                                                atom_to_list( SelectedCar#adj_entity.name ), 
-                                                "\" | cut -d \"@\" -f 1);", 
-                                                "for i in `ps -ef | grep $NAME | awk '{print $2}'`; do echo $i; kill -9 $i; done; ;",
-                                                "for i in `sudo docker ps | grep $NAME | awk '{print $1}'`; do echo $i; sudo docker stop $i; done"
-                                            ] ) );        
+            utils:kill_car(Host, SelectedCar);   
         true ->
             host_undefined
         end;
@@ -77,11 +66,29 @@ kill(Name, Target) ->
     SelectedCars2 = adj_repository:select(Name),
     
     if length(SelectedCars2) == 1 -> 
-        [Caller] = SelectedCars2,
-        adj(Caller);
+        utils:log("Killer caller was not in sync state"),
+        [AdjCaller] = SelectedCars2,
+        adj(AdjCaller);
     true ->
-        [[],[]]
+        SelectedCars3 = sync_repository:select(Name),
+        if length(SelectedCars3) == 1 -> 
+            utils:log("Killer caller was in sync state"),
+            [SyncCaller] = SelectedCars3,
+            sync_to_adj(sync_repository:add(SyncCaller));
+        true ->
+            [ [], [] ]
+        end
     end.    
+
+
+sync_to_adj([]) ->
+    [ [], [] ];
+sync_to_adj(First) ->
+    [ adj_marshalling( [ #adj_entity{
+                                      name = First#sync_entity.name,
+                                      side = First#sync_entity.side,
+                                      power = First#sync_entity.power
+                                    } ] ), [] ].
 
 %%%===================================================================
 %%% private functions

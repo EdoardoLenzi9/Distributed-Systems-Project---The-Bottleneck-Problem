@@ -58,7 +58,7 @@ dead( From, Event, Data ) ->
             car_call_supervisor_api:car_call( { 
                                                 wait, 
                                                 name(Data), 
-                                                undefied, 
+                                                undefined, 
                                                 tow_truck_time(Data), 
                                                 tow_truck
                                             } ),
