@@ -58,13 +58,26 @@ different number and type of cars. The following are the property of each scenar
     \item[scenario \textbf{1}]: \\ there are two cars, on the same side (left), while there is no one on the other 
     side. The cars don't arrive at the same time but there is a delay of 2000ms between them. \\
     The correct behaviour should be that the first car that reach the bridge will cross it (the other 
-    one will wait and then cross the bridge too) 
+    one will wait and then cross the bridge too) \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc1.jpg}
+        \captionof{figure}{Scenario 1}
+    \end{center}
     \item[scenario \textbf{2}]: \\ there are four car from the same side all created at the same time \\The correct behaviour should be that 
     the cars are able to synchronize themselves and then cross the bridge according to their $arrival\_time$
+    \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc2.jpg}
+        \captionof{figure}{Scenario 2}
+    \end{center}
     \item[scenario \textbf{3}]: \\ there are four car on left side and one on the right side (there is no delay 
     between them).\\ The correct behaviour should be that the cars will cross the bridge in the correct 
     order without crashing with the car on the other side (that will wait for its turn accordingly
-    to its arrival time) 
+    to its arrival time) \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc3.jpg}
+        \captionof{figure}{Scenario 3}
+    \end{center}
     \item[scenario \textbf{4}]: \\ there are three cars, with no delay, that are on the same side but there is one that is going to
     have a system crash.\\ The correct behaviour should be that the two cars that won't have any type of crash
     will cross the bridge even if there is one in front of them that has crashed. Due to the fact that the 
