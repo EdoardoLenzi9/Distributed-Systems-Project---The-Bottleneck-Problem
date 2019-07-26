@@ -18,12 +18,12 @@ class Street extends THREE.Group{
 		this.scaleFactor = scaleFactor;
 		
 		// Street
-		var streetGeometry = new THREE.PlaneGeometry( 4 * scaleFactor, 								// width
+		var streetGeometry = new THREE.PlaneGeometry( 4 * scaleFactor, 									// width
 													  (initialLegth + bridge_length) * scaleFactor, 	// height
-													  1, 1											// widthSegments, heightSegments
+													  1, 1												// widthSegments, heightSegments
 											  		);
 		var streetMaterial = new THREE.MeshBasicMaterial( { color: 0x000, side: THREE.DoubleSide } );
-
+		debugger
 		// Middle line
 		this.drawMiddleLine();
 		

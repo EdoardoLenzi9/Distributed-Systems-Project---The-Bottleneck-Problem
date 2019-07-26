@@ -81,7 +81,7 @@ function SaveSettings(){
     })
 
     //var event = new CustomEvent('update-bridge', { bridge_length: parseInt( parameters.bridge_length ) } );
-    var event = new CustomEvent('update-street', { detail: parameters.bridge_length });
+    var event = new CustomEvent('update-street', { detail: parseInt(parameters.bridge_length) });
     document.dispatchEvent(event);
 }
 
