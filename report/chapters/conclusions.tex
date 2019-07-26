@@ -10,8 +10,8 @@ was ensuring that nobody will wait forever to cross the bridge. In a realistic s
 that one or more cars could never cross the bridge.\\
 The chosen strategy is FIFO order. This avoids starvation but isn't the best choice for performance: consider
 the case where one car arrives on the left side while on the right there are, for example, 20 cars, and that the bridge
-has capacity equal to 1 and lenght 30. The car on the left has to wait for all the other 20 on the right side: this 
-is a very long time due to the fact that only one car per time can cross the bridge and to the lenght of the bridge.
+has capacity equal to 1 and length 30. The car on the left has to wait for all the other 20 on the right side: this 
+is a very long time due to the fact that only one car per time can cross the bridge and to the length of the bridge.
 If that car could cross without waiting for all the others its waiting time would decrease significally while
 the waiting time for the others will increase only as if there were one car more before them. So one thing 
 that can improve the system could be order the cars by minimizing the average waiting time.\\
