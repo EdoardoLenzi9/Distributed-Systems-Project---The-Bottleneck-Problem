@@ -17,7 +17,7 @@ class AnimatedCar extends THREE.Group {
 		super( );
 		this.transitionTime = transitionTime;
 		// car
-		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
+		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, state.size * 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
 		this.car.position.z += 0.3 * street.scaleFactor;

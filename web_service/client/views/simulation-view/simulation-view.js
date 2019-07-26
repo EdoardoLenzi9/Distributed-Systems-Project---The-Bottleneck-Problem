@@ -33,6 +33,14 @@ var cars = {};
 var i = 0;
 var samplingFrequency;
 var maxRTT;
+
+
+window.parent.document.addEventListener('update-street', function (e) { 
+	scene.remove(street);
+	street = new Street(15, e.detail, 10);
+	scene.add(street);
+}, false);
+
 /*
 * Init function
 */ 
