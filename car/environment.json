@@ -4,7 +4,7 @@
     "process_visibility": "visible",
     "max_speed": 2,				
     "bridge_capacity": 2,				
-    "bridge_length": 3,
+    "bridge_length": 4,
     "tow_truck_time": 10,
     "max_RTT": 1000			
 }
