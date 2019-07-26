@@ -80,9 +80,9 @@ tow_truck_request(Req) ->
             end
     after RTT ->
         utils:log("Tow Truck: timeout reached, car is in crash type 2 or just removed"),
-        % TODO SSH
         Adj = http_client:kill(Body, Target),
-        supervisor_reply_supervisor_api:timer_reply({update_adj, Sender, Target, CurrentTime, Adj})
+        utils:log("Adj ~p", [Adj]),
+        supervisor_reply_supervisor_api:timer_reply({update_adj, Target, Sender, CurrentTime, Adj})
     end.
 
 

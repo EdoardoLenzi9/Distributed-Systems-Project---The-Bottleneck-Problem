@@ -164,7 +164,7 @@ loop() ->
                 timeout ->
                     car:timeout(ReplySender, ReplyTarget);
                 update_adj ->
-                    car:adj_reply(ReplySender, ReplyBody)
+                    car:adj_reply(ReplyTarget, ReplyBody)
             end;   
         Any ->
             utils:log("Test: receive unhandled call ~p ", [Any])

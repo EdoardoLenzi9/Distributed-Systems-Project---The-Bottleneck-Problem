@@ -111,8 +111,28 @@ sync( From, Event, Data ) ->
         { adj_reply, Adj } ->
             utils:log( "EVENT adj_reply: ~p", [ Adj ] ),
             NewData = adj( Data, Adj ),
-            utils:log( "Arrival Time: ~p", [ arrival_time(NewData) ] ),
-            flow:next( normal, NewData, From, { normal, NewData } );
+            FrontCars = front_cars( NewData ),
+            if length( FrontCars ) > 0 ->
+                [ Pivot | _Rest ] = FrontCars,
+
+                if Pivot#car_state.position == undefined; Pivot#car_state.position == <<"undefined">> ->
+                    utils:log( "Car with unknown position in front ~p", [ Pivot ] ),
+                    car_call_supervisor_api:car_call( { 
+                                                        check, 
+                                                        name(NewData), 
+                                                        name(Pivot), 
+                                                        max_RTT(NewData), 
+                                                        NewData
+                                                    } ),
+                    flow:keep( NewData, From, { sync_default_behaviour, NewData } );
+                true ->
+                    utils:log( "Arrival Time: ~p", [ arrival_time(NewData) ] ),
+                    flow:next( normal, NewData, From, { normal, NewData } )
+                end;
+            true ->
+                utils:log( "Arrival Time: ~p", [ arrival_time(NewData) ] ),
+                flow:next( normal, NewData, From, { normal, NewData } )
+            end;
 
 
         default_behaviour ->

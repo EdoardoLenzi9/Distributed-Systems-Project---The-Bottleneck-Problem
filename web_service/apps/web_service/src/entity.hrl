@@ -20,7 +20,8 @@
                         power,
                         size,
                         time_stamp,
-                        chained             
+                        front_car,
+                        rear_car             
                     }).
 
 

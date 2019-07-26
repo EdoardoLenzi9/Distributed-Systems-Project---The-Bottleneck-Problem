@@ -74,6 +74,7 @@ kill(Name, Target) ->
         if length(SelectedCars3) == 1 -> 
             utils:log("Killer caller was in sync state"),
             [SyncCaller] = SelectedCars3,
+            sync_repository:delete(SyncCaller),
             sync_to_adj(sync_repository:add(SyncCaller));
         true ->
             [ [], [] ]
