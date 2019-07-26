@@ -74,8 +74,12 @@ kill(Name, Target) ->
         if length(SelectedCars3) == 1 -> 
             utils:log("Killer caller was in sync state"),
             [SyncCaller] = SelectedCars3,
-            sync_repository:delete(SyncCaller),
-            sync_to_adj(sync_repository:add(SyncCaller));
+
+            if SyncCaller#sync_entity.front_car =/= undefined ->
+                sync_to_adj(sync_repository:select(SyncCaller#sync_entity.front_car));
+            true -> 
+                [ [], [] ]
+            end;
         true ->
             [ [], [] ]
         end
@@ -84,7 +88,7 @@ kill(Name, Target) ->
 
 sync_to_adj([]) ->
     [ [], [] ];
-sync_to_adj(First) ->
+sync_to_adj([First]) ->
     [ adj_marshalling( [ #adj_entity{
                                       name = First#sync_entity.name,
                                       side = First#sync_entity.side,

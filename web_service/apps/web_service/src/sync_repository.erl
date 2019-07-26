@@ -42,7 +42,7 @@ delete(Entity) ->
             [Item] = Result,
             utils:log("Delete sync record ~p", [Item]),
 
-            RearCar = if Item#sync_entity.rear_car == undefined ->
+            RearCar = if Item#sync_entity.rear_car =/= undefined ->
                 utils:log("Item chained with a rear car ~p", [Item#sync_entity.rear_car]),
                 RearCars = repository_helper:select(sync_entity, #sync_entity{name = Item#sync_entity.rear_car, _='_'}, [], ['$_']),
                 if length(RearCars) == 1 ->
