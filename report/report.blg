@@ -1,0 +1,68 @@
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: report.aux
+The style file: alpha.bst
+Database file #1: biblio.bib.bib
+Warning--to sort, need author or key in 1
+Warning--to sort, need author or key in 9
+Warning--to sort, need author or key in 2
+Warning--to sort, need author or key in 10
+Warning--to sort, need author or key in 3
+Warning--to sort, need author or key in 4
+Warning--to sort, need author or key in 6
+Warning--to sort, need author or key in 5
+Warning--to sort, need author or key in 12
+Warning--to sort, need author or key in 13
+Warning--to sort, need author or key in 7
+Warning--to sort, need author or key in 8
+Warning--to sort, need author or key in 14
+Warning--to sort, need author or key in 17
+Warning--to sort, need author or key in 18
+Warning--to sort, need author or key in 16
+Warning--to sort, need author or key in 19
+Warning--to sort, need author or key in 20
+Warning--to sort, need author or key in 21
+Warning--to sort, need author or key in 15
+Warning--empty journal in Lamport:1978
+You've used 21 entries,
+            2543 wiz_defined-function locations,
+            619 strings with 5539 characters,
+and the built_in function-call counts, 4468 in all, are:
+= -- 445
+> -- 28
+< -- 1
++ -- 2
+- -- 2
+* -- 215
+:= -- 497
+add.period$ -- 43
+call.type$ -- 21
+change.case$ -- 85
+chr.to.int$ -- 21
+cite$ -- 62
+duplicate$ -- 214
+empty$ -- 561
+format.name$ -- 4
+if$ -- 1053
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 1
+newline$ -- 88
+num.names$ -- 3
+pop$ -- 207
+preamble$ -- 1
+purify$ -- 106
+quote$ -- 0
+skip$ -- 212
+stack$ -- 0
+substring$ -- 167
+swap$ -- 20
+text.length$ -- 1
+text.prefix$ -- 1
+top$ -- 0
+type$ -- 168
+warning$ -- 21
+while$ -- 2
+width$ -- 22
+write$ -- 193
+(There were 21 warnings)

@@ -31,7 +31,24 @@ var hemiLight, dirLight;
 var street;
 var cars = {};
 var i = 0;
+var samplingFrequency;
+var maxRTT;
+var parent = window.parent;
+var bridgeLength;
+var streetCapacity = 30;
+var scaleFactor = 10;
 
+parent.document.addEventListener('update-street', function (e) { 
+	bridgeLength = e.detail;
+	UpdateStreet();
+}, false);
+
+
+function UpdateStreet(){
+	scene.remove(street);
+	street = new Street(streetCapacity, bridgeLength, scaleFactor);
+	scene.add(street);
+}
 
 /*
 * Init function
@@ -49,14 +66,56 @@ function Init() {
 	camera.position.set( 0, 0, 10 );
 	scene.add( group );
 		
-	// load test state (polling)
-	window.setInterval(function(){
-		console.log('polling')
-		httpPostAsync('/simulation', {}, function(content){
-			console.log(content);
-			LoadState(JSON.parse(content));
-		})
-	}, speed);
+
+	Read("environment.json", function(env){
+		var env = JSON.parse(env);
+		bridgeLength = env.bridge_length;
+		street = new Street(streetCapacity, bridgeLength, scaleFactor);
+		scene.add(street);
+		maxRTT = env.max_RTT;
+		samplingFrequency = maxRTT / 10;
+		console.log('polling frequency ' + samplingFrequency)
+		// load test state (polling)
+		window.setInterval(function(){
+			httpPostAsync('/simulation', {}, function(content){
+				if(content != '[]'){
+					console.log(content);
+				}
+				LoadState(JSON.parse(content));
+			});
+			//counter = counter % 6;
+			//Read('frames/0' + (counter++) + '.json', function(content){
+			//	var frame = JSON.parse(content);
+			//	console.log(frame);
+			//	LoadState(frame);
+			//})
+		}, samplingFrequency);
+
+		window.setInterval(function(){
+			if (! parent.manualGeneration){
+				parent.carIndex ++;
+
+				var side = Random(2);
+				var timeout = Random(10) * 1000 * Probability(10);
+
+				var parameters = {
+									name:       "car" + parent.carIndex,
+									side:       side == 0 ? -1 : 1, 
+									power:      Random(3) + 1, 
+									size:       1 + Probability(10), 
+									crash_type: timeout > 0 ? Random(2) + 1 : 0, 
+									timeout:    timeout
+								} 
+				parent.CreateCarAsync(0, parameters)
+			}
+
+			if(5 + parent.carIndex - parent.deadCarIndex > streetCapacity / 2){
+				streetCapacity = (5 + parent.carIndex - parent.deadCarIndex) * 2;
+				//UpdateStreet();
+			}
+		}, 2 * maxRTT);
+	})
+
 
 	// desktop events
 	BindEvent( window, 'mousemove', OnDocumentMouseMove );
@@ -78,31 +137,27 @@ function Init() {
 * deserialize the json content and setup each component defined
 */ 
 function LoadState( state ) {
-	var leftIndex = 0;
-	var rightIndex = 0;
 	for (const [key, car] of Object.entries(cars)) {
 		car.check = false;
 	}
-	middleIndex = state.length;
-	for (let car of state){ 
-		if(car.side == "right"){
-			middleIndex --;
-		}
-	}
 	state.forEach(function(car){ 	//left side
-		if(car.side == "left"){
-			car.side = -1;
-			leftIndex ++;
-			car.position = middleIndex - leftIndex;
-		} else {
-			car.side = 1;
-			car.position = rightIndex ++;				
+		if(car.state != "sync"){
+			if(car.crossing){ 
+				console.log(car.name + "From position: " + car.position)
+				car.position -= (street.bridge_length/2 * car.side)
+				console.log(car.name + "To position: " + car.position)
+			} else {
+				console.log(car.name + "From position: " + car.position)
+				car.position += (street.bridge_length/2 * car.side)
+				console.log(car.name + "To position: " + car.position)
+			}
+			UpdateState(car);
 		}
-		UpdateState(car);
 	});
 	for (var [key, car] of Object.entries(cars)) {
 		if(!car.check){
-			group.remove(car);
+			parent.deadCarIndex ++;
+			car.remove(maxRTT);
 			car = null;
 			delete cars[key];
 		}
@@ -114,7 +169,7 @@ function UpdateState(carState){
 	if(cars[carState.name] != undefined){
 		cars[carState.name].updateState(carState);
 	} else {
-		var carInstance = new AnimatedCar(carState); 
+		var carInstance = new AnimatedCar(carState, maxRTT); 
 		group.add(carInstance);
 		cars[carState.name] = carInstance;
 	}
@@ -180,10 +235,8 @@ function InitScene(){
 	scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
 	hemiLight = CreateHemiLight();
 	dirLight = CreateDirLight();
-	street = new Street();
     scene.add( hemiLight );  
 	scene.add( dirLight );  
-	scene.add( street );  
 }
 
 

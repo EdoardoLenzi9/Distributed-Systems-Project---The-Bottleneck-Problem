@@ -1,4 +1,46 @@
 \chapter{Validation}\label{ch:validation}
+In this section we will talk about the testing part of the project. In particular our purpose was to 
+show that the system satisfy the requirements listed in ~\ref{ch:analysis}. \\
+In order to do that we wrote some test that consider different case for esch state of the car:
+\begin{itemize}
+    \item [a.] on each side, and on the bridge itself, there aren't any cars, except the one we are testing;
+    \item [b.] on the same side of our car there is another one in position -1 or 1 depending on the side, 
+    while on the other one there is nobody;
+    \item [c.] on the opposite side there is a car.
+\end{itemize}
 
-Check if requirements from Chapter~\ref{ch:analysis} have been fulfilled.
-Quantitative tests (simulations) and screenshots of the interfaces are put here.
+\subsection{Tests}
+Our tests check the correct flow of events. In other words we wanted to find out if the car in a 
+particular situation (defined by the environment) reacts to it sending and receiving the expected
+events. The car should also act as we wanted so that there is no accident, deadlock, starvation and so on.
+
+\section{Functional requirements}
+
+We were able to check if the system can:
+\begin{itemize}
+    \item \textbf{Coordinate the traffic}.
+    \item \textbf{Avoid} any kind of \textbf{accident}.
+    \item Avoid situation where more than $n$ cars, where $n$ is the capacity, cross the the bridge at 
+    the same time.
+    \item Make cars cars interchange messages due to decide correctly who can cross, after reached an
+    (\textbf{agreement}), the bridge.
+    \item Detect \textbf{broken} cars and remove them calling a tow truck.
+    \item generate new cars.
+\end{itemize}
+
+
+\section{Non functional requirements}
+
+For the non functional requirements we tested that:
+\begin{itemize}
+    \item \textbf{Safety}: the system guarantees that the bridge can be crossed only by cars that 
+        are moving in the same direction, but also that if a car broke, the others are able to detect that
+        and so they stop before crashing into it. 
+    \item \textbf{Strength}: the system is usable even if a car breaks down and needs to be removed.
+    \item \textbf{Scalability}: incrementing number of cars, clients and web services, the system don't affect
+    too much the whole system.
+    \item \textbf{Starvation}: when a car requires to cross the bridge, the request will be satisfied 
+    eventually. 
+    \item \textbf{Fairness}: the crossing order is a \textbf{FIFO ordering}.
+\end{itemize}
+

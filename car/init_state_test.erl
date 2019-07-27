@@ -10,9 +10,9 @@
 
 
 % Launch every test with
-% erl -sname car1@car1 -run init_state_test test
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test test
 
-% erl -sname car1@car1 -run init_state_test sync_test_
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync_test_
 sync_test_() ->
     % Arrange
     
@@ -22,171 +22,118 @@ sync_test_() ->
     
     % Act    
 
-    % if there isn't any car in front, sync transit in the normal state
-    Result1 = car:default_behaviour(State#car_state.name),
-    ExpectedResult1 = {sync_default_behaviour, State#car_state{ delta = 0 }},
+    utils:log("Test: there isn't any car in front"),
+    utils:log("Test: call defaultBehaviour"),
+    car:default_behaviour(State#car_state.name),
 
-    receive
-        {car_call, Req} ->
-            {Label, Sender, Target, Body} = Req,
-            test_fixture:assert(Body, State),
-            case Label of 
-                adj ->
-                    utils:log("Supervisor receive adj call"),
-                    % respond with no adj
-                    Adj = #adj{front_cars = [], rear_cars = []},
-                    {Result2, Data2} = car:adj_response({Label, Sender, Target, utils:get_timestamp(), 0, Adj}),
-                    ExpectedData2 = State#car_state{    speed = 0, 
-                                                        position = State#car_state.side, 
-                                                        current_time = Data2#car_state.current_time, 
-                                                        arrival_time = Data2#car_state.arrival_time, 
-                                                        delta = 0, 
-                                                        adj = Adj },
-                    test_fixture:assert(normal, Result2),
-                    test_fixture:assert(ExpectedData2, Data2)
-            end
-    end,
+    test_fixture:listen(adj, fun(_, Sender, _, _, _) -> 
+        Adj = #adj{front_cars = [], rear_cars = []},
+        {_Result, _Data} = car:adj_reply(Sender, Adj)
+    end),
 
-    car:stop(State#car_state.name),
-
-    % Assert
-    
-    test_fixture:assert(Result1, ExpectedResult1),
-    [ ?_assert(Result1 =:= ExpectedResult1) ].
+    car:stop(State#car_state.name).
 
 
-% erl -sname car1@car1 -run init_state_test sync_test2_
-sync_test2_() ->
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync2_test_
+sync2_test_() ->
+    sync_common_test(test_fixture:default_state2()).
+
+
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync3_test_
+sync3_test_() ->
+    sync_common_test(test_fixture:default_state3()).
+
+
+sync_common_test(State) ->
+    % Arrange
+
+    test_fixture:register(),
+    car:start_link(State#car_state.name, State),
+    utils:log("Test: there is another car called car2 in front of car1"),
+
+    % Act and Assert
+
+    utils:log("Test: car1 remains in the default state waiting for a check from car2"),
+    car:default_behaviour(State#car_state.name),
+
+    test_fixture:listen(check, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
+        flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, utils:get_timestamp(), ReqRTT, ReqBody}])   
+    end),
+    test_fixture:listen(check, fun(_ReqLabel, ReqSender, ReqTarget, ReqNickname, ReqSendingTime, _ReqBody) -> 
+        {_Result, Data} = car:check(ReqTarget),
+        supervisor_reply_supervisor_api:sup_reply({check_reply, ReqTarget, ReqSender, ReqNickname, ReqSendingTime, Data})
+    end),
+    test_fixture:listen(check_reply, fun(_ReplyLabel, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody) -> 
+        RTT = utils:get_timestamp() - ReplySendingTime,
+        {_Result, _Data} = car:check_reply({ReplySender, ReplyTarget, ReplySendingTime, RTT, ReplyBody})
+    end),
+    test_fixture:listen(adj, fun(_ReplyLabel, ReplySender, _ReplyTarget, _ReplySendingTime, _ReplyBody) -> 
+        Adj = State#car_state.adj,
+        {_Result, _Data} = car:adj_reply(ReplySender, Adj)
+    end),
+        
+    car:stop(State#car_state.name).
+
+
+% cerl ; erl -sname car1 -setcookie ds-project -run init_state_test sync_check_timeout_test_
+sync_check_timeout_test_() ->
     % Arrange
 
     test_fixture:register(),
     State = test_fixture:default_state2(),
-    % there is another car called car2 in front of car1
+    utils:log("Test: there is another car called car2 in front of car1"),
     car:start_link(State#car_state.name, State),
+    utils:log("Test: car1 remains in the default state waiting for a check from car2"),
+    car:default_behaviour(State#car_state.name),
 
     % Act and Assert
 
-    % car1 remains in the default state waiting for a check from car2
-    {Result1, _Data1} = car:default_behaviour(State#car_state.name),
-    ExpectedResult1 = sync_default_behaviour,
-
-    % car1 calls its supervisor in order to propagate the check
-    receive
-        {car_call, Request2} ->
-            ExpectedRequest2 = {check, car1, car2, {}},
-            test_fixture:assert(Request2, ExpectedRequest2)
-    end,
-
-    % send a check event to the car
-    TimeStamp3 = utils:get_timestamp(),
-    Request3 = {check, car1, car1, TimeStamp3, {}},
-    {Result3, _Data} = car:check(Request3),
-    ExpectedResult3 = sync_check,
-
-    % receive car response with current state
-    receive
-        {car_response, Response4} ->
-            {Label4, Sender4, Target4, Time4, _Body4} = Response4,
-            test_fixture:assert({Label4, Sender4, Target4, Time4}, {check_response, car1, car1, TimeStamp3})
-    end,
-
-    % send check response to the car
-    RTT = utils:get_timestamp() - TimeStamp3,
-    {Result5, _Delta} = car:check_response({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
-    ExpectedResult5 = sync_response_check,
-    
-    receive
-        {car_call, Req} ->
-            {Label, Sender, Target, _Body} = Req,
-            case Label of 
-                adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    {Result6, Data6} = car:adj_response({Label, Sender, Target, TimeStamp3, 0, Adj}),
-                    ExpectedData6 = State#car_state{speed = 0, position = State#car_state.side, arrival_time = Data6#car_state.arrival_time, current_time = Data6#car_state.current_time, delta = Data6#car_state.delta, adj = Adj},
-                    utils:log("~p", [Data6]),
-                    utils:log("~p", [ExpectedData6]),
-                    test_fixture:assert(Result6, normal),
-                    test_fixture:assert(Data6, ExpectedData6)
-            end
-    end,
-        
-    car:stop(State#car_state.name),
-
-    % Assert
-    
-    test_fixture:assert(Result1, ExpectedResult1),
-    test_fixture:assert(Result3, ExpectedResult3),
-    test_fixture:assert(Result5, ExpectedResult5),
-    
-    [   ?_assert(Result1 =:= ExpectedResult1),
-        ?_assert(Result3 =:= ExpectedResult3),
-        ?_assert(Result5 =:= ExpectedResult5) ].
-
-
-% erl -sname car1@car1 -run init_state_test sync_test3_
-sync_test3_() ->
-    % Arrange
-
-    test_fixture:register(),
-    State = test_fixture:default_state3(),
-    
-    % there is another car called car2 in front of car1 on the other side of the bridge
-    car:start_link(State#car_state.name, State),
-
-    % Act and Assert
-
-    % car1 remains in the default state waiting for a check from car2
-    {Result1, _Data1} = car:default_behaviour(State#car_state.name),
-    ExpectedResult1 = sync_default_behaviour,
-
-    % car1 calls its supervisor in order to propagate the check
-    receive
-        {car_call, Request2} ->
-            ExpectedRequest2 = {check, car1, car2, {}},
-            test_fixture:assert(Request2, ExpectedRequest2)
-    end,
-
-    % send a check event to the car
-    TimeStamp3 = utils:get_timestamp(),
-    Request3 = {check, car1, car1, TimeStamp3, {}},
-    {Result3, _Data} = car:check(Request3),
-    ExpectedResult3 = sync_check,
-
-    % receive car response with current state
-    receive
-        {car_response, Response4} ->
-            {Label4, Sender4, Target4, Time4, _Body4} = Response4,
-            test_fixture:assert({Label4, Sender4, Target4, Time4}, {check_response, car1, car1, TimeStamp3})
-    end,
-
-    % send check response to the car
-    RTT = utils:get_timestamp() - TimeStamp3,
-    {Result5, _Delta} = car:check_response({check, car2, car1, TimeStamp3, RTT, State#car_state{current_time = utils:get_timestamp()}}),
-    ExpectedResult5 = sync_response_check,
-
-    receive
-        {car_call, Req} ->
-            {Label, Sender, Target, _Body} = Req,
-            case Label of 
-                adj ->
-                    Adj = #adj{front_cars = [#car_state{ name = car2, side = -1, position = 0 }], rear_cars = []},
-                    {Result6, Data6} = car:adj_response({Label, Sender, Target, TimeStamp3, 0, Adj}),
-                    ExpectedData6 = State#car_state{speed = 0, position = State#car_state.side, arrival_time = Data6#car_state.arrival_time, current_time = Data6#car_state.current_time, delta = Data6#car_state.delta, adj = Adj},
-                    utils:log("~p", [Data6]),
-                    utils:log("~p", [ExpectedData6]),
-                    test_fixture:assert(Result6, normal),
-                    test_fixture:assert(Data6, ExpectedData6)
-            end
-    end,
-        
-    car:stop(State#car_state.name),
-
-    % Assert
-
-    test_fixture:assert(Result1, ExpectedResult1),
-    test_fixture:assert(Result3, ExpectedResult3),
-    test_fixture:assert(Result5, ExpectedResult5),
-
-    [   ?_assert(Result1 =:= ExpectedResult1),
-        ?_assert(Result3 =:= ExpectedResult3),
-        ?_assert(Result5 =:= ExpectedResult5) ].
+    test_fixture:listen(check, fun(ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody) -> 
+        flow:launch_event(request_timer, [{ReqLabel, ReqSender, ReqTarget, utils:get_timestamp(), ReqRTT, ReqBody}])
+    end),
+    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqNickname, _ReqSendingTime, _ReqBody) -> 
+        utils:log("wait until timeout")   
+    end),
+    test_fixture:listen(timeout, fun(_ReplyLabel, ReplySender, ReplyTarget, _ReplySendingTime, _ReplyBody) -> 
+        car:timeout(ReplySender, ReplyTarget)
+    end),
+    test_fixture:listen(tow_truck_request, fun(_ReqLabel, ReqSender, ReqTarget, _ReqRTT, ReqBody) -> 
+        flow:launch_event(tow_truck, [ReqBody, ReqTarget]),
+        utils:log("Test: call car crash (will be postponed)"),
+        car:crash(ReqTarget, 2),
+        car:update_front(ReqSender, []),
+        car:default_behaviour(ReqSender)
+    end),
+    test_fixture:listen(default_behaviour, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:default_behaviour(ReqSender)
+    end),
+    test_fixture:listen(adj, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        Adj = State#car_state.adj,
+        car:adj_reply(ReqSender, Adj)
+    end),
+    test_fixture:listen(adj, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        ok
+    end),
+    test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:default_behaviour(ReqSender)
+    end),
+    test_fixture:listen(crash, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:crash(ReqSender, 2)
+    end),
+    test_fixture:listen(check, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        ok
+    end),
+    test_fixture:skip_log_state(),
+    test_fixture:listen(next, fun(_ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:default_behaviour(ReqSender)
+    end),
+    test_fixture:listen(tow_truck, fun(_ReqLabel, _ReqSender, ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:tow_truck(ReqTarget)
+    end),
+    % TODO
+    test_fixture:listen(update_rear, fun(_ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody) -> 
+        ok
+    end),
+    test_fixture:listen(stop, fun(_ReqLabel, _ReqSender, ReqTarget, _ReqRTT, _ReqBody) -> 
+        car:stop(ReqTarget)
+    end).

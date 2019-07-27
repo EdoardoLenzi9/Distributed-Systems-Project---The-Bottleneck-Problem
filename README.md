@@ -48,13 +48,6 @@ The project deadline is 28 of June; we ar going to split the month into 4 sprint
 ## Get Started
 
 ```
-sh clean.sh
-sh setup.sh
-cd web_service/client/
-npm install
+sudo make 
+sudo make run
 ```
-
-## TODO
-
-* Creare un makefile
-* Tutti i test anche della macchina

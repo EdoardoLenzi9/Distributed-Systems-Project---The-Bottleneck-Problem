@@ -8,25 +8,29 @@ and specific algorithms.
 
 The logical architecture is composed by the following component:
 \begin{itemize}
-    \item \textbf{Web Service} a node of a peer-to-peer layer that 
-        provides environment primitives to the car processes (list of adjacent cars) and, 
-        at the same time, can send queries to the DB component and exposes an API for the 
-        clients.
-    \item \textbf{Client} a simple web page used to monitoring the simulation state; 
-        uses the web service APIs to render a graphic interface that must 
-        be constantly syncronized.
+    \item \textbf{Web Service} a node that provides environment primitives to the 
+        car processes (list of adjacent cars) and, at the same time, 
+        can send queries to the DB component and exposes a \textbf{RESTful API}~\cite{9} 
+        for the clients.
+    \item \textbf{Client} a simple web page used to monitoring the simulation state
+        and manage simulation settings; uses the web service APIs to render a 
+        graphic interface that must be constantly syncronized (polling).
     \item \textbf{Car} a process that is the abstraction/simulation of a real car; 
         \begin{itemize}
-            \item it can become a leader in order to schedule the crossing order for the next turn
-            \item it must check the health state of the other adjacent cars 
+            \item[$\rhd$] it can become a leader in order to schedule the crossing 
+                order for the next turn
+            \item[$\rhd$] it must check the health state and position of the other adjacent cars 
                 (calls the tow truck in case of failure)
-            \item it can see environment details calling a web service 
-            \item it have to syncronize its local timing using Berkeley algorith
+            \item[$\rhd$] it can see environment details calling a web service 
+            \item[$\rhd$] it have to syncronize its local timing using Berkeley algorithm
         \end{itemize}
-    \item \textbf{Distributed DBMS}, an instance of Mnesia DBMS distributed 
-        on each container in order increase redundancy and robustness. 
+    \item \textbf{Distributed DBMS}, an instance of Mnesia DBMS paired 
+        with the web service instance 
+        (in a real distributed scenery there will be an instance of Mnesia 
+        foreach web service in order increase redundancy and robustness). 
     \item \textbf{Docker Container} wraps one or more car and/or web service instances 
         and is designed to be interconnected with all others containers 
+        (using a \textbf{docker network}). 
     \end{itemize}
 
 
@@ -37,13 +41,14 @@ into some subproblems and solve them.
 We also provide a simplified sequence of UML (sequence) diagrams in order to 
 describe the workflow/communication patterns.
 
+
 \subsection{Starvation/deadlock and order method}
 
 Ideally a car that reaches first the queue must pass before other 
-incoming cars (\textbf{FIFO}).\\
+incoming cars (\textbf{FIFO}).
 
 We have to \textbf{avoid starvation} (ie. when a car waits infinite time cause the opposite queue 
-has infinite lenght and it never has the priority) and \textbf{deadlock} (cars aren't able to 
+has infinite length and it never has the priority) and \textbf{deadlock} (cars aren't able to 
 reach the agreement). 
 
 
@@ -52,12 +57,14 @@ reach the agreement).
 In order to avoid \textbf{starvation} in a first stage cars syncronize themselves 
 (for the syncronization process we follow the \textbf{Berkeley algorithm})
 in terms of local timinig and in a second stage there will be a \textbf{leader election} 
-and the leader decides the crossing order. Using this method we also avoid 
-the possibility of a \textbf{deadlock} as long as the leader is running.\\
+and the leader decides the crossing order. 
 
-In a certain instant the elected leader is the first car that has reached the bridge; 
-once the current leader cross the bridge there is a new election of the car on the other 
-side of the bridge (if one is present).\\
+Using this method we also avoid 
+the possibility of a \textbf{deadlock} as long as the leader is running.
+
+In a certain instant the elected leader is the car that has reached the bridge and 
+present a lower arrival time wrt. the car on the opposite side (if present); 
+once the current leader cross the bridge there is a new election.\\
 
 
 \section{Syncronization problem}
@@ -65,25 +72,18 @@ side of the bridge (if one is present).\\
 Every car has a \textbf{local timing} that can \textbf{drifts} out from the 
 global timing. 
 
+
 \subsection{Solution}
 
-So we need to syncronize the incoming cars using the \textbf{Berkeley algorithm}.\\
+So we need to syncronize the incoming cars using the \textbf{Berkeley algorithm}.
 
 A new incoming car calls the \textit{environment:get$\_$adjacent$\_$cars(p)} 
-method in order to get the name of the adjacent cars. \\
-
+method in order to get the name of the adjacent cars. 
 The new car $c$ sends a message to the nearest car $n$ in order to get the current time 
 (we assume that $n$ was already syncronized). 
-With this information $c$ is concious of the RTT and its local drift from the global time. 
-Finally $c$ sends to the furthest car 
-reachable in the queue its arrival time (and the message is propagated along the 
-peer chain to the current leader).\\
 
-So basically the global timing is the timing of the first leader (or the average time 
-of the first block of incoming cars).\\
-
-If some new unsyncronized cars appear in block the syncronization process takes into 
-consideration the average RTT (according to the Berkeley algorithm). 
+With this information $c$ is concious of the RTT and its local drift from the global time;
+so basically the global timing is the timing of the first leader. 
 
 
 \section{Agreement}
@@ -93,12 +93,24 @@ this decision.
 
 \subsection{Solution}
 
-The leader is concious of the current queue state in terms of arrival time of the cars; 
-so it decides how may cars have to cross the bridge in this turn (accordingly with the 
-bridge capacity c and FIFO ordering).\\
+Before crossing the bridge, the leader $A$ propagates a message to 
+the first $n$ cars behind him (where $n$ is the capacity of the bridge) 
+telling them to cross the bridge if their arrival times are lower than the 
+arrival time of $B$, the car on the opposite side (if present).
 
-Finally the leader notifies to the involved cars its decision and, after 
-an acknowledgement (agreement), the block starts crossing. 
+Each car, who receives the message, checks if its arrival time is less then $B$'s: 
+if so then the car can cross the bridge too, otherwise waits for its turn.\\
+
+\noindent
+The leader will always be elected by himself. Suppose that the car $A$, 
+which is not a leader and hasn't the permission to cross, arrives on the bridge side.
+
+At that point $A$ checks if there are any other car in front of her:
+\begin{itemize}
+\item if there is a car and whose arrival time is greater then $A$'s then A 
+    is the new leader;
+\item if there isn't any car, A is the new leader.
+\end{itemize}
 
 \begin{center}
     \includegraphics[scale=0.6]{assets/ds2019_3.png}
@@ -107,14 +119,21 @@ an acknowledgement (agreement), the block starts crossing.
 
 \section{Failures}
 
-In case of failure another car (or the same car) has to call a \textbf{tow truck} for help.
+In case of failure, of both engine and communication system,
+another car has to call a \textbf{tow truck} for help. 
+If only the engine has crashed then the car
+itself can call the \textbf{tow truck}.
 
 
 \subsection{Solution}
 
 Each car recursively checks if other reachable cars are safe; if a check message
-hasn't any response before a certain \textbf{timeout} (depends on the RTT) is assumed 
-that the receiver has a failure (and so the tow truck will be call).
+hasn't any response within a certain \textbf{timeout} (depends on the $max\_RTT$ allowed) 
+it is assumed that the receiver has a failure (and so the tow truck will be call). 
+
+Once the car was removed the tow truck notifies the adjacent cars; anyway if the car
+is able to send messages notifies autonomously its removal to the adjacent cars.
+
 
 \begin{center}
     \includegraphics[scale=0.9]{assets/ds2019_4.png}
@@ -122,7 +141,9 @@ that the receiver has a failure (and so the tow truck will be call).
 
 
 \section{MIM attack}
+\fbox{Bonus requirement, not necessary}\\
 
+\noindent
 The system must withstand a MIM attack.
 
 
@@ -134,19 +155,22 @@ Each message will be encrypted (HTTPS).
 \section{Scalability}
 
 The system must \textbf{scale wrt. the load} 
-(the number of cars and clients can scale arbitrary).
+(the number of cars and clients can scale arbitrarily).
 
 
 \subsection{Solution}
 
-Assume that the available machines are defined in an arbitrary 
-way in the initialization phase; on each machine some docker containers 
-will be raised and foreach one of those an arbitrary number of web services and 
-car processes will be spawned.\\
+Erlang allows huge numbers of processes on the same machine so we will 
+test everything locally.\\
 
+\noindent
+\fbox{Bonus requirement, not necessary}\\
 
-[Bonus requirement, not necessary]
-We will design an embedded load balancer in order to avoid the web services overload 
+\noindent
+Anyway if we assume that the available machines are defined in the initialization phase,
+it will be easy to rise up instances of cars and/or web services on different machines.
+
+Can be also designed an embedded load balancer in order to avoid the web services overload 
 (considering the number of calls).
 
 \begin{center}
@@ -164,13 +188,15 @@ and \textbf{decentralized} (avoid any SPOF).
 \subsection{Solution}
 
 The scalability requirement imposes that every macro-component must be scalable 
-so the architecture provides some \textbf{peer-to-peer layers} 
-(web services layer, cars layer).
+so the architecture provides a \textbf{peer-to-peer layer} of cars.
+
 The only SPOF in this context can be the \textit{environment} component 
 (which is embedded into the web services) that allows for a new spawned car to 
 start a message exchange with the adjacent cars. 
-A possible solution can be using a \textbf{distributed DBMS} like Mnesia~\cite{1} in order to keep 
-track of the queue state.
+
+This issue can be solved 
+with a peer to peer layer of web services and some istances of a 
+\textbf{distributed DBMS} like Mnesia~\cite{1} (but isn't a project requirement).
 
 \begin{center}
     \includegraphics[scale=0.8]{assets/ds2019_1.png}
@@ -185,32 +211,129 @@ track of the queue state.
 \end{center}
 
 
-\subsection{Algorithms}
+\section{Algorithms}
+
+\subsection{Assumptions and observations}
+Starting from the instantiation of a new car process we will describe the main aspects 
+of a \textbf{car life-cycle}. 
+\noindent
+We have to define new variables and notations; first of all we define a first layer cars as
+ the set of car processes, this layer sends periodically updates to a second layer of web service and 
+database. Finally a third layer of clients make polling on the second layer.
+
+As we will show, we model a car as a \textbf{finite state machine} 
+with the following main states: sync, normal, leader, dead.\\
+
+\noindent
+One of the main problems of the project task is that there are some non trivial aspects 
+that do not emerge in the initial analysis but are of fundamental importance; 
+this happens cause the analysis takes into consideration only the problem 
+that is located on an higher level with respect to the implementation and the 
+architecture proposed.
+
+First of all from the problem analysis is clear that the bridge is a shared resource 
+so the problem can be solved with the solution exposed by Lamport in its 
+article~\cite{Lamport:1978} about total ordering and synchronization. 
+
+But this isn't the best choice cause total ordering requires a huge exchange of 
+messages and, for this problem, is more than necessary; we decide to implement a 
+custom algorithm based on the idea of locks.
+
+Also leader election/distribute agreement algorithms are superfluous cause bridge 
+access isn't contended by every car in a certain instant but, at most, 
+by two concurrent cars on the opposite side; so a simple message exchange 
+will be enough for the leader election. \\
+
+\subsection{Concurrency}
+Due to the asyncronicity, concurrency and time drifting is really hard 
+to keep consistent the state of the cars layer with the simulation 
+on the client layer. 
+One way to keep an exact consistency can be to structure the algorithm on 
+turns and only at the end of the turn, after the reaching of a global agreement,
+launch a transactional update on the database layer. 
+This way is for sure really safe but implies the implementation of some logic 
+and a huge message exchange that overloads the network.
+
+A simpler and less expensive idea (greedy) can be to leave a temporal inconsistency between 
+layers state but avoid anomalous behaviours on the simulation side. \\
+
+\noindent
+Denote with $A \rightarrow B$ the partial order relation\footnote{
+    To be precise $\rightarrow$ isn't a partial order relation cause it isn't 
+    reflexive (a car cannot be behind itself) but only transitive and antisymmetric.
+} between two cars $A$ and $B$ that are running from left to right and $A$ 
+\textbf{is behind} $B$. 
+
+So assume that in a certain instant $t_0$ 
+(measured from an external and omniscient point of view) 
+$A$ is in position $p_{A0}$ and B in $p_{B0}$ and 
+the database layer state is consistent with the car layer state:
+
+\begin{equation}\begin{split}
+    state_{DB} = state_{Car}
+\end{split}\end{equation} 
+
+\noindent
+Now before the next instant $t_1$ car $A$ moves forward of one block and car $B$
+do the same after a while; we said after a while cause, as described by Lamport,
+time is a continuous measure but clocks have a finite precision so 
+ticks are discretizations of the time concept. 
+
+For this reason if we consider a turn/tick 
+of one second between $t_0$ and $t_1$ we realize that in this interval some 
+actions can be made so consider the case in which A and B before $t_1$ 
+have send two messages to the DB layer $A:p_{A1}$ and $B:p_{B1}$.
+
+Now from the point of view of the database layer we cannot made any assumption 
+about the incoming messages cause one or both of them can be lost and/or the 
+arrival order can be different from the sending order. 
+
+The more the third layer cannot have a consistent vision and, for example, 
+can render the movement of $B$ before the transition of $A$ causing 
+a visual crash (never happened).\\
+
+\begin{tcolorbox}
+\textbf{I)} Anomalous behaviours like that can easily be avoided ensuring that 
+for each car must hold an order relation $\rightarrow$ and both movements 
+and updates must be send respecting this relation.\\
+
+In this way it is possible 
+that the simulation renders $A$ in position $p_{A1}$ and $B$ in position 
+$p_{B0}$ but this isn't a huge issue cause doesn't led to a crash so 
+can be overlooked.
+\end{tcolorbox}
+
+\subsection{Berkeley}
 
 We have used the Berkeley algorithm in order to syncronize new spawned car processes.
 
 \begin{center}
-    \includegraphics[scale=0.6]{assets/berkeley.png}
+    \includegraphics[scale=0.6, width=\linewidth]{assets/berkeley.png}
 \end{center}
 
 \section{Physical architecture and deployment}
 
 The deployment and start up consists in the following steps:
 \begin{enumerate}
-    \item Get the ssh credentials of each computer involved in the simulation
-    \item Execute a launcher bash script that will open an ssh tunnel with each computer and 
-        raise the Docker Containers with an arbitrary number of web services 
-    \item A random generator or a test procedure inserts into the DB a simulation schedule
-        (the web service p2p layer starts automatically the simulation)
-    \item With a web browser any client can connect to the web service API and monitoring 
-        the simulation state   
+    \item Get the SSH credentials and IP of each computer involved in the simulation and 
+        fill the \textbf{settings files} (\textit{environment.json})
+    \item Launch the \textit{make run} command 
+    \item With a \textbf{web browser} any client can connect to the web service API and 
+        manage/monitoring the \textbf{simulation state}   
 \end{enumerate}
 
-The code required for the simulation is taken directly from the project repository hosted on 
-GitHub~\cite{2}.
+We adopt \textbf{Git} for code versioning with a \textbf{feature-oriented} 
+branching strategy with a \textbf{PR} foreach merge.
+
+The code required for the simulation is taken directly from the project 
+\textbf{repository} hosted on \textbf{GitHub}~\cite{2}.
 
 
 \section{Development plan}
 
 The proposed architecture is a \textbf{P2P} architecture flanked by a 
-\textbf{client-server} architecture (\textbf{three-tier architecture}: client, web service and DBMS).
+\textbf{client-server} architecture (\textbf{three-tier architecture}: 
+client, web service and DBMS).\\
+
+We will follow the \textbf{Agile} philosophy, splitting the development process in sprints 
+of one week and adopting the \textbf{TDD}~\cite{10} methodology.

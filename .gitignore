@@ -17,9 +17,16 @@ car/environment.json
 web_service/environment.json
 web_service/client/environment.json 
 web_service/client/views/simulation-view/environment.json 
+web_service/client/views/log-view/environment.json 
 web_service/test/tmp
 jiffy/
+logs/
+*.so
 
-credentials/credentials\.json
+web_service/rebar3
+
+# credentials
+credentials/credentials.json
+car/credentials\.json
 
 web_service/credentials\.json

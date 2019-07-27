@@ -67,10 +67,13 @@ function OnDocumentMouseMove( event ) {
 		if ( res && res.object ) {
 			// mouse hover
 			if(selectedObject != null && selectedObject.parent != null){
+				console.log("Hide Details");
 				selectedObject.parent.hideDetails();
 			}
+			debugger;
 			selectedObject = res.object;
 			if(selectedObject != null && selectedObject.parent != null){
+				console.log("Show Details");
 				selectedObject.parent.showDetails();
 			}
 		}
