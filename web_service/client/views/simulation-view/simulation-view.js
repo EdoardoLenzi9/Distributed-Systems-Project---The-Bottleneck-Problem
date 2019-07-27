@@ -35,7 +35,7 @@ var samplingFrequency;
 var maxRTT;
 var parent = window.parent;
 var bridgeLength;
-var streetCapacity = 15;
+var streetCapacity = 25;
 var scaleFactor = 10;
 
 parent.document.addEventListener('update-street', function (e) { 

@@ -240,7 +240,7 @@ unmarshalling_kill(Content) ->
 
 
 unmarshalling_adj([ Front | Rest ]) ->
-    utils:log("unmarshalling_adj_wrapper"),
+    utils:log("unmarshalling_adj"),
     [Back] = Rest,
     #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
 
@@ -261,7 +261,7 @@ unmarshalling_adj_wrapper([First| Rest]) ->
         {<<"delta">>,Delta},
         {<<"state">>,State},
         {<<"crash_type">>, CrashType} ] } = First,
-    utils:log("unmarshalling_adj_wrapper2"),
+
     [#car_state{    name = utils:binary_to_atom(Name), 
                     host = binary_to_list(Host),
                     ip = binary_to_list(Ip),

@@ -162,7 +162,7 @@ loop() ->
                 check_reply ->
                     car:check_reply({ReplySender, ReplyTarget, ReplySendingTime, RTT, ReplyBody});
                 timeout ->
-                    car:timeout(ReplySender, ReplyTarget);
+                    car:timeout(ReplyTarget, ReplySender);
                 update_adj ->
                     car:adj_reply(ReplyTarget, ReplyBody)
             end;   

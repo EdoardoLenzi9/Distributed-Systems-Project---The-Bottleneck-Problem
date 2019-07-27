@@ -52,11 +52,11 @@ request_timer(Req) ->
                 end;
             true ->
                 utils:log("Timer: car is dead"),
-                supervisor_reply_supervisor_api:timer_reply({timeout, ReplyTarget, ReplySender, ReplySendingTime, ReplyBody})
+                supervisor_reply_supervisor_api:timer_reply({timeout, ReplySender, ReplyTarget, ReplySendingTime, ReplyBody})
             end
     after RTT ->
         utils:log("Timer: timeout reached for ~p", [Label]),
-        supervisor_reply_supervisor_api:timer_reply({timeout, Sender, Target, CurrentTime, Body})
+        supervisor_reply_supervisor_api:timer_reply({timeout, Target, Sender, CurrentTime, Body})
     end.
 
 
