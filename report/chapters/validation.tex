@@ -11,9 +11,9 @@ At first, in order to do that, we wrote some test that consider different case f
     \item [c.] on the opposite side of our testing car there is another.
 \end{itemize}
 
-At a second time we decided to implement several scenarios in order to see what will actually happen. 
+At a second time we decided to implement several scenerys in order to see what will actually happen. 
 In the following sections there are also some significant screenshot we took from the UI while running 
-different scenarios.
+different scenerys.
 
 \subsection{Tests}
 \noindent
@@ -52,63 +52,82 @@ For the non functional requirements we tested that:
     \item \textbf{Fairness}: the crossing order is a \textbf{FIFO ordering}.
 \end{itemize}
 
-In order to detacht any type of failure we defined different $scenarios$: these are json files which instantiate
-different number and type of cars. The following are the property of each scenario:
+In order to detacht any type of failure we defined different $scenerys$: these are json files which instantiate
+different number and type of cars. The following are the property of each scenery:
 \begin{itemize}
-    \item[scenario \textbf{1}]: \\ there are two cars, on the same side (left), while there is no one on the other 
+    \item[scenery \textbf{1}]: \\ there are two cars, on the same side (left), while there is no one on the other 
     side. The cars don't arrive at the same time but there is a delay of 2000ms between them. \\
     The correct behaviour should be that the first car that reach the bridge will cross it (the other 
     one will wait and then cross the bridge too) \\
     \begin{center}
         \includegraphics[scale=0.3, width=\linewidth]{assets/sc1.jpg}
-        \captionof{figure}{Scenario 1}
+        \captionof{figure}{scenery 1}
     \end{center}
-    \item[scenario \textbf{2}]: \\ there are four car from the same side all created at the same time \\The correct behaviour should be that 
+    \item[scenery \textbf{2}]: \\ there are four car from the same side all created at the same time \\The correct behaviour should be that 
     the cars are able to synchronize themselves and then cross the bridge according to their $arrival\_time$
     \\
     \begin{center}
         \includegraphics[scale=0.3, width=\linewidth]{assets/sc2.jpg}
-        \captionof{figure}{Scenario 2}
+        \captionof{figure}{scenery 2}
     \end{center}
-    \item[scenario \textbf{3}]: \\ there are four car on left side and one on the right side (there is no delay 
+    \item[scenery \textbf{3}]: \\ there are four car on left side and one on the right side (there is no delay 
     between them).\\ The correct behaviour should be that the cars will cross the bridge in the correct 
     order without crashing with the car on the other side (that will wait for its turn accordingly
     to its arrival time) \\
     \begin{center}
         \includegraphics[scale=0.3, width=\linewidth]{assets/sc3.jpg}
-        \captionof{figure}{Scenario 3}
+        \captionof{figure}{scenery 3}
     \end{center}
-    \item[scenario \textbf{4}]: \\ there are three cars, with no delay, that are on the same side but there is one that is going to
+    \item[scenery \textbf{4}]: \\ there are three cars, with no delay, that are on the same side but there is one that is going to
     have a system crash.\\ The correct behaviour should be that the two cars that won't have any type of crash
     will cross the bridge even if there is one in front of them that has crashed. Due to the fact that the 
     $crash\_type$ for the broken one is 2, the other cars (at least one of them) have to call the tow truck for 
-    it; after it has been removed the cars can continue crossing the bridge
-    \item[scenario \textbf{5}]: \\ there are five cars that are on the same side and all of them have a crash; three of them have system crash, 
+    it; after it has been removed the cars can continue crossing the bridge \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc4.jpg}
+        \captionof{figure}{scenery 4}
+    \end{center}
+    \item[scenery \textbf{5}]: \\ there are five cars that are on the same side and all of them have a crash; three of them have system crash, 
     while the other have only engine crash and there is a delay between the car with $crash\_type$ 2 and the others.\\
     The correct behaviour should be that the cars that have only engine crash will call the tow truck for themselves and
     for the cars that they can reach (because if a car has system crash cannot call a tow truck for itself). 
     For this reason if there is a car that has a system crash after that the cars, which had an engine crash, 
-    have already been removed by the tow truck, it will stuck there, waiting for a new car to call the tow truck for it
-    \item[scenario \textbf{6}]: \\ there are two cars that will have a crash with $crash\_type$ 2 and another one that will not
+    have already been removed by the tow truck, it will stuck there, waiting for a new car to call the tow truck for it\\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc5.jpg}
+        \captionof{figure}{scenery 5}
+    \end{center}
+    \item[scenery \textbf{6}]: \\ there are two cars that will have a crash with $crash\_type$ 2 and another one that will not
     crash and that will arrive after that the previously cars have crashed due to the delay between them. All of them are on the same 
     side of the bridge. \\ The correct behaviour should be that the cars with 
     the crash will wait there until the other one arrive and call a tow truck for them. After they have been removed
-    the last car can cross the bridge 
-    \item[scenario \textbf{7}]: \\ it is the same as the above but there are only two cars and them are on different sides; the 
+    the last car can cross the bridge \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc6.jpg}
+        \captionof{figure}{scenery 6}
+    \end{center}
+    \item[scenery \textbf{7}]: \\ it is the same as the above but there are only two cars and them are on different sides; the 
     sane one has a delay. \\ The correct behaviour should be that when it arrives, it will call the tow truck for
-    the other and then cross the bridge (after the other has been removed) 
-    \item[scenario \textbf{8}]: \\ there are five cars on the same side but only one (with the longer delay) is sane. \\
+    the other and then cross the bridge (after the other has been removed) \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc7.jpg}
+        \captionof{figure}{scenery 7}
+    \end{center}
+    \item[scenery \textbf{8}]: \\ there are five cars on the same side but only one (with the longer delay) is sane. \\
     The correct behaviour should be that the cars with crashes will wait to be removed by the tow truck called 
-    by the sane one (they have $crash\_type$ 2) and then the last car can cross the bridge 
-    \item[scenario \textbf{9}]: \\ the first three cars that arrive are two on the left side and one of them will
-    have a system crash, while the other one is on the right side. After a delay of 300ms other 10 cars (four from one side, and six from the other)
-    will arrive and they will not have any type of crash. \\
-    The correct behaviour should be that the cars with crashes will wait to be removed by the tow truck called by
-    the one of the first three that is sane or by the others that will arrive after.    
-    \item[scenario \textbf{10}]: \\ there are three cars, two from the same side. One of them has a system crash 
+    by the sane one (they have $crash\_type$ 2) and then the last car can cross the bridge \\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc8.jpg}
+        \captionof{figure}{scenery 8}
+    \end{center} 
+    \item[scenery \textbf{9}]: \\ there are three cars, two from the same side. One of them has a system crash 
     and a delay of 300ms. \\
     The correct behaviour should be that the car with crash will wait to be removed by the tow truck called by
-    one or both the others cars.
+    one or both the others cars.\\
+    \begin{center}
+        \includegraphics[scale=0.3, width=\linewidth]{assets/sc10.jpg}
+        \captionof{figure}{scenery 9}
+    \end{center}
     
     
 \end{itemize}
