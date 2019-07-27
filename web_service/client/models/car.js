@@ -128,7 +128,7 @@ class AnimatedCar extends THREE.Group {
 
 
 	remove(time){
-		if(this.state.crash_type > 0){
+		if(this.state.crash_type > 0 || this.state.position * this.state.side > street.bridge_length / 2){
 			this.setTowTruckColor();
 			var pos = { x: this.state.side * this.scaleFactor * (3 / 2), 
 						 y: this.position.y,

@@ -35,7 +35,7 @@ var samplingFrequency;
 var maxRTT;
 var parent = window.parent;
 var bridgeLength;
-var streetCapacity = 25;
+var streetCapacity = 30;
 var scaleFactor = 10;
 
 parent.document.addEventListener('update-street', function (e) { 
@@ -111,7 +111,7 @@ function Init() {
 
 			if(5 + parent.carIndex - parent.deadCarIndex > streetCapacity / 2){
 				streetCapacity = (5 + parent.carIndex - parent.deadCarIndex) * 2;
-				UpdateStreet();
+				//UpdateStreet();
 			}
 		}, 2 * maxRTT);
 	})

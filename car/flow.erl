@@ -71,7 +71,7 @@ tow_truck_request(Req) ->
     receive
         {sup_reply, Reply} ->
             utils:log("Tow Truck: receive reply"),
-            {ReplyLabel, ReplySender, ReplyTarget, _ReplyNickname, ReplySendingTime, ReplyBody} = Reply,
+            {_ReplyLabel, _ReplySender, _ReplyTarget, _ReplyNickname, _ReplySendingTime, ReplyBody} = Reply,
             if ReplyBody == ignore -> 
                 utils:log("Tow Truck: car is not in crash");
             true ->
