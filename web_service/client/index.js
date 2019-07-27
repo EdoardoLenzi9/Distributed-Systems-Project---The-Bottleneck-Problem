@@ -6,7 +6,7 @@ window.addEventListener('environment-loaded', function (e) {
     $('#tow-truck-time').attr("placeholder", "Tow truck time (" + settings.tow_truck_time + ")");
 }, false);
 
-var manualGeneration = false;
+var manualGeneration = true;
 var carIndex = 0;
 
 
@@ -113,7 +113,6 @@ function ShowTimer(side){
 
 
 function SwitchMode(){
-    manualGeneration = !manualGeneration;
     if(manualGeneration){
         $( '#random-field' ).removeClass( 'd-block' ).addClass( 'd-none' );
         $( '#manual-field' ).removeClass( 'd-none' ).addClass( 'd-block' );
@@ -127,5 +126,5 @@ function SwitchMode(){
         $( '#left-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
         $( '#right-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
     }
+    manualGeneration = !manualGeneration;
 }
-

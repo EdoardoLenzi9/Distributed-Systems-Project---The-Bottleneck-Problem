@@ -33,13 +33,15 @@ var cars = {};
 var i = 0;
 var samplingFrequency;
 var maxRTT;
+var parent = window.parent;
 
 
-window.parent.document.addEventListener('update-street', function (e) { 
+parent.document.addEventListener('update-street', function (e) { 
 	scene.remove(street);
 	street = new Street(15, e.detail, 10);
 	scene.add(street);
 }, false);
+
 
 /*
 * Init function
@@ -72,7 +74,7 @@ function Init() {
 					console.log(content);
 				}
 				LoadState(JSON.parse(content));
-			})
+			});
 			//counter = counter % 6;
 			//Read('frames/0' + (counter++) + '.json', function(content){
 			//	var frame = JSON.parse(content);
@@ -80,6 +82,23 @@ function Init() {
 			//	LoadState(frame);
 			//})
 		}, samplingFrequency);
+
+		window.setInterval(function(){
+			if (! parent.manualGeneration){
+				parent.carIndex ++;
+				var side = Random(2);
+
+				var parameters = {
+									name:       "car" + parent.carIndex,
+									side:       side == 0 ? -1 : 1, 
+									power:      Random(3) + 1, 
+									size:       Random(2) + 1, 
+									crash_type: Random(3), 
+									timeout:    0 /*Random(10) * 1000*/
+								} 
+				parent.CreateCarAsync(0, parameters)
+			}
+		}, 2 * maxRTT);
 	})
 
 

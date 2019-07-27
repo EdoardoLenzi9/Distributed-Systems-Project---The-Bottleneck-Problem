@@ -93,7 +93,13 @@ function Unlock(){
     sceneLocked = false;
 }
 
+
 function OpenInNewTab(url) {
     var win = window.open(url, '_blank');
     win.focus();
+}
+
+
+function Random(upperBound){
+    return Math.ceil(Math.ceil(Math.random() * 100) % upperBound);
 }
