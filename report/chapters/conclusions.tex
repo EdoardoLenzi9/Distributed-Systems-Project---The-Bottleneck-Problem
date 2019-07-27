@@ -15,4 +15,19 @@ is a very long time due to the fact that only one car per time can cross the bri
 If that car could cross without waiting for all the others its waiting time would decrease significally while
 the waiting time for the others will increase only as if there were one car more before them. So one thing 
 that can improve the system could be order the cars by minimizing the average waiting time.\\
-Finally the system satisfy all the requisites of the bridge (capacity and one way cross).
+Finally the system satisfy all the requisites of the bridge (capacity and one way cross).\\ \\
+
+Another important matter we have to discuss is the performance of the system. Everytime a car has to move 
+it has to send many message to its adjacent cars: for this reason the cars cannot move in a fluent way
+but have to stop sometimes. Moreover we cannot visualize a new car if there is already another one on the 
+street that has $crash\_type$ 2, in fact, if it is broken it isn't able to tell the new car its position and
+so the new one has to wait until it is removed (notice that the tow truck will be called by the new car before
+going on the street).
+Pay also attention to the $max\_RTT$ that will be set because a short one could led to assume that some cars
+are dead even if they are not (only because their response to the check would arrive too late), but on the other
+hand a long one could be unnecessary (and so the cars would wait longer before making a decision).\\
+
+The last aspect we would talk about is how the $crash\_type$ effects the performance of the system. As we could
+imagine a car that crash only because its engine is broken would be easier to handle. This because it can call
+by itself the tow truck. Moreover it can also keep sending messages to the other and so they can move and reach
+the last ammisible position without crashing with it. In other words the whole system works faster.
