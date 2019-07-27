@@ -22,14 +22,7 @@ class AnimatedCar extends THREE.Group {
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
 		this.car.position.z += 0.3 * street.scaleFactor;
 		this.add( this.car );
-		// power
-		var powerGeometry = new THREE.CircleGeometry( 1.5 * street.scaleFactor, 32 );
-		var powerMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00, transparent: true, opacity: 0.1} );
-		this.power = new THREE.Mesh( powerGeometry, powerMaterial );
-		this.power.position.z += zIndex;
-		zIndex += 0.001;
-		// this.add( this.power );
-		
+		this.powerVisible = false;
 		this.scaleFactor = street.scaleFactor;
 		this.initState(state);
 	}
@@ -186,14 +179,25 @@ class AnimatedCar extends THREE.Group {
 		return tween;
 	}
 
+	createPower(){
+		var powerGeometry = new THREE.CircleGeometry( 1.5 * street.scaleFactor, 32 );
+		var powerMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00, transparent: true, opacity: 0.1} );
+		this.power = new THREE.Mesh( powerGeometry, powerMaterial );
+		this.power.position.z += zIndex;
+		zIndex += 0.001;
+	}
+
 	showDetails(){
-		this.add( this.power );
+		if(!this.powerVisible){
+			this.createPower();
+			this.add( this.power );
+			this.powerVisible = true;
+		}
 		setCarDetails(this.state);
 		carStateFolder.open();
 	}
 
 	hideDetails(){
-		this.remove( this.power );
 		carStateFolder.close();
 	}
 }

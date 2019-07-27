@@ -103,3 +103,11 @@ function OpenInNewTab(url) {
 function Random(upperBound){
     return Math.ceil(Math.ceil(Math.random() * 100) % upperBound);
 }
+
+
+function Probability(percentage){
+    if (Math.random() * 100 <= percentage) {
+        return 1;
+    }
+    return 0;    
+}

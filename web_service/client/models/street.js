@@ -23,7 +23,7 @@ class Street extends THREE.Group{
 													  1, 1												// widthSegments, heightSegments
 											  		);
 		var streetMaterial = new THREE.MeshBasicMaterial( { color: 0x000, side: THREE.DoubleSide } );
-		debugger
+
 		// Middle line
 		this.drawMiddleLine();
 		
@@ -38,7 +38,7 @@ class Street extends THREE.Group{
 
 
 	drawMiddleLine(){
-		for(var i = Math.floor( - this.length / 2 ); i < Math.ceil( this.length / 2 ); i++){
+		for(var i = Math.floor( - (this.length + this.bridge_length - 1) / 2 ); i < Math.ceil( (this.length + this.bridge_length - 1) / 2 ); i++){
 			this.add(this.newLine(0.1, 0.5, {x: 0, y: (i + 0.5)}));
 		}
 	}

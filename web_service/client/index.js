@@ -8,6 +8,7 @@ window.addEventListener('environment-loaded', function (e) {
 
 var manualGeneration = true;
 var carIndex = 0;
+var deadCarIndex = 0;
 
 
 function LoadScenery(index){
