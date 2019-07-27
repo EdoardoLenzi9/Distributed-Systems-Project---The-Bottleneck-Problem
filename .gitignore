@@ -19,3 +19,7 @@ web_service/client/environment.json
 web_service/client/views/simulation-view/environment.json 
 web_service/test/tmp
 jiffy/
+
+credentials/credentials\.json
+
+web_service/credentials\.json
