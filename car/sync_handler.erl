@@ -1,6 +1,10 @@
--module( sync_handler ).
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
 
--compile(export_all).
+
+-module( sync_handler ).
+-compile( export_all ).
 -include( "car.hrl" ). 
 
 
@@ -70,7 +74,7 @@ sync( From, Event, Data ) ->
             if Body#car_state.synchronized ->
                 utils:log( "Car: Front car is synchronized with WS" ),
 
-                Position = obstacle_position(SyncData) + (car_size(SyncData) / 2 * side(SyncData)), 
+                Position = obstacle_position( SyncData ) + ( car_size( SyncData ) / 2 * side( SyncData ) ), 
                 NewData = SyncData#car_state{ 
                                                 speed = 0, 
                                                 position = Position, 
@@ -89,9 +93,9 @@ sync( From, Event, Data ) ->
                 utils:log( "initial position: ~p, arrival time ~p, delta ~p", [ Position, arrival_time(NewData2), delta(NewData2) ] ),
                 car_call_supervisor_api:car_call( { 
                                                     adj, 
-                                                    name(NewData2), 
+                                                    name( NewData2 ), 
                                                     undefined, 
-                                                    max_RTT(NewData2), 
+                                                    max_RTT( NewData2 ), 
                                                     NewData2 
                                                 } ),
                 flow:keep( NewData2, From, { sync_check_reply, NewData2 } );
@@ -99,9 +103,9 @@ sync( From, Event, Data ) ->
                 utils:log( "Car: Front car is not synchronized with WS" ),
                 car_call_supervisor_api:car_call( { 
                                                     check, 
-                                                    name(SyncData), 
-                                                    name(Body), 
-                                                    max_RTT(SyncData), 
+                                                    name( SyncData ), 
+                                                    name( Body ), 
+                                                    max_RTT( SyncData ), 
                                                     SyncData 
                                                 } ),
                 flow:keep( SyncData, From, { sync_check_reply, SyncData } )
@@ -119,9 +123,9 @@ sync( From, Event, Data ) ->
                     utils:log( "Car with unknown position in front ~p", [ Pivot ] ),
                     car_call_supervisor_api:car_call( { 
                                                         check, 
-                                                        name(NewData), 
-                                                        name(Pivot), 
-                                                        max_RTT(NewData), 
+                                                        name( NewData ), 
+                                                        name( Pivot ), 
+                                                        max_RTT( NewData ), 
                                                         NewData
                                                     } ),
                     flow:keep( NewData, From, { sync_default_behaviour, NewData } );
@@ -143,18 +147,18 @@ sync( From, Event, Data ) ->
                 utils:log( "Car: there is a car in the front queue, send a check independently from its side" ),
                 car_call_supervisor_api:car_call( { 
                                                     check, 
-                                                    name(Data), 
-                                                    name(Pivot), 
-                                                    max_RTT(Data), 
+                                                    name( Data ), 
+                                                    name( Pivot ), 
+                                                    max_RTT( Data ), 
                                                     Data
                                                 } );
             true ->
                 utils:log( "Car: there is not any other car in the front queue" ),
                 car_call_supervisor_api:car_call( { 
                                                     adj, 
-                                                    name(Data), 
+                                                    name( Data ), 
                                                     undefined, 
-                                                    max_RTT(Data), 
+                                                    max_RTT( Data ), 
                                                     Data 
                                                 } )
             end,

@@ -1,6 +1,10 @@
--module( leader_handler ).
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
 
--compile(export_all).
+
+-module( leader_handler ).
+-compile( export_all ).
 -include( "car.hrl" ). 
 
 
@@ -45,9 +49,9 @@ leader( From, Event, Data ) ->
                 utils:log( "Car: can start crossing the bridge" ),
                 NewData = Data#car_state{  
                                             obstacle_position = 0,
-                                            position = ((car_size(Data) / 2) + bridge_length(Data)) * side(Data), 
+                                            position = ( ( car_size( Data ) / 2 ) + bridge_length( Data ) ) * side( Data ), 
                                             crossing = true, 
-                                            speed = max_speed(Data)
+                                            speed = max_speed( Data )
                                         },
                 common_handler:propagate_crossing( NewData, Body ),
                 flow:next( normal, NewData, From, { normal, NewData } );
@@ -56,9 +60,9 @@ leader( From, Event, Data ) ->
                 utils:log( "Car: must wait ( has arrived after )" ),
                 car_call_supervisor_api:car_call( { 
                                                     wait, 
-                                                    name(Data), 
+                                                    name( Data ), 
                                                     undefined, 
-                                                    max_RTT(Data), 
+                                                    max_RTT( Data ), 
                                                     default_behaviour 
                                                 } ),
                 flow:keep( Data, From, default_behaviour )
@@ -66,16 +70,16 @@ leader( From, Event, Data ) ->
 
 
         default_behaviour ->
-            FrontCars = front_cars(Data),
+            FrontCars = front_cars( Data ),
 
             if length( FrontCars ) > 0 ->
                 utils:log( "Car: There is a car on the opposite side of the bridge" ),
                 [ Pivot | _Rest ] = FrontCars,
                 car_call_supervisor_api:car_call( {     
                                                     check, 
-                                                    name(Data), 
-                                                    name(Pivot), 
-                                                    max_RTT(Data), 
+                                                    name( Data ), 
+                                                    name( Pivot ), 
+                                                    max_RTT( Data ), 
                                                     Data 
                                                 } ),
                 flow:keep( Data, From, { leader_default_behaviour, Data } );
@@ -84,15 +88,15 @@ leader( From, Event, Data ) ->
                 utils:log( "Car: can start crossing the bridge" ),
                 NewData = Data#car_state{  
                                             obstacle_position = 0,
-                                            position = bridge_length(Data) * side(Data), 
+                                            position = bridge_length( Data ) * side( Data ), 
                                             crossing = true, 
-                                            speed = max_speed(Data)
+                                            speed = max_speed( Data )
                                         },
                 common_handler:propagate_crossing( 
                                                     Data, 
                                                     #car_state{     
                                                                 arrival_time = -1, 
-                                                                bridge_capacity = bridge_capacity(Data) 
+                                                                bridge_capacity = bridge_capacity( Data ) 
                                                               } 
                                                  ),
                 flow:next( normal, NewData, From, { normal, NewData } )
