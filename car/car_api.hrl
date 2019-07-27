@@ -14,30 +14,63 @@ stop(Name) ->
     utils:log("API Stop"),
     gen_statem:stop({global, Name}).
 
+
+% Simple events
     
+tow_truck(Name) ->
+    utils:log("API tow_truck"),
+    gen_statem:call({global, Name}, tow_truck).
+
+
 default_behaviour(Name) ->
     utils:log("API default_behaviour"),
     gen_statem:call({global, Name}, default_behaviour).
 
     
-crash(Name) ->
+crash(Name, CrashType) ->
     utils:log("API Crash"),
-    gen_statem:call({global, Name}, crash).
+    gen_statem:call({global, Name}, {crash, CrashType}).
 
 
-check(Req) ->
+adj_reply(Name, Adj) ->
+    utils:log("API Adj Reply"),
+    gen_statem:call({global, Name}, {adj_reply, Adj}).
+    
+
+last_adj_reply(Name, Last) ->
+    utils:log("API Last Adj Reply"),
+    gen_statem:call({global, Name}, {last_adj_reply, Last}).
+
+
+update_front(Name, Replacement) ->
+    utils:log("API Update front"),
+    gen_statem:call({global, Name}, {update_front, Replacement}).
+
+
+update_rear(Name, Replacement) ->
+    utils:log("API Update rear"),
+    gen_statem:call({global, Name}, {update_rear, Replacement}).
+
+
+timeout(Name, Target) ->
+    utils:log("API Timeout Reply"),
+    gen_statem:call({global, Name}, {timeout, Target}).
+
+
+% Req/reply events
+
+check(Name, Sender) ->
     utils:log("API Check Request"),
-    {_Label, _Sender, Target, _SendingTime, _Body} = Req,
-    gen_statem:call({global, Target}, {check, Req}).
+    gen_statem:call({global, Name}, {check, Sender}).
 
 
-check_response(Response) ->
-    utils:log("API Check Response"),
-    {_Label, _Sender, Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Target}, {response_check, Response}).
+check_reply(Reply) ->
+    utils:log("API Check Reply"),
+    {_Sender, Target, _SendingTime, _RTT, _Body} = Reply,
+    gen_statem:call({global, Target}, {check_reply, Reply}).
 
 
-adj_response(Response) ->
-    utils:log("API Adj Response"),
-    {_Label, Sender, _Target, _SendingTime, _RTT, _Body} = Response,
-    gen_statem:call({global, Sender}, {response_adj, Response}).
+crossing(Req) ->
+    utils:log("API Crossing Request"),
+    {_Label, _Sender, Target, _Nickname, _SendingTime, Body} = Req,
+    gen_statem:call({global, Target}, {crossing, Body}).

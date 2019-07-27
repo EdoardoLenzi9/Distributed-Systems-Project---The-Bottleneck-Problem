@@ -3,14 +3,13 @@
 
 # public rules
 
-start: clean dependencies env build
+start: clean dependencies env cred build setup-docker
 
 
-run:
-	@echo "make rule run"
+run-docker:
+	@echo "make rule run-docker"
 	@cat environment.json
-	@cd web_service ; \
-	rebar3 run
+	@sudo docker run -it --net host -p 8090:8090 webservice:v1
 
 
 test:
@@ -52,19 +51,30 @@ clean:
 	@find . -type f -name '*.log' -delete
 	@find . -type f -name '*.out' -delete
 	@rm -rf web_service/_build
-	@rm -rf web_service/client/node_modules
+	#TODO
+	#@rm -rf web_service/client/node_modules
 
 	@echo "delete jiffy"
 	@rm -rf ./jiffy
 	@rm -rf ./car/priv
 	@rm ./car/jiffy.app || true
 	
+	@echo "clean logs"
+	@cd car/ ; \
+	rm -rf logs ; \
+	mkdir logs
+
 	@echo "clean env"
 	@rm ./car/environment.json  || true
 	@rm ./web_service/environment.json  || true
 	@rm ./web_service/client/environment.json  || true
 	@rm ./web_service/client/views/simulation-view/environment.json  || true
-
+	@rm ./web_service/_build/default/rel/web_service/environment.json  || true
+	@rm ./web_service/client/views/log-view/environment.json  || true
+	@echo "clean credential"
+	@rm ./web_service/_build/default/rel/web_service/credentials.json  || true
+	@rm ./web_service/credentials.json  || true
+	@rm ./car/credentials.json  || true
 	@echo "clean tests"
 	@rm ./car/test/tmp/* || true
 	@rm ./web_service/test/tmp/* || true
@@ -80,23 +90,67 @@ dependencies:
 	make ; \
 	cp -r ./priv ./ebin ; \
 	cp -r ./ebin/* ../car ; \
-	cp -r ./ebin/* ../web_service/apps/web_service/src ; \
-	cd ..
+	cp -r ./ebin/* ../web_service/apps/web_service/src
+	@echo "setup node modules"
+	@cd web_service/client ; \
+	npm install || true
+	@cd web_service ; \
+	wget https://s3.amazonaws.com/rebar3/rebar3 ; \
+	chmod +x rebar3
 
 
 env:
 	@echo "make rule env"
-	@cp environment.json car/ 
-	@cp environment.json web_service/ 
-	@cp environment.json web_service/client/ 
-	@cp environment.json web_service/client/views/simulation-view/ 
+	@cp environment.json car/ || true
+	@cp environment.json web_service/ || true 
+	@cp environment.json web_service/client/ || true
+	@cp environment.json web_service/client/views/simulation-view/ || true 
+	@cp environment.json web_service/client/views/log-view/ || true
+	@cp environment.json web_service/_build/default/rel/web_service/ || true
+
+
+cred:
+	@echo "make rule credential"
+	@cp credentials/credentials.json car/ || true
+	@cp credentials/credentials.json web_service/_build/default/rel/web_service/ || true
+	@cp credentials/credentials.json web_service/ || true
+
+
+setup-docker: build-docker-erlssh build-docker-car build-docker-ws
+	@echo "docker setup"
+
+
+build-docker-erlssh: 
+	@echo "create docker network"
+	@sudo docker network create ds_network || true
+	@echo "build docker erlssh"
+	@sudo docker build -t erlssh:v1 .
+
+
+build-docker-car: env cred
+	@echo "build docker car"
+	@cd car ; \
+	sudo docker build -t car:v1 .
+
+
+build-docker-ws: env cred
+	@echo "build docker ws"
+	@cd web_service ; \
+	sudo docker build -t webservice:v1 .
 
 
 build: 
 	@echo "make rule build"
+
+	@echo "clean logs"
+	@cd car/ ; \
+	rm -rf logs ; \
+	mkdir logs
+
 	@echo "build car"
 	@cd car/ ; \
 	sh ../scripts/compile-all.sh
+	
 	@echo "build web service"
 	@cd web_service ; \
-	rebar3 compile
+	sudo ./rebar3 run || true

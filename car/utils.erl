@@ -10,15 +10,23 @@
 -ifdef(LOG).
     log(String)->
         ParsedString = io:format(String),
+        os:cmd(lists:flatten(io_lib:format("echo '~p' >> logs/~p.log", [String, node()]))),
         io:format("~n~p~n", [ParsedString]).
     log(String, Args) ->
         ParsedString = io:format(String, Args),
+        ParsedString2 = lists:flatten(io_lib:format(String, Args)),
+        os:cmd(lists:flatten( io_lib:format("echo '~p' >> logs/~p.log", [ ParsedString2, node() ]))),
         io:format("~n~p~n", [ParsedString]).
 -else.
     log(String)-> ok.
     log(String, Args) -> ok.
 -endif.
 
+
+concat([]) ->
+    [];
+concat([First | Rest]) ->
+    string:concat(First, concat(Rest)).
 
 binary_to_atom(Item) ->
     list_to_atom(binary_to_list(Item)).
@@ -28,10 +36,11 @@ binary_to_atom(Item) ->
 load_environment() ->
     {ok, Content} = file:read_file("environment.json"),
     {[{<<"host">>,Host},
+    {<<"port">>,_Port},
+    {<<"process_visibility">>,_ProcessVisibility},
     {<<"max_speed">>,MaxSpeed},
     {<<"bridge_capacity">>,BridgeCapacity},
     {<<"bridge_length">>,BridgeLength},
-    {<<"sampling_frequency">>,_SamplingFrequency},
     {<<"tow_truck_time">>,TowTruckTime},
     {<<"max_RTT">>,MaxRTT}]} = jiffy:decode(Content),
     #env{
@@ -84,6 +93,28 @@ first_element([_First | Rest], Hop) ->
         -1
     end.
 
+
+last_elements(List, Hop) ->
+        lists:nthtail(length(List) - erlang:min(length(List), Hop), List).
+        
+        
+first_elements([ ], _) ->
+        [ ];
+first_elements([First | Rest], Hop) ->
+    if Hop > 0 -> 
+        [First | first_elements(Rest, Hop - 1)];
+    true -> 
+        [ ]
+    end.
+
+
+bool_to_int(Bool) ->
+    if Bool == true ->
+        1;
+    true ->
+        0
+    end.
+     
 
 %%%===================================================================
 %%% time management

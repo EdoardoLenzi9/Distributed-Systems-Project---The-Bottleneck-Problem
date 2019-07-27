@@ -1,5 +1,9 @@
 \documentclass{memoir}
+\usepackage{amssymb}
+\usepackage{caption}
 \usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{tcolorbox}
 \usepackage[english, american]{babel}
 
 \title{
@@ -14,8 +18,12 @@
 \begin{document}
 
 \maketitle
-
 \input{chapters/abstract.tex}
+
+\newpage
+\tableofcontents
+\newpage
+
 \input{chapters/introduction.tex}
 \input{chapters/analysis.tex}
 \input{chapters/project.tex}
@@ -25,6 +33,9 @@
 
 \appendix
 \input{chapters/appendix.tex}
+
+\bibliographystyle{alpha}
+\bibliography{biblio.bib}
 
 \input{chapters/evaluation.tex}
 \end{document}

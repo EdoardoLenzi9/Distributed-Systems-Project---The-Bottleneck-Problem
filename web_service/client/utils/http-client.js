@@ -3,13 +3,9 @@ var settings;
 
 
 Read("environment.json", function(env){
-    var environment = JSON.parse(env);
-    host = environment.host; 
-    settings = {
-        turn:               env.turn,
-        bridge_capacity:     env.bridge_capacity,
-        bridgeCrossingTime: env.bridgeCrossingTime
-    }
+    settings = JSON.parse(env);
+    var event = new Event('environment-loaded');
+    window.dispatchEvent(event);
 })
 
 

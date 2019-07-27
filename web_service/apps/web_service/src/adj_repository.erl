@@ -8,27 +8,42 @@
 %%%===================================================================
 
 add(Entity) ->
-    db_manager:add(Entity).
+    repository_helper:add(Entity).
+
+
+delete(Entity) ->
+    repository_helper:delete(Entity).
 
 
 get_all() ->
-    order(db_manager:get_all(adjEntity)).
+    order(repository_helper:get_all(adj_entity)).
 
 
+select(Name) ->
+    F = fun() -> 
+        SelectResult = db_manager:select(adj_entity, #adj_entity{name = Name, _='_'}, [], ['$_']),
+        if length(SelectResult) == 1 ->
+            SelectResult;
+        true ->
+            []
+        end
+    end,
+    {atomic, Res} = mnesia:transaction(F),
+    Res.
 %%%===================================================================
 %%% private functions
 %%%===================================================================
 
 order(List) ->
     F = fun(X, Y) -> 
-        if X#adjEntity.side == right, Y#adjEntity.side == right -> 
-            X#adjEntity.arrival_time + X#adjEntity.delta < Y#adjEntity.arrival_time + Y#adjEntity.delta;
-        X#adjEntity.side == right, Y#adjEntity.side == left ->
+        if X#adj_entity.side == 1, Y#adj_entity.side == 1 -> 
+            X#adj_entity.arrival_time + X#adj_entity.delta < Y#adj_entity.arrival_time + Y#adj_entity.delta;
+        X#adj_entity.side == 1, Y#adj_entity.side == -1 ->
             false;
-        X#adjEntity.side == left, Y#adjEntity.side == right ->
+        X#adj_entity.side == -1, Y#adj_entity.side == 1 ->
             true; 
-        X#adjEntity.side == left, Y#adjEntity.side == left -> 
-            X#adjEntity.arrival_time + X#adjEntity.delta > Y#adjEntity.arrival_time + Y#adjEntity.delta
+        X#adj_entity.side == -1, Y#adj_entity.side == -1 -> 
+            X#adj_entity.arrival_time + X#adj_entity.delta > Y#adj_entity.arrival_time + Y#adj_entity.delta
             end
         end,
     lists:sort(F, List).
