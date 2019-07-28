@@ -8,13 +8,9 @@
 %%%===================================================================
 
 sync(Entity) ->
-    Sync = if Entity#sync_entity.side == -1 -> 
-        utils:first_elements( sync_repository:get_all(), Entity#sync_entity.power);
-    Entity#sync_entity.side == 1 ->
-        lists:reverse(utils:last_elements( sync_repository:get_all(), Entity#sync_entity.power))
-    end,    
-    sync_repository:add(Entity),
-    sync_marshalling(Sync).
+    Res = sync_repository:add(Entity),
+    utils:log("SYNC ~p", [Res]),
+    sync_marshalling(Res).
 
 
 adj(Entity) ->
@@ -43,6 +39,61 @@ last_adj(Side) ->
     end,    
     last_adj_marshalling(Last, Side).
         
+
+kill(Name, Target) ->
+    utils:log("Kill ~p", [Target]),
+    SelectedCars = adj_repository:select(Target),
+    utils:log("Kill ~p", [SelectedCars]),
+    if length(SelectedCars) == 1 -> 
+        [SelectedCar] = SelectedCars,
+
+        adj_repository:delete(SelectedCar),
+        sync_repository:delete(#sync_entity{name = SelectedCar#adj_entity.name, side = SelectedCar#adj_entity.side, power = SelectedCar#adj_entity.power}),
+        
+        utils:log("Selected Car: ~p", [SelectedCar]),
+        Hosts = host_repository:select(SelectedCar),
+
+        utils:log("Selected Hosts: ~p", [Hosts]),
+        if length(Hosts) == 1 -> 
+            [Host] = Hosts,
+            utils:kill_car(Host, SelectedCar);   
+        true ->
+            host_undefined
+        end;
+    true ->
+        car_undefined
+    end,
+    SelectedCars2 = adj_repository:select(Name),
+    
+    if length(SelectedCars2) == 1 -> 
+        utils:log("Killer caller was not in sync state"),
+        [AdjCaller] = SelectedCars2,
+        adj(AdjCaller);
+    true ->
+        SelectedCars3 = sync_repository:select(Name),
+        if length(SelectedCars3) == 1 -> 
+            utils:log("Killer caller was in sync state"),
+            [SyncCaller] = SelectedCars3,
+
+            if SyncCaller#sync_entity.front_car =/= undefined ->
+                sync_to_adj(sync_repository:select(SyncCaller#sync_entity.front_car));
+            true -> 
+                [ [], [] ]
+            end;
+        true ->
+            [ [], [] ]
+        end
+    end.    
+
+
+sync_to_adj([]) ->
+    [ [], [] ];
+sync_to_adj([First]) ->
+    [ adj_marshalling( [ #adj_entity{
+                                      name = First#sync_entity.name,
+                                      side = First#sync_entity.side,
+                                      power = First#sync_entity.power
+                                    } ] ), [] ].
 
 %%%===================================================================
 %%% private functions

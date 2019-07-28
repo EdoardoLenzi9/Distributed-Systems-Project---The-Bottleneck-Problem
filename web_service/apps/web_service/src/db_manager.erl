@@ -5,17 +5,23 @@
 
 start() ->
     mnesia:start(),
+    utils:log("Schema creation"),
     mnesia:create_schema([node()]), 
     create_table_scheme(),
+    utils:log("Clear DB"),
     clear_all(),
-    settings_repository:add(utils:load_environment()).
+    utils:log("Load environment"),
+    settings_repository:add(utils:load_environment()),
+    host_repository:add_range(utils:load_credentials()),
+    utils:log("DB setup terminated").
 
 
 create_table_scheme() ->
-    mnesia:create_table(settingsEntity, [{attributes, record_info(fields, settingsEntity)}]),
+    mnesia:create_table(settings_entity, [{attributes, record_info(fields, settings_entity)}]),
     mnesia:create_table(sync_entity, [{attributes, record_info(fields, sync_entity)}]),
+    mnesia:create_table(host_entity, [{attributes, record_info(fields, host_entity)}]),
     mnesia:create_table(adj_entity, [{attributes, record_info(fields, adj_entity)}]).
-
+    
 
 addRange(List) ->
     if length(List) > 0 -> 
@@ -42,26 +48,25 @@ clear(Entity) ->
 clear_all() ->
     clear(adj_entity),
     clear(sync_entity),
-    clear(settingsEntity).
+    clear(host_entity),
+    clear(settings_entity).
 
 
 add(Item) ->
-    Fun = fun() -> mnesia:write(Item) end,
-    mnesia:transaction(Fun).
+    mnesia:write(Item).
 
 
 delete(Item) ->
-    Fun = fun() -> mnesia:delete_object(Item) end,
-    mnesia:transaction(Fun).
-
-
-get_all(Entity) ->
-    F = fun() -> mnesia:select(Entity,[{'_',[],['$_']}]) end,
-    {atomic, Data} = mnesia:transaction(F),
-    Data.
+    mnesia:delete_object(Item).
 
 
 select(Entity, MatchHead, Guard, Result) ->
-    F = fun() -> mnesia:select(Entity,[{MatchHead, Guard, Result}]) end,
-    {atomic, Data} = mnesia:transaction(F),
-    Data.
+    mnesia:select(Entity,[{MatchHead, Guard, Result}]).
+
+
+get_all(Entity) ->
+    select(Entity, '_', [], ['$_']).
+
+
+counter(Entity) ->
+    length(get_all(Entity)).

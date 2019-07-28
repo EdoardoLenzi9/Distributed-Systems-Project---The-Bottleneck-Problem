@@ -33,6 +33,23 @@ var cars = {};
 var i = 0;
 var samplingFrequency;
 var maxRTT;
+var parent = window.parent;
+var bridgeLength;
+var streetCapacity = 30;
+var scaleFactor = 10;
+
+parent.document.addEventListener('update-street', function (e) { 
+	bridgeLength = e.detail;
+	UpdateStreet();
+}, false);
+
+
+function UpdateStreet(){
+	scene.remove(street);
+	street = new Street(streetCapacity, bridgeLength, scaleFactor);
+	scene.add(street);
+}
+
 /*
 * Init function
 */ 
@@ -52,7 +69,8 @@ function Init() {
 
 	Read("environment.json", function(env){
 		var env = JSON.parse(env);
-		street = new Street(15, env.bridge_length, 10);
+		bridgeLength = env.bridge_length;
+		street = new Street(streetCapacity, bridgeLength, scaleFactor);
 		scene.add(street);
 		maxRTT = env.max_RTT;
 		samplingFrequency = maxRTT / 10;
@@ -64,7 +82,7 @@ function Init() {
 					console.log(content);
 				}
 				LoadState(JSON.parse(content));
-			})
+			});
 			//counter = counter % 6;
 			//Read('frames/0' + (counter++) + '.json', function(content){
 			//	var frame = JSON.parse(content);
@@ -72,6 +90,32 @@ function Init() {
 			//	LoadState(frame);
 			//})
 		}, samplingFrequency);
+
+		window.setInterval(function(){
+			if (! parent.manualGeneration){
+				parent.carIndex ++;
+
+				var side = Random(2);
+				var timeout = Random(10) * 1000 * Probability(10);
+
+				var parameters = {
+									name:       "car" + parent.carIndex,
+									side:       side == 0 ? -1 : 1, 
+									power:      Random(3) + 1, 
+									size:       1 + Probability(10), 
+									crash_type: timeout > 0 ? Random(2) + 1 : 0, 
+									timeout:    timeout
+								} 
+				parent.CreateCarAsync(0, parameters)
+			}
+
+			// Uncomment in order to update the street size dynamically;
+			// pay attention cause when the street length is updated some gliches can appear 
+			//if(5 + parent.carIndex - parent.deadCarIndex > streetCapacity / 2){
+			//	streetCapacity = (5 + parent.carIndex - parent.deadCarIndex) * 2;
+			//	UpdateStreet();
+			//}
+		}, 2 * maxRTT);
 	})
 
 
@@ -114,6 +158,7 @@ function LoadState( state ) {
 	});
 	for (var [key, car] of Object.entries(cars)) {
 		if(!car.check){
+			parent.deadCarIndex ++;
 			car.remove(maxRTT);
 			car = null;
 			delete cars[key];

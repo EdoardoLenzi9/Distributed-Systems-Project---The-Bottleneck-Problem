@@ -8,16 +8,28 @@
 %%%===================================================================
 
 add(Entity) ->
-    db_manager:add(Entity).
+    repository_helper:add(Entity).
 
 
 delete(Entity) ->
-    db_manager:delete(Entity).
+    repository_helper:delete(Entity).
+
 
 get_all() ->
-    order(db_manager:get_all(adj_entity)).
+    order(repository_helper:get_all(adj_entity)).
 
 
+select(Name) ->
+    F = fun() -> 
+        SelectResult = db_manager:select(adj_entity, #adj_entity{name = Name, _='_'}, [], ['$_']),
+        if length(SelectResult) == 1 ->
+            SelectResult;
+        true ->
+            []
+        end
+    end,
+    {atomic, Res} = mnesia:transaction(F),
+    Res.
 %%%===================================================================
 %%% private functions
 %%%===================================================================

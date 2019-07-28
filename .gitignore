@@ -25,4 +25,9 @@ logs/
 
 web_service/rebar3
 
-credentials/credentials\.json
+
+# credentials
+credentials/credentials.json
+car/credentials\.json
+
+web_service/credentials\.json

@@ -37,7 +37,7 @@ handler(Req, State) ->
 		<<"">>
 	end,
 	{_HTTP, _Domain, Path, _, _Qs} = mochiweb_util:urlsplit(binary_to_list(URL)),
-	utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
+	%utils:log("~n~n~p    ~p    ~p~n~n", [Method, Path, Body]),
 	ResponseBody = case Path of 
 		"/simulation" ->
 			state_handler();
@@ -67,7 +67,7 @@ init_handler(Body) ->
 		{<<"bridge_capacity">>, BridgeCapacity},
 		{<<"bridge_length">>, BridgeLength} ]} = DecodedTuple, 
 	utils:log("~n~p~n", [TowTruckTime]),
-	simulation_service:init(#settingsEntity{ 	process_visibility = list_to_atom(binary_to_list(ProcessVisibility)),
+	simulation_service:init(#settings_entity{ 	process_visibility = list_to_atom(binary_to_list(ProcessVisibility)),
 												max_speed = bin_to_int(MaxSpeed),
 												max_RTT = bin_to_int(MaxRTT),
 												tow_truck_time = bin_to_int(TowTruckTime),
@@ -90,7 +90,7 @@ new_node_handler(Body) ->
 		{<<"size">>, Size},
 		{<<"crash_type">>, CrashType},
 		{<<"timeout">>, Timeout} ]} = DecodedTuple, 
-		jiffy:encode(simulation_service:new(#newCarEntity{ 	host = binary_to_list(Host),
+		jiffy:encode(simulation_service:new(#new_car_entity{ 	host = binary_to_list(Host),
 															port = binary_to_list(Port),
 															name = binary_to_list(Name), 
 															side = Side, 

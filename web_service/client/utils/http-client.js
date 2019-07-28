@@ -4,6 +4,8 @@ var settings;
 
 Read("environment.json", function(env){
     settings = JSON.parse(env);
+    var event = new Event('environment-loaded');
+    window.dispatchEvent(event);
 })
 
 

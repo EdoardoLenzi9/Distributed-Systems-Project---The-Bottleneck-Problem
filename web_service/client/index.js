@@ -1,5 +1,14 @@
-var manualGeneration = false;
+window.addEventListener('environment-loaded', function (e) { 
+    $('#max-speed').attr("placeholder", "Max speed (" + settings.max_speed + ")");
+    $('#bridge-capacity').attr("placeholder", "Bridge capacity (" + settings.bridge_capacity + ")");
+    $('#bridge-length').attr("placeholder", "Bridge length (" + settings.bridge_length + ")");
+    $('#max-RTT').attr("placeholder", "Max RTT (" + settings.max_RTT + ")");
+    $('#tow-truck-time').attr("placeholder", "Tow truck time (" + settings.tow_truck_time + ")");
+}, false);
+
+var manualGeneration = true;
 var carIndex = 0;
+var deadCarIndex = 0;
 
 
 function LoadScenery(index){
@@ -71,6 +80,10 @@ function SaveSettings(){
     httpPostAsync('/simulation/init', parameters, function(content){
         console.log(content);
     })
+
+    //var event = new CustomEvent('update-bridge', { bridge_length: parseInt( parameters.bridge_length ) } );
+    var event = new CustomEvent('update-street', { detail: parseInt(parameters.bridge_length) });
+    document.dispatchEvent(event);
 }
 
 
@@ -101,7 +114,6 @@ function ShowTimer(side){
 
 
 function SwitchMode(){
-    manualGeneration = !manualGeneration;
     if(manualGeneration){
         $( '#random-field' ).removeClass( 'd-block' ).addClass( 'd-none' );
         $( '#manual-field' ).removeClass( 'd-none' ).addClass( 'd-block' );
@@ -115,5 +127,5 @@ function SwitchMode(){
         $( '#left-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
         $( '#right-panel-content' ).removeClass( 'd-none' ).addClass( 'd-block' );
     }
+    manualGeneration = !manualGeneration;
 }
-

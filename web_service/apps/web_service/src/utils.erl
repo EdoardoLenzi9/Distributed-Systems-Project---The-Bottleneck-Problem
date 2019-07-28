@@ -70,7 +70,7 @@ load_environment() ->
     {<<"bridge_length">>,BridgeLength},
     {<<"tow_truck_time">>,TowTruckTime},
     {<<"max_RTT">>,MaxRTT}]} = jiffy:decode(Content),
-    #settingsEntity{
+    #settings_entity{
         process_visibility = list_to_atom(binary_to_list(ProcessVisibility)),
         max_speed = MaxSpeed, 
         bridge_capacity = BridgeCapacity, 
@@ -78,3 +78,53 @@ load_environment() ->
         tow_truck_time = TowTruckTime,
         max_RTT = MaxRTT
     }.
+
+
+% Load credentials.json
+load_credentials() ->
+    os:cmd("echo ciao > a.txt"),
+    {ok, Content} = file:read_file("credentials.json"),
+    decode_credentials(jiffy:decode(Content), []).
+
+
+decode_credentials([], Result) ->
+    utils:log("Result: ~p", [Result]),
+    Result;
+decode_credentials([First | Rest], Result) ->
+    {[{<<"id">>,Id},
+    {<<"host">>,Host},
+    {<<"ip">>,Ip},
+    {<<"password">>,Password}]} = First,
+    decode_credentials(Rest, [ #host_entity{
+                                                id = Id,
+                                                host = binary_to_list(Host),
+                                                ip = binary_to_list(Ip),
+                                                password = binary_to_list(Password),
+                                                number_of_cars = 0
+                                            } | Result ]).
+
+
+ssh_command(Host, Command) ->
+        SSHCommand = utils:concat( [ "sshpass -p '", 
+                                      Host#host_entity.password, 
+                                      "' ssh -T -o \"StrictHostKeyChecking=no\" ",
+                                      Host#host_entity.host, 
+                                      "@",
+                                      Host#host_entity.ip, 
+                                      " <<'EOF'\nnohup ", 
+                                      Command,
+                                      " & \nEOF" ] ),
+        log(SSHCommand),
+        os:cmd(SSHCommand).
+
+
+kill_car(Host, Car) ->
+    CarName = lists:sublist(atom_to_list(Car#adj_entity.name), 1, string:rstr(atom_to_list(Car#adj_entity.name), "@") - 1),
+    kill(Host, CarName).
+
+
+kill(Host, Name) ->
+    ssh_command( Host, concat(["sudo kill $(ps -ef | grep ", Name, " | awk '{print $2}') 2> /dev/null || true" ])),
+    ssh_command( Host, concat(["sudo docker stop $(sudo docker ps | grep ", Name, " | awk '{print $1}')" ])).    
+    %ssh_command( First, "for i in `ps -ef | grep car | awk '{print $2}'`; do echo $i; kill -9 $i; done" ),
+    %ssh_command( First, "for i in `sudo docker ps | grep car | awk '{print $1}'`; do echo $i; sudo docker stop $i; done" ),

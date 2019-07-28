@@ -38,7 +38,9 @@ handler(Req, State) ->
 		"/car/adj" ->
 			adj_handler(Body);
 		"/car/adj/last" ->
-			last_adj_handler(Body)
+			last_adj_handler(Body);
+		"/car/kill" ->
+			kill_handler(Body)
 	end,
 	Req3 = cowboy_req:set_resp_body(ResponseBody, Req),
 	{true, Req3, State}.
@@ -49,15 +51,16 @@ sync_handler(Body) ->
 	{[	{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power} ]} = DecodedTuple, 
-	jiffy:encode(car_service:sync(#sync_entity{	name = list_to_atom(binary_to_list(Name)), 
-												side = Side, 
-												power = Power,
-												timeStamp = utils:get_timestamp() })).
-
+		jiffy:encode(car_service:sync(#sync_entity{	name = list_to_atom(binary_to_list(Name)), 
+													side = Side, 
+													power = Power
+												  })).
 
 adj_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
-	{[	{<<"name">>, Name},
+	{[	{<<"host">>, Host},
+		{<<"ip">>, Ip},
+		{<<"name">>, Name},
 		{<<"side">>, Side},
 		{<<"power">>, Power},
 		{<<"size">>, Size},
@@ -67,7 +70,10 @@ adj_handler(Body) ->
 		{<<"delta">>, Delta},
 		{<<"state">>, State},
 		{<<"crash_type">>, CrashType} ]} = DecodedTuple, 
-	jiffy:encode(car_service:adj(#adj_entity{ 	name = list_to_atom(binary_to_list(Name)), 
+	jiffy:encode(car_service:adj(#adj_entity{ 	
+												name = list_to_atom(binary_to_list(Name)), 
+												host = list_to_atom(binary_to_list(Host)), 
+												ip = list_to_atom(binary_to_list(Ip)), 
 											 	side = Side, 
 											 	power = Power, 
 												size = Size, 
@@ -83,3 +89,13 @@ last_adj_handler(Body) ->
 	DecodedTuple = jiffy:decode(Body),
 	{[	{<<"side">>, Side} ]} = DecodedTuple, 
 	jiffy:encode(car_service:last_adj(Side)).										
+
+
+kill_handler(Body) ->
+	DecodedTuple = jiffy:decode(Body),
+	{[	{<<"name">>, Name},
+		{<<"target">>, Target} ]} = DecodedTuple, 
+		jiffy:encode( car_service:kill( 
+										list_to_atom(binary_to_list( Name ) ), 
+										list_to_atom(binary_to_list( Target ) )
+									  ) ).

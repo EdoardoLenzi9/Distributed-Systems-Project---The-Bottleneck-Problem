@@ -1,3 +1,8 @@
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
 %%%===================================================================
 %%% macros and record definitions
 %%%===================================================================
@@ -19,9 +24,14 @@
                         adj,
                         state,
                         last_RTT,
+                        last_position,
+                        last_crossing,
+                        obstacle_position,
                         % settings and bridge metadata 
                         host,
-                        port,
+                        ip,
+                        ws_host,
+                        ws_port,
                         bridge_capacity,
                         bridge_length,
                         max_speed,
@@ -30,30 +40,30 @@
                     }).
 
 
--record (adj, { front_cars, 
-                rear_cars 
-              }).
+-record ( adj, { front_cars, 
+                 rear_cars 
+               } ).
 
 
 %%%===================================================================
 %%% DTO
 %%%===================================================================
 
--record (syncDto, {    
+-record ( syncDto, {    
                         name,
                         side,
                         power
-                    }).
+                    } ).
 
 
--record (env, {    
-                host,
-                max_speed,
-                bridge_capacity,
-                bridge_length,
-                tow_truck_time,
-                max_RTT
-            }).
+-record ( env, {    
+                    host,
+                    max_speed,
+                    bridge_capacity,
+                    bridge_length,
+                    tow_truck_time,
+                    max_RTT
+                } ).
 
 
 %%%===================================================================
@@ -88,6 +98,22 @@ position( Data, Value ) ->
     Data#car_state{ position = Value }.
 position( Data ) ->
     Data#car_state.position.
+
+
+update_last_position( Data ) ->
+    Data#car_state{ last_position = Data#car_state.position, last_crossing = Data#car_state.crossing }.
+
+
+last_position( Data, Value ) ->
+    Data#car_state{ last_position = Value }.
+last_position( Data ) ->
+    Data#car_state.last_position.
+
+
+last_crossing( Data, Value ) ->
+    Data#car_state{ last_crossing = Value }.
+last_crossing( Data ) ->
+    Data#car_state.last_crossing.
 
 
 crossing( Data, Value ) ->
@@ -156,12 +182,26 @@ last_RTT( Data ) ->
     Data#car_state.last_RTT.
 
 
+obstacle_position( Data, Value ) ->
+    Data#car_state{ obstacle_position = Value }.
+obstacle_position( Data ) ->
+    Data#car_state.obstacle_position.
+
+
+ws_host( Data ) ->
+    Data#car_state.ws_host.
+
+
+ws_port( Data ) ->
+    Data#car_state.ws_port.
+
+
 host( Data ) ->
     Data#car_state.host.
 
 
-port( Data ) ->
-    Data#car_state.port.
+ip( Data ) ->
+    Data#car_state.ip.
 
 
 bridge_capacity( Data, Value ) ->
@@ -190,37 +230,52 @@ max_RTT( Data ) ->
 %%% Unmarshalling mappers (Dto -> Entity)
 %%%===================================================================
 
-unmarshalling_sync([]) ->
+unmarshalling_sync( [] ) ->
     [];
-unmarshalling_sync([First| Rest]) ->
-    { [ {<<"name">>, Name},{<<"side">>,Side},{<<"power">>,Power} ] } = First,
-    [#car_state{ name = utils:binary_to_atom(Name), 
-                side = Side, 
-                power = Power } | unmarshalling_sync(Rest)].
+unmarshalling_sync( [ First ] ) ->
+    { [ { <<"name">>, Name },
+        { <<"side">>, Side },
+        { <<"power">>, Power } ] } = First,
+
+    [ #car_state{ name = utils:binary_to_atom( Name ), 
+                  side = Side, 
+                  power = Power } ].
 
 
-unmarshalling_adj([ Front | Rest ]) ->
-    utils:log("unmarshalling_adj_wrapper1"),
-    [Back] = Rest,
-    #adj{ front_cars = unmarshalling_adj_wrapper(Front), rear_cars = unmarshalling_adj_wrapper(Back) }.
+unmarshalling_kill( Content ) ->
+    utils:log( "unmarshalling_kill ~p", [ Content ] ),
+    unmarshalling_adj( Content ).
 
 
-unmarshalling_adj_wrapper([]) ->
+unmarshalling_adj( [ Front | Rest ] ) ->
+    utils:log( "unmarshalling_adj" ),
+    [ Back ] = Rest,
+    #adj{ 
+            front_cars = unmarshalling_adj_wrapper( Front ), 
+            rear_cars = unmarshalling_adj_wrapper( Back ) 
+        }.
+
+
+unmarshalling_adj_wrapper( [] ) ->
     [];
-unmarshalling_adj_wrapper([First| Rest]) ->
-    utils:log("unmarshalling_adj_wrapper1"),
-    { [ {<<"name">>, Name}, 
-        {<<"side">>,Side},
-        {<<"power">>,Power},
-        {<<"size">>,Size},
-        {<<"position">>,Position},
-        {<<"crossing">>,Crossing},
-        {<<"arrival_time">>,ArrivalTime},
-        {<<"delta">>,Delta},
-        {<<"state">>,State},
-        {<<"crash_type">>, CrashType} ] } = First,
-    utils:log("unmarshalling_adj_wrapper2"),
-    [#car_state{    name = utils:binary_to_atom(Name), 
+unmarshalling_adj_wrapper( [ First | Rest ] ) ->
+    utils:log( "unmarshalling_adj_wrapper" ),
+    { [ { <<"name">>, Name }, 
+        { <<"host">>, Host },
+        { <<"ip">>, Ip },
+        { <<"side">>, Side },
+        { <<"power">>, Power },
+        { <<"size">>, Size },
+        { <<"position">>, Position },
+        { <<"crossing">>, Crossing },
+        { <<"arrival_time">>, ArrivalTime },
+        { <<"delta">>, Delta },
+        { <<"state">>, State },
+        { <<"crash_type">>, CrashType } ] } = First,
+
+    [ #car_state{   name = utils:binary_to_atom( Name ), 
+                    host = binary_to_list( Host ),
+                    ip = binary_to_list( Ip ),
                     side = Side, 
                     power = Power,
                     size = Size,
@@ -228,11 +283,11 @@ unmarshalling_adj_wrapper([First| Rest]) ->
                     crossing = Crossing,
                     arrival_time = ArrivalTime,
                     delta = Delta,
-                    state = utils:binary_to_atom(State),
-                    crash_type = CrashType} | unmarshalling_adj_wrapper(Rest)].    
+                    state = utils:binary_to_atom( State ),
+                    crash_type = CrashType } | unmarshalling_adj_wrapper( Rest ) ].    
 
 
-unmarshalling_last_adj(Last) ->
-    utils:log("unmarshalling_last_adj"),
-    { [ {<<"name">>, Name} ] } = Last,
-    utils:binary_to_atom(Name).
+unmarshalling_last_adj( Last ) ->
+    utils:log( "unmarshalling_last_adj" ),
+    { [ { <<"name">>, Name } ] } = Last,
+    utils:binary_to_atom( Name ).

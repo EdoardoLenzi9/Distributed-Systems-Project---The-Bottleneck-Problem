@@ -17,19 +17,12 @@ class AnimatedCar extends THREE.Group {
 		super( );
 		this.transitionTime = transitionTime;
 		// car
-		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
+		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, state.size * 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
 		this.car.position.z += 0.3 * street.scaleFactor;
 		this.add( this.car );
-		// power
-		var powerGeometry = new THREE.CircleGeometry( 1.5 * street.scaleFactor, 32 );
-		var powerMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00, transparent: true, opacity: 0.1} );
-		this.power = new THREE.Mesh( powerGeometry, powerMaterial );
-		this.power.position.z += zIndex;
-		zIndex += 0.001;
-		// this.add( this.power );
-		
+		this.powerVisible = false;
 		this.scaleFactor = street.scaleFactor;
 		this.initState(state);
 	}
@@ -135,7 +128,7 @@ class AnimatedCar extends THREE.Group {
 
 
 	remove(time){
-		if(this.state.crash_type > 0){
+		if(this.state.crash_type > 0 || this.state.position * this.state.side > street.bridge_length / 2){
 			this.setTowTruckColor();
 			var pos = { x: this.state.side * this.scaleFactor * (3 / 2), 
 						 y: this.position.y,
@@ -186,14 +179,25 @@ class AnimatedCar extends THREE.Group {
 		return tween;
 	}
 
+	createPower(){
+		var powerGeometry = new THREE.CircleGeometry( 1.5 * street.scaleFactor, 32 );
+		var powerMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00, transparent: true, opacity: 0.1} );
+		this.power = new THREE.Mesh( powerGeometry, powerMaterial );
+		this.power.position.z += zIndex;
+		zIndex += 0.001;
+	}
+
 	showDetails(){
-		this.add( this.power );
+		if(!this.powerVisible){
+			this.createPower();
+			this.add( this.power );
+			this.powerVisible = true;
+		}
 		setCarDetails(this.state);
 		carStateFolder.open();
 	}
 
 	hideDetails(){
-		this.remove( this.power );
 		carStateFolder.close();
 	}
 }

@@ -3,14 +3,13 @@
 
 # public rules
 
-start: clean dependencies build build-docker env
+start: clean dependencies env cred build setup-docker
 
 
-run:
-	@echo "make rule run"
+run-docker:
+	@echo "make rule run-docker"
 	@cat environment.json
-	@cd web_service ; \
-	sudo ./rebar3 run
+	@sudo docker run -it --net host -p 8090:8090 webservice:v1
 
 
 test:
@@ -72,6 +71,10 @@ clean:
 	@rm ./web_service/client/views/simulation-view/environment.json  || true
 	@rm ./web_service/_build/default/rel/web_service/environment.json  || true
 	@rm ./web_service/client/views/log-view/environment.json  || true
+	@echo "clean credential"
+	@rm ./web_service/_build/default/rel/web_service/credentials.json  || true
+	@rm ./web_service/credentials.json  || true
+	@rm ./car/credentials.json  || true
 	@echo "clean tests"
 	@rm ./car/test/tmp/* || true
 	@rm ./web_service/test/tmp/* || true
@@ -98,19 +101,42 @@ dependencies:
 
 env:
 	@echo "make rule env"
-	@cp environment.json car/ 
-	@cp environment.json web_service/ 
-	@cp environment.json web_service/client/ 
-	@cp environment.json web_service/client/views/simulation-view/ 
-	@cp environment.json web_service/client/views/log-view/ 
-	@cp environment.json web_service/_build/default/rel/web_service/
+	@cp environment.json car/ || true
+	@cp environment.json web_service/ || true 
+	@cp environment.json web_service/client/ || true
+	@cp environment.json web_service/client/views/simulation-view/ || true 
+	@cp environment.json web_service/client/views/log-view/ || true
+	@cp environment.json web_service/_build/default/rel/web_service/ || true
 
 
-build-docker:
-	@sudo docker network create ds_network
-	@echo "build docker"
+cred:
+	@echo "make rule credential"
+	@cp credentials/credentials.json car/ || true
+	@cp credentials/credentials.json web_service/_build/default/rel/web_service/ || true
+	@cp credentials/credentials.json web_service/ || true
+
+
+setup-docker: build-docker-erlssh build-docker-car build-docker-ws
+	@echo "docker setup"
+
+
+build-docker-erlssh: 
+	@echo "create docker network"
+	@sudo docker network create ds_network || true
+	@echo "build docker erlssh"
+	@sudo docker build -t erlssh:v1 .
+
+
+build-docker-car: env cred
+	@echo "build docker car"
 	@cd car ; \
 	sudo docker build -t car:v1 .
+
+
+build-docker-ws: env cred
+	@echo "build docker ws"
+	@cd web_service ; \
+	sudo docker build -t webservice:v1 .
 
 
 build: 

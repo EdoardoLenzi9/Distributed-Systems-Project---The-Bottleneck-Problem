@@ -1,3 +1,8 @@
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
 -module( car ).
 -behaviour( gen_statem ).
 
@@ -13,8 +18,8 @@
 %% @doc Init metastate useful to initialize State parameters 
 
 init( [ State ] ) ->
-    utils:log("---STATE Init---"),
-    init_handler:init(State).
+    utils:log( "---STATE Init---" ),
+    init_handler:init( State ).
     
 
 %% @doc Sync state used for car synchronization ( Berkeley ) and adj queue update
@@ -40,7 +45,7 @@ normal( { call, From }, Event, Data ) ->
 %%      then propagate a crossing event to the rear cars if the arrival time of the front car is higher that its arrival time
 
 leader( { call, From }, Event, Data ) ->
-    utils:log( "STATE Leader" ),
+    utils:log( "---STATE Leader---" ),
     leader_handler:leader( From, Event, Data ).
 
 
@@ -48,5 +53,5 @@ leader( { call, From }, Event, Data ) ->
 %%      it has the duty to give this information to the nearest cars
 
 dead( { call, From }, Event, Data ) -> 
-    utils:log( "STATE Dead" ),
-    dead_handler:leader( From, Event, Data ).
+    utils:log( "---STATE Dead---" ),
+    dead_handler:dead( From, Event, Data ).
