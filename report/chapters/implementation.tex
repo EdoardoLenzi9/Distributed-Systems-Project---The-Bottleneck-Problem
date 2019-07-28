@@ -7,10 +7,12 @@ technologies/languages, data structures, patterns and best practices used.
 
 Starting from the instantiation of a new car process we will describe the main aspects 
 of a \textbf{car life-cycle}. 
-\noindent
-We have to define new variables and notations; first of all we define a first layer cars as
- the set of car processes, this layer sends periodically updates to a second layer of web service and 
-database. Finally a third layer of clients make polling on the second layer.
+
+In order to do that we have to define new variables and notations; 
+first of all we define a first layer cars as the set of car processes, 
+this layer sends periodically updates to a second layer made by 
+the web service and the database. 
+Finally a third layer of clients make polling on the second layer.
 
 As we will show, we model a car as a \textbf{finite state machine} 
 with the following main states: sync, normal, leader, dead.\\
@@ -145,6 +147,129 @@ a message between two cars requires 8 hops (4 hops for the request and 4 hops fo
 the response) so we implement a \textbf{pseudo multi-layer encapsulation} in order 
 to create a generic asynchronous communication infrastructure.    
 
+
+\subsubsection{Init metastate}
+
+Init isn't properly a state cause cannot receive external events, 
+is used only for 
+\textit{Data}\footnote{\textbf{Data}: we denote as \textit{Data} 
+the state persistent variables} 
+initializations.
+
+
+\subsubsection{Sync state}
+
+After FSM initialization the car reaches \textbf{sync state}, the main goals 
+of this state are:
+
+\begin{itemize}
+    \item Synchronize with the other cars
+    \item Set a consistent arrival time with the queue state 
+    \item Set an initial position (safe, avoid spawn on the other cars)
+    \item Send an update to the DB layer with the informations above
+\end{itemize}
+
+\noindent
+In order to perform a synchronization using Berkeley algorithm the new car needs to 
+know a reference of the last car in the queue which is exposed by an end point; 
+in order to avoid concurrency issues when a car calls the end point 
+it becomes automatically the last car in the queue (with a transaction query).
+
+This implies that any car is chained with the car in front of her and any other 
+new car, from now on, cannot be interponed betweent them.\\
+
+\noindent
+If everything goes in the right way, at the end of the synchronization the new car ($A$) 
+is located near the car in front of her ($B$) and the arrival time of $A$ must be 
+higher then that of $B$.
+
+We have also to guarantee \textbf{I} property so a car in sync state can synchronize 
+itself with the database layer only after the car in front of her. Define 
+$A:check(B)$ a check message from $A$ to $B$ that asks for the current $B$ state;
+the message reply contains every relevant information about $B$ also its synchronization 
+state, so is enough to wait until a check response state that B was just 
+synchronized.  
+
+If a check call doesn't have any reply, a timeout event will be triggered after 
+$max\_RTT$ ms. Once a car receives a timeout event calls a special process 
+tow truck that has the duty of remove the broken cars.  
+
+Once a car is removed by a tow truck the garbage process returns to the caller 
+an update event that is then propagated to every other cars. For this kind of events 
+the order isn't relevant, so even if we receive two concurrent updates of near cars 
+we haven't to straggle to ordering them.
+
+
+\subsubsection{Normal state}
+
+Sync was a static state, the car declares its initial position but has $speed_A = 0$;
+normal is instead the state in which the car remains for the most of its life time and 
+manages every car movement.
+
+Assume that between two cars $A \rightarrow B$, in a certain instant $t_0$, 
+there is a safety distance $d_{AB0}$; 
+the car behind know this information because has sended a check message to the car 
+in front of her and at instant $t_1$ receives a response.
+
+Now $A$ is free to move forward (because $B$ can only move forward) of:
+
+\begin{equation}\begin{split}
+    & min\{\ d_{AB0},\ max\_speed * travel\_time \} \\
+    & p_{Bi} \leq p_{Bj},\quad i < j \\
+\end{split}\end{equation}    
+
+Where $max\_speed$ is an arbitrary constant that constitute an upper bound for the speed 
+and $travel\_time$ the time passed from the last car transition. 
+
+Such as for sync also in this context we have to guarantee \textbf{I} property, so 
+a car behind can move only after the car in front is synchronized with the DB layer.
+
+Once a car reaches the bridge side and the car on the other side has an 
+higher arrival time, becomes the new leader.
+
+
+\subsubsection{Leader state}
+
+Leader state is a static state such as sync, in this state the car notifies to 
+the first $i$ rear cars the arrival time of of the car on the opposite side of the bridge 
+(where $i$ is the bridge capacity) with a crossing message.
+
+After the crossing propagation leader returns in the normal state in order to 
+crossing the bridge. 
+
+This simple leader election is safe, in the worst scenario 
+the car in front can present a wrong arrival time due to a synchronization error 
+but this at most cause the break of the FIFO order but never a car accident.
+
+
+\subsubsection{Dead state}
+
+Once a car reaches the end of the bridge goes in the dead state and, 
+after the sending of a global update event, the process stops.
+
+A car can also reach dead from normal and leader states in case of an unexpected 
+crash; in this case the car has to wait for a tow truck that removes it from the 
+street. 
+
+
+\subsubsection{Communication}
+
+It is important to underline how two cars can send messages to each other. \\
+First of all, each car has a supervisor and, when a car A wants to send something to another car B,
+this happens:
+\begin{itemize}
+   \item[1.] A sends a message to hers supervisor S$_{A}$
+   \item [2.] S$_{A}$ calls a process $Timer$ $T$, which is used to send a timeout
+   if the message target didn't reply within a certain time;
+   in that case $S_{A}$ assumes that $B$ is dead and so $A$ will call 
+   a tow truck to remove it.
+   \item[3.] $T$ sends it to the supervisor of B ($S_{B}$)
+   \item [4.] $S_{B}$ sends an event to $B$ which contains the message of $A$
+   \item [5.] $B$ sends a reply to $S_{B}$ that propagates the response behind 
+              following the inversal path. 
+\end{itemize}
+
+
 \begin{center}
     \includegraphics[scale=0.3]{assets/request-track.png}
     \captionof{figure}{Message exchange between two cars}
@@ -203,13 +328,17 @@ are the following:
     it has a maximun value specified in \textbf{environment.js}\\
     it is initialized with 0 to prevent crashing 
     \item $crossing$: if true it means that the car is on the bridge
-    \item $crash_type$: if equal to zero, the car won't crash, if equal to one the car will have an engine only crash
+    \item $crash\_type$: if equal to zero, the car won't crash, if equal to one the car will have an engine crash
     and if equal to 2 the car will have both engine and system crash 
     \item $adj$: it contains the lists of front and rear cars
     \item $state$: it defines the current state of the car\\ it could be \textbf{init}, \textbf{sync}, \textbf{normal} or \textbf{dead}
     \item $position$: it indicates the distance between the car and the bridge or the car and the end of the
-    bridge\\it is initialized as $pos(B)+1*side(B)$, where B is the first front car, if B is on the same side of A, or
-    as $-pos(B)$ if B is on the other side\\ when negative it means that the car is on the left side, otherwise on the right side
+    bridge
+    \begin{itemize}
+        \item[$\rhd$] initialized with $( pos(B) + 1 ) * side(B)$, where B is the first front 
+                      car ($size(A) / 2 + 1$ if there isn't any other car in front af A)
+        \item[$\rhd$] assumes negative values if the car is on the left side and positive if it is on the right side
+    \end{itemize}
     \item $arrival\_time$: it defines the time when the car has arrived in the queue
 \end{itemize}
 
@@ -222,126 +351,6 @@ The $adj$ is another data structure. It is composed by:
      is the previous car
 \end{itemize} 
 
-Each car knows also the $bridge\_capacity$ and $bridge\_length$ that are imposed by the environment and cannot change during the
-simulation.\\
-
-We choose to model the car as a finite state machine because the car can switch between four main different states. 
-\subsection{Init}
-
-Init isn't properly a state cause cannot receive external events, 
-is used only for 
-\textit{Data}\footnote{\textbf{Data}: we denote as \textit{Data} 
-the state persistent variables} 
-initializations.
-
-
-\subsection{Sync}
-
-After FSM initialization the car reaches \textbf{sync state}, the main goals 
-of this state are:
-
-\begin{itemize}
-    \item Synchronize with the other cars
-    \item Set a consistent arrival time with the queue state 
-    \item Set an initial position (safe, avoid spawn on the other cars)
-    \item Send an update to the DB layer with the informations above
-\end{itemize}
-
-In order to perform a synchronization using Berkeley algorithm the new car needs to 
-know a reference of the last car in the queue which is exposed by an end point; 
-in order to avoid concurrency issues when a car calls the end point 
-it becomes automatically the last car in the queue (with a transaction query).
-
-This implies that any car is chained with the car in front of her and any other 
-new car, from now on, cannot be interponed betweent them.\\
-
 \noindent
-If everything goes in the right way, at the end of the synchronization the new car ($A$) 
-is located near the car in front of her ($B$) and the arrival time of $A$ must be 
-higher then that of $B$.
-
-We have also to guarantee \textbf{I} property so a car in sync state can synchronize 
-itself with the database layer only after the car in front of her. Define 
-$A:check(B)$ a check message from $A$ to $B$ that asks for the current $B$ state;
-the message reply contains every relevant information about $B$ also its synchronization 
-state, so is enough to wait until a check response state that B was just 
-synchronized.  
-
-If a check call doesn't have any reply, a timeout event will be triggered after 
-$max_{RTT}$ ms. Once a car receives a timeout event calls a special process 
-tow truck that has the duty of remove the broken cars.  
-
-Once a car is removed by a tow truck the garbage process returns to the caller 
-an update event that is then propagated to every other cars. For this kind of events 
-the order isn't relevant, so even if we receive two concurrent updates of near cars 
-we haven't to straggle to ordering them.
-
-
-\subsection{Normal}
-
-Sync was a static state, the car declares its initial position but has $speed_A = 0$;
-normal is instead the state in which the car remains for the most of its life time and 
-manages every car movement.
-
-Assume that between two cars $A \rightarrow B$, in a certain instant $t_0$, 
-there is a safety distance $d_{AB0}$; 
-the car behind know this information because has sended a check message to the car 
-in front of her and at instant $t_1$ receives a response.
-
-Now $A$ is free to move forward (because $B$ can only move forward) of:
-
-\begin{equation}\begin{split}
-    & min\{\ d_{AB0},\ max\_speed * travel\_time \} \\
-    & p_{Bi} \leq p_{Bj},\quad i < j \\
-\end{split}\end{equation}    
-
-Where $max\_speed$ is an arbitrary constant that constitute an upper bound for the speed 
-and $travel\_time$ the time passed from the last car transition. 
-
-Such as for sync also in this context we have to guarantee \textbf{I} property, so 
-a car behind can move only after the car in front is synchronized with the DB layer.
-
-Once a car reaches the bridge side and the car on the other side has an 
-higher arrival time, the first car becomes the new leader.
-
-
-\subsection{Leader}
-
-Leader state is a static state such as sync, in this state the car notifies to 
-the first $i$ rear cars the arrival time of of the car on the opposite side of the bridge 
-(where $i$ is the bridge capacity) with a crossing message.
-
-After the crossing propagation leader returns in the normal state in order to 
-crossing the bridge. 
-
-This simple leader election is safe, in the worst scenario 
-the car in front can present a wrong arrival time due to a synchronization error 
-but this at most cause the break of the FIFO order but never a car accident.
-
-
-\subsection{Dead}
-
-Once a car reaches the end of the bridge goes in the dead state and, 
-after the sending of a global update event, the process stops.
-
-A car can also reach dead from normal and leader states in case of an unexpected 
-crash; in this case the car has to wait for a tow truck that removes it from the 
-street. 
-
-\subsubsection{Communication}
-
-It is important to underline how two cars can send message to each other. \\
-First of all, each car has a supervisor and, when a car A wants to send something to another car B,
-this happens:
-\begin{itemize}
-   \item[1.] A sends a message to hers supervisor S$_{A}$
-   \item [2.] S$_{A}$ calls a process, we can refer at it as $Timer$, which is used to send a timeout
-   if the supervisor didn't receive a response from the other within a certain time. In that case S$_{A}$ assumes 
-   that B is dead and so A will call a tow truck to remove it.
-   \item[3.] S$_{A}$ sends it to the supervisor of B S$_{B}$
-   \item [4.] S$_{B}$ sends an event to B which contains the message of A
-   \item [5.] B sends a message to S$_{B}$ whit the response
-   \item [6.] S$_{B}$ sends it to S$_{A}$, going through the $Timer$ as S$_{A}$ has done at point 2
-   \item [7.] finally S$_{A}$ sends another event to A with the response of B, to which A reacts appropiately
-\end{itemize}
-
+Each car knows also the $bridge\_capacity$, $bridge\_length$ and other global settings 
+that are imposed by the \textbf{environment} and cannot change during the simulation.
