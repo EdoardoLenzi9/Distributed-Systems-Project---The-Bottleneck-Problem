@@ -24,3 +24,5 @@ logs/
 *.so
 
 web_service/rebar3
+
+credentials/credentials\.json
