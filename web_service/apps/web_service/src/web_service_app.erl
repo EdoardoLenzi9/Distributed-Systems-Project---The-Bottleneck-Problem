@@ -22,7 +22,9 @@ start(_StartType, _StartArgs) ->
             % Car end points
             {"/car/sync", car_controller, []},                  %% update car sync
             {"/car/adj", car_controller, []},                   %% update car adj
+            {"/car/adj/last", car_controller, []},              %% get last car in queue
             {"/car/state", car_controller, []},                 %% update car state
+            {"/car/kill", car_controller, []},                  %% kill target car
 
             % Client 
             {"/", cowboy_static, {file, "../../../../client/index.html"}},

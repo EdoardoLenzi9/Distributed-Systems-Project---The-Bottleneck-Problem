@@ -7,12 +7,12 @@
 %%%===================================================================
 
 add(Entity) ->
-    db_manager:clear(settingsEntity),
-    db_manager:add(Entity).
+    db_manager:clear(settings_entity),
+    repository_helper:add(Entity).
 
 
 get_all() ->
-    db_manager:get_all(settingsEntity).
+    repository_helper:get_all(settings_entity).
 
 
 reset() ->

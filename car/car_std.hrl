@@ -3,7 +3,8 @@
 %%%===================================================================
 
 
-terminate(_Reason, _StateName, _State) ->
+terminate(Reason, StateName, State) ->
+    utils:log("Car terminate ~n Reason: ~p ~n StateName: ~p ~n State: ~p", [Reason, StateName, State]),
     ok.
  
 

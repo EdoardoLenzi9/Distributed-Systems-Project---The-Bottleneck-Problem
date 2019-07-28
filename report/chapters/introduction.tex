@@ -6,44 +6,51 @@ solution (from the point of view of a Distributed Systems designer).\\
 
 \section{The Problem}
 
-The bridge has a \textbf{maximum capacity} $c \geq 1$ and a crossing time $t$. \\
+The bridge has a \textbf{maximum capacity} $c \geq 1$ and a certain length $l$. 
 
 Cars can send messages to adjacent cars (to the car in front and to the rear one); 
 cars can also have the ability to speak with more than two other cars depending on the 
-\textbf{power of their transmission medium} $p \geq 1$.\\
+\textbf{power of their transmission medium} $p \geq 1$.
 
 The initialization of a communication between two cars can be done unsing an 
 \textbf{environment process} 
-that returns the required references needed to start the message exchange.\\
+that returns the required references needed to start the message exchange.
 
 So basically a car can only send messages to the $p$ cars in front and 
-to the $p$ cars behind. We assume that the bridge length doesn't constitute an impediment 
+to the $p$ cars behind. We assume that \textbf{the bridge length doesn't 
+constitute an impediment}
 for the communications (so even if the bridge was very long, however, 
-the cars can send messages as if they were close).\\
+the cars can send messages as if they were close).
 
-For simplicity we assume that every car has the 
-same dimensions expressed in an arbitrary length scale called \textbf{block} and 
-\textbf{every measure is an integer} ($s$, $l$, $c$, $p$, etc.). \\
+By default every car has the same dimensions (but can be setted to an arbitrary
+\textbf{size}) expressed in a custom length scale called \textbf{block} and 
+\textbf{every measure is an integer} ($l$, $c$, $p$, etc.). \\
 
+\noindent
 We assume that cars can have a failure at any moment and there are only 
 three types of failures:
 \begin{itemize}
-    \item \textbf{mechanical failure} (the car cannot move but can send help messages to the other cars)
+    \item \textbf{mechanical failure} (the car cannot move but can send messages to the other cars)
     \item \textbf{link failure} (the car can move but cannot send any message)
     \item \textbf{system failure} (the car cannot move and cannot send messages)
 \end{itemize}
 
+\noindent
 We assume that a link failure is equivalent to a system failure cause the car cannot 
 take any decision without the agreement of the others. 
+
 In case of engine failure or system failure the car or another helping car must call 
 a tow truck in order to remove the broken car 
 (in this case we have to wait an \textbf{elimination time} $e$).
+
 In case of failure the car behind has to wait until the tow truck removes the broken car.\\
 
+\noindent
 We assume that a car cannot be malicius (must follow the algorithm) but the communication 
 channel isn't secure so it is exposed to a \textbf{MIM} (man in the middle) attack 
 (drop messages, edit messages, message injection, ...).\\
 
+\noindent
 Finally we have to consider that in a distributed system a global up-to-date state 
 or a global timing cannot exist; this implies that each car can have a partial 
 and \textbf{inconsistent view} of the global environment and a \textbf{time drift} 

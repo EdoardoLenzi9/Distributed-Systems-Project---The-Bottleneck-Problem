@@ -9,26 +9,20 @@
 
 var zIndex = 0.002;
 
+
 class AnimatedCar extends THREE.Group {
     
 
-    constructor( state ){
+    constructor( state, transitionTime ){
 		super( );
-		debugger;
+		this.transitionTime = transitionTime;
 		// car
-		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
+		var carGeometry = new THREE.BoxBufferGeometry(0.8 * street.scaleFactor, state.size * 0.8 * street.scaleFactor, 0.4 * street.scaleFactor);
 		var carMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, transparent: true } );
 		this.car = new THREE.Mesh(carGeometry, carMaterial);
 		this.car.position.z += 0.3 * street.scaleFactor;
 		this.add( this.car );
-		// power
-		var powerGeometry = new THREE.CircleGeometry( 1.5 * street.scaleFactor, 32 );
-		var powerMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00, transparent: true, opacity: 0.1} );
-		this.power = new THREE.Mesh( powerGeometry, powerMaterial );
-		this.power.position.z += zIndex;
-		zIndex += 0.001;
-		// this.add( this.power );
-		
+		this.powerVisible = false;
 		this.scaleFactor = street.scaleFactor;
 		this.initState(state);
 	}
@@ -36,10 +30,12 @@ class AnimatedCar extends THREE.Group {
 
 	initState(state){
 		this.state = state;
-		// cross index
-		this.crossIndex = 0;
 		// update position
-		this.computePosition(state)
+
+		this.position.set((state.side * this.scaleFactor / 2), ((street.bridge_length + street.length) / 2) * this.scaleFactor * state.side, this.position.z);
+		this.lastPos = this.computePosition(state);
+		this.TweenTo( this.lastPos ).start();
+
 		// update state
 		this.setColor();
 	}
@@ -55,24 +51,33 @@ class AnimatedCar extends THREE.Group {
 	}
 
 
+	setDeadColor(){
+		this.car.material.color.setHex(0xff0000);
+		this.car.material.opacity = 0.5;
+	}
+
+
+	setTowTruckColor(){
+		this.car.material.color.setHex(0x8b4513);
+		this.car.material.opacity = 0.5;
+	}
+
+
+	setStopColor(){
+		this.car.material.color.setHex(0xff5400);
+		this.car.material.opacity = 0.5;
+	}
+
+
 	computePosition(state){
 		var pos = {
 			x: state.side * this.scaleFactor / 2,
-			y: ((street.bridge_capacity + 1) / 2 + state.position - this.crossIndex) * this.scaleFactor * state.side,
+			y: state.position * this.scaleFactor,
 			z: this.position.z 
 		};
 
-		if((state.position - this.crossIndex < 0) && (state.position - this.crossIndex > - (street.bridge_capacity + 1))){
+		if(state.crossing && (state.position * state.side) < (street.bridge_length / 2)){
 			pos.x = 0;
-		}
-
-		if(state.state == 'dead'){
-			pos.y = ((street.bridge_capacity + street.length) / 2) * this.scaleFactor * ( - state.side);
-		}
-
-		if(state.state == 'create'){
-			this.position.set(pos.x, ((street.bridge_capacity + street.length) / 2) * this.scaleFactor * state.side, pos.z);
-			this.initTween = this.TweenTo( pos ).start();
 		}
 
 		return pos;
@@ -89,32 +94,66 @@ class AnimatedCar extends THREE.Group {
 	* 3 crossing car	1
 	* 4 dead			1
 	*/
+
 	updateState(state){
-		
 		// update position
-		if(this.state.position != state.position && this.crossIndex >= 0){
-			this.TweenTo( this.computePosition(state) ).start();
-		} else if(state.state == 'crossing' || state.state == 'dead'){
-			this.crossIndex++;
-			this.TweenTo( this.computePosition(state) ).start();
+		var newPos = this.computePosition(state);
+
+		if (JSON.stringify(newPos) != JSON.stringify(this.lastPos)){
+			console.log("\n\n tween" + JSON.stringify(newPos) + JSON.stringify(this.lastPos) + "crossing " + state.crossing);
+			this.TweenTo( newPos ).start();
 		}
+		this.lastPos = newPos;
+
 		switch (state.state) {
-			case 'dead': 	
-				this.car.material.color.setHex(0xff0000);
-				this.car.material.opacity = 0.5;
+			case 'dead': 
+				if (state.crash_type > 0){
+					this.setDeadColor();
+				} else {
+					this.setStopColor();
+				}
 				break;
-			case 'create': case 'queue':		
+			case 'sync':		
 				this.setColor();
 				break;
-			case 'leader':
+			case 'normal':
 				this.setColor(0.8);
 				break;
-			case 'crossing': case 'crossed':
+			case 'leader':
 				this.setColor(1);
 				break;
-		  }
+		}
 		this.state = state;
 	} 
+
+
+	remove(time){
+		if(this.state.crash_type > 0 || this.state.position * this.state.side > street.bridge_length / 2){
+			this.setTowTruckColor();
+			var pos = { x: this.state.side * this.scaleFactor * (3 / 2), 
+						 y: this.position.y,
+						 z: this.position.z 
+					   };
+			var pos1 = { x: this.state.side * this.scaleFactor * (3 / 2), 
+						 y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * this.state.side,
+						 z: this.position.z 
+					   };
+			this.TweenTo( pos ).chain( this.TweenTo(pos1) ).start();
+			setTimeout(() => {
+				group.remove(this);
+			}, time);
+		} else {
+			this.setStopColor();
+			var pos = {	x: this.state.side * this.scaleFactor / 2, 
+					y: ((street.bridge_length + street.length) / 2) * this.scaleFactor * ( - this.state.side),
+					z: this.position.z 
+				};
+			this.TweenTo( pos ).start();
+			setTimeout(() => {
+				group.remove(this);
+			}, time);
+		}
+	}
 
 
 	/*
@@ -130,20 +169,35 @@ class AnimatedCar extends THREE.Group {
 	/*
 	* Tween to the next frame 
 	*/
-	TweenTo( nextPosition){
-		var tween = new TWEEN.Tween( this.position ).to( nextPosition );
+
+	TweenTo(nextPosition){
+		this.initTime = Date.now();
+		var tween = new TWEEN.Tween( this.position ).to( nextPosition, this.transitionTime ).onComplete(function() {
+			//console.log('tweentime: ' + (Date.now() - this.initTime));
+		});
 		//tween.easing( TWEEN.Easing.Elastic.InOut )
 		return tween;
 	}
 
+	createPower(){
+		var powerGeometry = new THREE.CircleGeometry( 1.5 * street.scaleFactor, 32 );
+		var powerMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00, transparent: true, opacity: 0.1} );
+		this.power = new THREE.Mesh( powerGeometry, powerMaterial );
+		this.power.position.z += zIndex;
+		zIndex += 0.001;
+	}
+
 	showDetails(){
-		this.add( this.power );
+		if(!this.powerVisible){
+			this.createPower();
+			this.add( this.power );
+			this.powerVisible = true;
+		}
 		setCarDetails(this.state);
 		carStateFolder.open();
 	}
 
 	hideDetails(){
-		this.remove( this.power );
 		carStateFolder.close();
 	}
 }

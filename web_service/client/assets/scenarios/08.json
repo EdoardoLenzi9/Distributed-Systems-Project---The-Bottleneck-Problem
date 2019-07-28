@@ -1,0 +1,52 @@
+[
+    {
+        "delay": 0,
+        "parameters": { "name": "car1",
+                        "side": -1,
+                        "power": 1,
+                        "size": 1,
+                        "crash_type": 2,
+                        "timeout": 1
+                    }
+    },
+    {
+        "delay": 0,
+        "parameters": { "name": "car2",
+                        "side": -1,
+                        "power": 1,
+                        "size": 1,
+                        "crash_type": 2,
+                        "timeout": 1
+                    }
+    },
+    {
+        "delay": 2000,
+        "parameters": { "name": "car3",
+                        "side": -1,
+                        "power": 2,
+                        "size": 1,
+                        "crash_type": 0,
+                        "timeout": 0
+                    }
+    },
+    {
+        "delay": 500,
+        "parameters": { "name": "car4",
+                        "side": -1,
+                        "power": 1,
+                        "size": 1,
+                        "crash_type": 2,
+                        "timeout": 1
+                    }
+    },
+    {
+        "delay": 0,
+        "parameters": { "name": "car5",
+                        "side": -1,
+                        "power": 1,
+                        "size": 1,
+                        "crash_type": 2,
+                        "timeout": 1
+                    }
+    }
+]

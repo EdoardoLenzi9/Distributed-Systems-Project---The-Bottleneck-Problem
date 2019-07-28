@@ -8,37 +8,105 @@
 %%%===================================================================
 
 sync(Entity) ->
-    Sync = if Entity#syncEntity.side == left -> 
-        utils:first_elements( sync_repository:get_all(), Entity#syncEntity.power);
-    Entity#syncEntity.side == right ->
-        lists:reverse(utils:last_elements( sync_repository:get_all(), Entity#syncEntity.power))
-    end,    
-    sync_repository:add(Entity),
-    sync_marshalling(Sync).
+    Res = sync_repository:add(Entity),
+    utils:log("SYNC ~p", [Res]),
+    sync_marshalling(Res).
 
 
 adj(Entity) ->
-    [Front, Rear] = if Entity#adjEntity.side == left -> 
+    [Front, Rear] = if Entity#adj_entity.side == -1 -> 
         get_left(Entity);
-    Entity#adjEntity.side == right ->
+    Entity#adj_entity.side == 1 ->
         get_right(Entity)
     end,    
     adj_repository:add(Entity),
+    if Entity#adj_entity.state == stop ->
+        io:format("Adj delete stopped car"),
+        adj_repository:delete(Entity),
+        sync_repository:delete(#sync_entity{name = Entity#adj_entity.name, side = Entity#adj_entity.side, power = Entity#adj_entity.power});
+    true ->
+        ok 
+    end,
     [adj_marshalling(Front), adj_marshalling(Rear)].
 
+
+last_adj(Side) ->
+    Adj = adj_repository:get_all(),
+    Last = if Side == -1 -> 
+        utils:first_element(Adj);
+    true ->
+        utils:last_element(Adj)
+    end,    
+    last_adj_marshalling(Last, Side).
+        
+
+kill(Name, Target) ->
+    utils:log("Kill ~p", [Target]),
+    SelectedCars = adj_repository:select(Target),
+    utils:log("Kill ~p", [SelectedCars]),
+    if length(SelectedCars) == 1 -> 
+        [SelectedCar] = SelectedCars,
+
+        adj_repository:delete(SelectedCar),
+        sync_repository:delete(#sync_entity{name = SelectedCar#adj_entity.name, side = SelectedCar#adj_entity.side, power = SelectedCar#adj_entity.power}),
+        
+        utils:log("Selected Car: ~p", [SelectedCar]),
+        Hosts = host_repository:select(SelectedCar),
+
+        utils:log("Selected Hosts: ~p", [Hosts]),
+        if length(Hosts) == 1 -> 
+            [Host] = Hosts,
+            utils:kill_car(Host, SelectedCar);   
+        true ->
+            host_undefined
+        end;
+    true ->
+        car_undefined
+    end,
+    SelectedCars2 = adj_repository:select(Name),
+    
+    if length(SelectedCars2) == 1 -> 
+        utils:log("Killer caller was not in sync state"),
+        [AdjCaller] = SelectedCars2,
+        adj(AdjCaller);
+    true ->
+        SelectedCars3 = sync_repository:select(Name),
+        if length(SelectedCars3) == 1 -> 
+            utils:log("Killer caller was in sync state"),
+            [SyncCaller] = SelectedCars3,
+
+            if SyncCaller#sync_entity.front_car =/= undefined ->
+                sync_to_adj(sync_repository:select(SyncCaller#sync_entity.front_car));
+            true -> 
+                [ [], [] ]
+            end;
+        true ->
+            [ [], [] ]
+        end
+    end.    
+
+
+sync_to_adj([]) ->
+    [ [], [] ];
+sync_to_adj([First]) ->
+    [ adj_marshalling( [ #adj_entity{
+                                      name = First#sync_entity.name,
+                                      side = First#sync_entity.side,
+                                      power = First#sync_entity.power
+                                    } ] ), [] ].
 
 %%%===================================================================
 %%% private functions
 %%%===================================================================
         
 get_left(Entity) ->
-    [Left , Right] = split(adj_repository:get_all(), Entity#adjEntity.name, left),
-    [ utils:first_elements(Right, Entity#adjEntity.power), lists:reverse(utils:last_elements(Left, Entity#adjEntity.power)) ].
+    [Left , Right] = split(adj_repository:get_all(), Entity#adj_entity.name, left),
+    [ utils:first_elements(Right, Entity#adj_entity.power), lists:reverse(utils:last_elements(Left, Entity#adj_entity.power)) ].
 
 
 get_right(Entity) ->
-    [Left , Right] = split(adj_repository:get_all(), Entity#adjEntity.name, right),
-    [ lists:reverse(utils:last_elements(Left, Entity#adjEntity.power)), utils:first_elements(Right, Entity#adjEntity.power) ].
+    [Left , Right] = split(adj_repository:get_all(), Entity#adj_entity.name, right),
+    [ lists:reverse(utils:last_elements(Left, Entity#adj_entity.power)), utils:first_elements(Right, Entity#adj_entity.power) ].
     
                                         
 split(List, Name, Side) ->
@@ -83,7 +151,7 @@ split_right_wrapper([First | Rest], ItemIndex, Side) ->
 get_index([], _Name, _Counter) ->
     -1;
 get_index([First | Rest], Name, Counter) ->
-    if First#adjEntity.name == Name ->
+    if First#adj_entity.name == Name ->
         Counter;
     true ->
         get_index(Rest, Name, Counter + 1)
