@@ -1,33 +1,84 @@
 \chapter{Conclusions}\label{ch:conclusions}
 
-The goal of our work was to develop a system that models the behaviour of a bridge. We managed to ensure
-most of the requisites.\\ In particular our model avoids any accident between two or more cars: this is 
-really important because in a real world the first thing to ensures is that nobody gets hurt or damaged. 
-For the same reason we made the cars able to detect any broken car. The case of the broken engine is the simpliest
-to handle because the broken car can still communicate with the others and so notify them she is not moving.
-Moreover the tow truck can remove the car so that the rear ones can eventually move again.\\ Similar to that
-was ensuring that nobody will wait forever to cross the bridge. In a realistic situation it is not contemplated
-that one or more cars could never cross the bridge.\\
-The chosen strategy is FIFO order. This avoids starvation but isn't the best choice for performance: consider
-the case where one car arrives on the left side while on the right there are, for example, 20 cars, and that the bridge
-has capacity equal to 1 and length 30. The car on the left has to wait for all the other 20 on the right side: this 
-is a very long time due to the fact that only one car per time can cross the bridge and to the length of the bridge.
-If that car could cross without waiting for all the others its waiting time would decrease significally while
-the waiting time for the others will increase only as if there were one car more before them. So one thing 
-that can improve the system could be order the cars by minimizing the average waiting time.\\
-Finally the system satisfy all the requisites of the bridge (capacity and one way cross).\\ \\
+We have encountered numerous impediments during the development of the project that 
+have led to a delay in the delivery. 
 
-Another important matter we have to discuss is the performance of the system. Everytime a car has to move 
-it has to send many message to its adjacent cars: for this reason the cars cannot move in a fluent way
-but have to stop sometimes. Moreover we cannot visualize a new car if there is already another one on the 
-street that has $crash\_type$ 2, in fact, if it is broken it isn't able to tell the new car its position and
-so the new one has to wait until it is removed (notice that the tow truck will be called by the new car before
+In first place we start the development on a single machine but when we try 
+to work on different machines we realize that there were some communication problems
+that forced us to update the communication architecture.
+
+In second place we find that even in a local network there can be huge delays in message exchange,
+so any solution based on timing, instead of event causality, will fail sooner or later; 
+this forces us to change the algorithm for the car movements in queue. 
+
+At the same time we realize that both to obtain a more realistic result and, above all, a more consistent result,
+many new variables had to be integrated (such as speed and car dimensions); this has impacted a lot
+on the movements logic and therefore on tests.
+
+Another major impediment was language, as Erlang is poorly documented outside the official documentation 
+and also some functionality of the new $gen\_statem$ behaviour don't work as expected 
+(i.e. event \textit{postpone} freezes the FSM and event \textit{timer} is blocking). 
+
+Unfortunately we discover too late the existence of the (relatively) new language Elixir~\cite{23} 
+which seems to be more documented and supported by the community 
+(if we had known of its existence at the beginning of the project surely we would 
+have taken it into consideration as an alternative language). 
+
+Also the implementation of the web service was hard at the beginning cause at first we tried to use Yaws~\cite{24} 
+but it didn't satisfy our needs, only after some time we found the Cowboy framework.\\
+
+\noindent
+Anyway the goal of our work was to develop a system that models the behaviour 
+of a bridge and, finally, we reach it. 
+
+Our attention focuses in first place on avoiding accidents between two or more cars: 
+this is really important because in a real world application the first thing to ensures 
+is that nobody gets hurt or damaged. 
+
+For the same reason, in the second place, we focus our attention on 
+fail detection; this has paved the way for a new idea for an optimization, 
+in fact FIFO strategy avoids starvation but isn't the best choice for performance.
+
+Consider the case where one car arrives on the left side while on the right there are, 
+for example, 20 cars, and that the bridge has capacity equal to 1 and length 30. 
+
+The car on the left has to wait until the other 20 cars have crossed the bridge; 
+this is a very long time due to the fact that only one car per time can cross the bridge 
+and to the length of the bridge.
+
+If the lonenly car could cross without waiting for all the others its waiting time would 
+decrease significally while the waiting time for the others will increase only 
+as if there were one car more before them. 
+So one thing that can improve the system could be order the cars by minimizing 
+the average waiting time.\\
+
+Another important matter we have to discuss the main bottlenecks
+for the system performace. 
+
+Everytime a car has to move it has to send many message to its adjacent cars: 
+for this reason the cars cannot move in a fluent way but have to stop sometimes. 
+
+Moreover we cannot visualize a new car if there is already another one on the 
+street that has $crash\_type$ 2, in fact, if it is broken it isn't able to tell 
+the new car its position and so the new one has to wait until it is removed 
+(notice that the tow truck will be called by the new car before
 going on the street).
-Pay also attention to the $max\_RTT$ that will be set because a short one could led to assume that some cars
-are dead even if they are not (only because their response to the check would arrive too late), but on the other
-hand a long one could be unnecessary (and so the cars would wait longer before making a decision).\\
 
-The last aspect we would talk about is how the $crash\_type$ effects the performance of the system. As we could
-imagine a car that crash only because its engine is broken would be easier to handle. This because it can call
-by itself the tow truck. Moreover it can also keep sending messages to the other and so they can move and reach
-the last ammisible position without crashing with it. In other words the whole system works faster.
+Pay also attention to the $max\_RTT$ that will be set because a short one could led 
+to assume that some cars are dead even if they are not 
+(only because their response to the check would arrive too late), 
+but on the other hand a long one could be unnecessary 
+(and so the cars would wait longer before making a decision).\\
+
+The last aspect we would talk about is how the $crash\_type$ effects the performance of 
+the system. 
+
+As we could imagine a car with a broken engine would be easier 
+to handle rather than a system failure;
+this because it can call by itself the tow truck and can also keep sending messages 
+to the other and so they can move and reach the last ammisible position without 
+crashing with it. In other words the whole system works faster.
+
+In conclusion we couldn't provide a better solution for the above bottlenecks 
+cause they depends on the problem nature and must be payed regardless 
+of the algorithms and their implementation.

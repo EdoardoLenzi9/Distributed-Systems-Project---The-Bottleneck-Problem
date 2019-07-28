@@ -3,7 +3,7 @@ var carIndex = 0;
 
 
 function LoadScenery(index){
-    Read( "/assets/scenarios/" + index + ".json", function(scenery){
+    Read( "/assets/scenerys/" + index + ".json", function(scenery){
         JSON.parse(scenery).forEach(async element => {
             console.log(element);   
             await CreateCarAsync(element.delay, element.parameters);
