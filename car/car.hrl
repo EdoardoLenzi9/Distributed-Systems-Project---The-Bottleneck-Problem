@@ -230,8 +230,8 @@ max_RTT( Data ) ->
 %%% Unmarshalling mappers (Dto -> Entity)
 %%%===================================================================
 
-unmarshalling_sync( [] ) ->
-    [];
+unmarshalling_sync( [ ] ) ->
+    [ ];
 unmarshalling_sync( [ First ] ) ->
     { [ { <<"name">>, Name },
         { <<"side">>, Side },
@@ -256,8 +256,8 @@ unmarshalling_adj( [ Front | Rest ] ) ->
         }.
 
 
-unmarshalling_adj_wrapper( [] ) ->
-    [];
+unmarshalling_adj_wrapper( [ ] ) ->
+    [ ];
 unmarshalling_adj_wrapper( [ First | Rest ] ) ->
     utils:log( "unmarshalling_adj_wrapper" ),
     { [ { <<"name">>, Name }, 

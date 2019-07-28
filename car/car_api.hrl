@@ -13,7 +13,7 @@
 
 start_link( Name, State ) ->
     utils:log( "API Start link" ),
-    gen_statem:start( { global, Name }, ?MODULE, [ State ], [] ).
+    gen_statem:start( { global, Name }, ?MODULE, [ State ], [ ] ).
  
 
 stop( Name ) ->

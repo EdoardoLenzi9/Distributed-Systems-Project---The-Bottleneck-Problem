@@ -10,7 +10,6 @@ var guiCar = {
 
   
 function setCarDetails(state){
-    debugger
     guiCar.name = state.name;
     guiCar.arrival_time = state.arrival_time;
     guiCar.state = state.state;

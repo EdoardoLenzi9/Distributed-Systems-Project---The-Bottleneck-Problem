@@ -1,24 +1,29 @@
--module(repository_helper).
--compile(export_all).
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
 
 
-add(Item) ->
-    Fun = fun() -> db_manager:add(Item) end,
-    mnesia:transaction(Fun).
+-module( repository_helper ).
+-compile( export_all ).
 
 
-delete(Item) ->
-    Fun = fun() -> db_manager:delete(Item) end,
-    mnesia:transaction(Fun).
+add( Item ) ->
+    Fun = fun() -> db_manager:add( Item ) end,
+    mnesia:transaction( Fun ).
 
 
-select(Entity, MatchHead, Guard, Result) ->
-    F = fun() -> db_manager:select(Entity, MatchHead, Guard, Result) end,
-    {atomic, Data} = mnesia:transaction(F),
+delete( Item ) ->
+    Fun = fun() -> db_manager:delete( Item ) end,
+    mnesia:transaction( Fun ).
+
+
+select( Entity, MatchHead, Guard, Result ) ->
+    F = fun() -> db_manager:select( Entity, MatchHead, Guard, Result ) end,
+    { atomic, Data } = mnesia:transaction( F ),
     Data.
 
 
-get_all(Entity) ->
-    F = fun() -> db_manager:get_all(Entity) end,
-    {atomic, Data} = mnesia:transaction(F),
+get_all( Entity ) ->
+    F = fun() -> db_manager:get_all( Entity ) end,
+    { atomic, Data } = mnesia:transaction( F ),
     Data.

@@ -91,7 +91,7 @@ timeout( State, Target, Data, From ) ->
 
 update_front( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_front" ), 
-	NewData = if Replacement == [] ->
+	NewData = if Replacement == [ ] ->
 		front_cars( Data, [ ] );
 	true -> 
 		front_cars( Data, [ Replacement ] )
@@ -114,7 +114,7 @@ safe_obstacle_position(Data) ->
 
 update_rear( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_rear" ), 
-	NewData = if Replacement == [] ->
+	NewData = if Replacement == [ ] ->
 		rear_cars( Data, [ ] );
 	true -> 
 		rear_cars( Data, [ Replacement ] )

@@ -32,7 +32,7 @@ sync_test_() ->
     car:default_behaviour( State#car_state.name ),
 
     test_fixture:listen( adj, fun( _, Sender, _, _, _ ) -> 
-        Adj = #adj{ front_cars = [], rear_cars = [] },
+        Adj = #adj{ front_cars = [ ], rear_cars = [ ] },
         { _Result, _Data } = car:adj_reply( Sender, Adj )
     end),
 
@@ -106,7 +106,7 @@ sync_check_timeout_test_() ->
         flow:launch_event( tow_truck, [ReqBody, ReqTarget ] ),
         utils:log( "Test: call car crash (will be postponed)" ),
         car:crash( ReqTarget, 2 ),
-        car:update_front( ReqSender, [] ),
+        car:update_front( ReqSender, [ ] ),
         car:default_behaviour( ReqSender )
     end ),
     test_fixture:listen( default_behaviour, fun( _ReqLabel, ReqSender, _ReqTarget, _ReqRTT, _ReqBody ) -> 

@@ -85,7 +85,7 @@ normal2_test_() ->
     test_fixture:listen( check, fun( _ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody ) -> 
         utils:log( "Test: Car2 moves to crossing position 0" ),
         car:check_reply( { node(), node(), utils:get_timestamp(), 0, test_fixture:queue_car( -0.5, true ) } ),
-        car:update_front( _ReqSender, [] )
+        car:update_front( _ReqSender, [ ] )
     end ),
     test_fixture:skip_log_state(),
     test_fixture:listen( wait, fun( ReqLabel, ReqSender, ReqTarget, ReqRTT, ReqBody ) -> 

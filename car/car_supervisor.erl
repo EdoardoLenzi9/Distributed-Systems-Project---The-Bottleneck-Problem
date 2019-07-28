@@ -51,7 +51,7 @@ start( Args ) ->
                                                                       WSHost, 
                                                                       WSPort
                                                                     ), 
-                                    rear_cars = []
+                                    rear_cars = [ ]
                                    }, 
                         state = sync,
                         host = list_to_atom( Host ),

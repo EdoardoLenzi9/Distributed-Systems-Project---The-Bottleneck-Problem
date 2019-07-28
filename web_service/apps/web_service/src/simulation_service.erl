@@ -1,3 +1,8 @@
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
 -module( simulation_service ).
 -compile( export_all ).
 -include( "entity.hrl" ).
@@ -112,7 +117,7 @@ reset() ->
     reset_host( host_repository:get_all() ).
 
                        
-reset_host( [] ) ->
+reset_host( [ ] ) ->
     settings_repository:reset();
 reset_host( [ First | Rest ] ) ->
     utils:log( "Reset Host ~p", [ First ]),

@@ -78,7 +78,7 @@ function Init() {
 		// load test state (polling)
 		window.setInterval(function(){
 			httpPostAsync('/simulation', {}, function(content){
-				if(content != '[]'){
+				if(content != '[ ]'){
 					console.log(content);
 				}
 				LoadState(JSON.parse(content));

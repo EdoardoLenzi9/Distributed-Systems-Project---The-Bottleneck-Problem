@@ -32,8 +32,8 @@
 -endif. 
 
 
-concat( [])  ->
-    [];
+concat( [ ])  ->
+    [ ];
 concat( [ First | Rest ] ) ->
     string:concat( First, concat( Rest ) ).
 

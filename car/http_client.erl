@@ -67,7 +67,7 @@ call( Method, Host, Port, Uri, Content, Module, Unmarshalling ) ->
                                                 "application/json", 
                                                 "application/json", 
                                                 marshalling( Content ) 
-                                            }, [], [] ),
+                                            }, [ ], [ ] ),
     utils:log( "Body: ~p~n~n", [ Body ] ),
     Module:Unmarshalling( jiffy:decode( Body ) ).
 

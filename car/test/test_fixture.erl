@@ -41,7 +41,7 @@ default_state() ->
                 delta = 0,
                 arrival_time = utils:get_timestamp(),
                 current_time = utils:get_timestamp(), 
-                adj = #adj{ front_cars = [], rear_cars = [] }, 
+                adj = #adj{ front_cars = [ ], rear_cars = [ ] }, 
                 state = sync,
                 % settings
                 host = Env#env.host,
@@ -159,7 +159,7 @@ listen( Label, Handler ) ->
 skip_sync( State ) ->
     car:default_behaviour( State#car_state.name ),
     listen( adj, fun(_, Sender, _, _, _ ) -> 
-        Adj = #adj{ front_cars = [], rear_cars = [] },
+        Adj = #adj{ front_cars = [ ], rear_cars = [ ] },
         { _Result, _Data } = car:adj_reply( Sender, Adj )
     end ).
 
@@ -187,7 +187,7 @@ skip_sync2( State ) ->
                                                 size = 1 
                                             } 
                                  ], 
-                    rear_cars = []
+                    rear_cars = [ ]
                    },
         car:adj_reply( Sender, Adj )
     end).
@@ -214,7 +214,7 @@ skip_sync3( State ) ->
                                                 size = 1 
                                             }
                                  ], 
-                    rear_cars = []
+                    rear_cars = [ ]
                    },
         car:adj_reply( Sender, Adj )
     end ).
@@ -232,7 +232,7 @@ skip_normal2( _State ) ->
     skip_next(),
     listen( check, fun( _ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody ) -> 
         car:check_reply( { node(), node(), utils:get_timestamp(), 0, queue_car( 0, true ) } ),
-        car:update_front( _ReqSender, [] )
+        car:update_front( _ReqSender, [ ] )
     end ),
     skip_log_state(),
     listen( check, fun( _ReqLabel, _ReqSender, _ReqTarget, _ReqRTT, _ReqBody ) -> 
