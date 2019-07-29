@@ -15,7 +15,8 @@
 -define( LOG, true ).
 
 
-%% Logger
+%% @doc logger utility
+%%      in order to suppress log comment the above LOG definition
 -ifdef( LOG ).
     log( String )->
         ParsedString = io:format( String ),
@@ -32,17 +33,22 @@
 -endif. 
 
 
+%% @doc String concat wrapper
+
 concat( [ ])  ->
     [ ];
 concat( [ First | Rest ] ) ->
     string:concat( First, concat( Rest ) ).
 
 
+%% @doc cast a binary to an atom
+
 binary_to_atom( Item ) ->
     list_to_atom( binary_to_list( Item ) ).
 
 
-% Load environment.json
+%% @doc load environment.json
+
 load_environment() ->
     { ok, Content } = file:read_file( "environment.json" ),
     { [ { <<"host">>, Host },

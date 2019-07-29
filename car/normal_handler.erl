@@ -3,8 +3,12 @@
 %% @version 1.0.0
 
 
--module( normal_handler ).
+%%%===================================================================
+%%% Handler for the normal state
+%%%===================================================================
 
+
+-module( normal_handler ).
 -compile(export_all).
 -include( "car.hrl" ). 
 

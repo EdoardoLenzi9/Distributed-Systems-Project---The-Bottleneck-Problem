@@ -4,20 +4,24 @@
 
 
 %%%===================================================================
-%%% spawn support processes
+%%% flow control / spawn support processes
 %%%===================================================================
+
+
 -module( flow ).
 -compile( export_all ).
 -include( "car.hrl" ). 
 
 
-%%% Spawn a process that launches an event
+%% @doc Spawn a process that launches an event
+
 launch_event( Handler, Args ) -> 
     utils:log( "launch_event: ~p~p~n", [ Handler, Args ] ),
     spawn( ?MODULE, Handler, Args ).
 
 
-%%% Simulate a car crash after a given timeout
+%% @doc Simulate a car crash after a given timeout
+
 timer( Req ) ->
     { _Label, Sender, Target, RTT, Body } = Req,
     utils:log( "Start timer ~p", [ RTT ] ),
@@ -34,7 +38,8 @@ nickname( Name, Index ) ->
     end.
 
 
-%%% request timer
+%% @doc request timer
+
 request_timer( Req ) ->
     utils:log( "Timer: receive request ~p", [ Req ] ),
     { Label, Sender, Target, CurrentTime, RTT, Body } = Req,
@@ -65,7 +70,8 @@ request_timer( Req ) ->
     end.
 
 
-%%% request tow truck
+%% @doc request tow truck
+
 tow_truck_request( Req ) ->
     utils:log( "Tow Truck: receive request ~p", [ Req ] ),
     { Label, Sender, Target, CurrentTime, RTT, Body } = Req,
@@ -90,7 +96,8 @@ tow_truck_request( Req ) ->
     end.
 
 
-%%% Change state to NextState, send a Reply to the event sender
+%% @doc Change state to NextState, send a Reply to the event sender
+
 next( NextState, Data, From, Reply ) ->
     utils:log( "STATE TRANSITION -> ~p", [ NextState ] ),
     utils:log( "State: ~p", [ Data ] ),
@@ -106,20 +113,23 @@ next( NextState, Data, From, Reply ) ->
     { next_state, NextState, NewData, [ { reply, From, Reply } ] }.
         
 
-%%% Keep the current state, send a Reply to the event sender
+%% @doc Keep the current state, send a Reply to the event sender
+
 keep( Data, From, Reply ) ->
     utils:log( "KEEP STATE ~p", [ Data#car_state.state ] ),
     NewData = Data#car_state{ current_time = utils:get_timestamp() },
     { keep_state, NewData, [ { reply, From, Reply } ] }.
 
 
-%%% Keep the current state, send a Reply to the event sender
+%% @doc Keep the current state, send a Reply to the event sender
+
 keep_ignore( Data, From, Reply ) ->
     utils:log( "KEEP IGNORE STATE ~p", [ Data#car_state.state ] ),
     { keep_state, Data, [ { reply, From, Reply } ] }.
 
 
-%%% Keep the current state, ignore event
+%% @doc Keep the current state, ignore event
+
 ignore( State, Event, Data, From ) ->
     utils:log( "Ignore unhandled event: ~p", [ Event ] ),
     if State == dead ->
@@ -129,18 +139,22 @@ ignore( State, Event, Data, From ) ->
     end.
 
 
-%%% Keep the current state, and postpone an event
+%% @doc Keep the current state, and postpone an event
+
 postpone( Data ) ->
     utils:log( "KEEP STATE ~p, POSTPONE EVENT", [ Data#car_state.state ] ),
     { keep_state, Data, [ postpone ] } .
 
 
-%%% Simulate a car crash after a given timeout
+%% @doc Simulate a car crash after a given timeout
+
 killer( Name, _Data, CrashType, Timeout ) ->
     utils:log( "KILLER ACTIVATED" ),
     %NewData = Data#car_state{crash_type = CrashType},
     timer:apply_after( Timeout, car_call_supervisor_api, car_call, [ { crash, Name, none, 0, CrashType } ] ).
     
-%%% Simulate a tow truck fix after a given timeout
+
+%% @doc Simulate a tow truck fix after a given timeout
+
 tow_truck( Timeout, Data, Target ) ->
     timer:apply_after( Timeout, car_call_supervisor_api, car_call, [ { tow_truck, Target, Target, Data#car_state.max_RTT, {} } ] ).

@@ -13,11 +13,15 @@
 -include( "car.hrl" ).
 
 
+%% @doc function used when a car needs to call its supervisor
+
 car_call( Req ) ->
     utils:log( "Car call supervisor ~p", [ Req ] ),
     { _Label, Sender, _Target, _RTT, _Body } = Req,
     call_supervisor( Sender, { car_call, Req } ).
 
+
+%% @doc call primitive
 
 call_supervisor( Name, Event ) ->
     utils:log( "send event" ),

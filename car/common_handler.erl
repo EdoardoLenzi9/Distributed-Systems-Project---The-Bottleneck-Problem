@@ -3,15 +3,17 @@
 %% @version 1.0.0
 
 
--module( common_handler ).
+%%%===================================================================
+%%% Shared utility functions for state handlers
+%%%===================================================================
 
+
+-module( common_handler ).
 -compile( export_all ).
 -include( "car.hrl" ). 
 
-%%%===================================================================
-%%% Utility functions
-%%%===================================================================
 
+%% @doc used in the dead state to notify a car stop to the other cars
 
 notify_dead_and_stop( Data ) ->
 	utils:log( "Notify dead ~p ~n", [ adj( Data ) ] ),
@@ -77,6 +79,8 @@ notify_dead_and_stop( Data ) ->
                                   	} ).
 
 
+%% @doc handler for timeout event
+
 timeout( State, Target, Data, From ) ->
 	utils:log( "EVENT timeout" ), 
 	car_call_supervisor_api:car_call( { 
@@ -88,6 +92,8 @@ timeout( State, Target, Data, From ) ->
 									} ),
 	flow:keep_ignore( Data, From, { list_to_atom( string:concat( atom_to_list( State ),"_timeout" ) ), Data } ).
 		
+
+%% @doc handler for update_front event
 
 update_front( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_front" ), 
@@ -107,10 +113,14 @@ update_front( State, Replacement, Data, From ) ->
   	flow:keep_ignore( NewData2, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_front" ) ), NewData2 } ).
 
 
+%% @doc update the obstacle position in order to block the car where it is
+
 safe_obstacle_position(Data) ->
 	utils:log("Apply Safe Obstacle Position"),
 	position(Data) - ( car_size( Data ) / 2 * side( Data ) ).
 
+
+%% @doc handler for update_rear event
 
 update_rear( State, Replacement, Data, From ) ->
 	utils:log( "EVENT update_rear" ), 
@@ -128,6 +138,8 @@ update_rear( State, Replacement, Data, From ) ->
 									} ),
 	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_update_rear" ) ), NewData } ).
 
+
+%% @doc handler for check event
 
 check( State, Sender, Data, From ) -> 
 	utils:log( "EVENT check" ), 
@@ -169,6 +181,8 @@ check( State, Sender, Data, From ) ->
 	flow:keep_ignore( NewData, From, { list_to_atom( string:concat( atom_to_list( State ),"_check" ) ), NewData } ).
 
 
+%% @doc handler for adj_reply event
+
 adj_reply( State, Adj, Data, From ) ->
 	utils:log( "EVENT adj_reply ~p", [ Adj ] ), 
 	NewData = adj( Data, Adj ),
@@ -182,6 +196,8 @@ adj_reply( State, Adj, Data, From ) ->
 									} ),
 	flow:keep_ignore( NewData2, From, { list_to_atom( string:concat( atom_to_list( State ), "_adj_reply" ) ), NewData2 } ).
 
+
+%% @doc handler for crossing event
 
 crossing( State, Body, Data, From ) ->
   	utils:log( "EVENT crossing" ), 
@@ -206,10 +222,14 @@ crossing( State, Body, Data, From ) ->
 	end.
 
 
+%% @doc propagates the crossing event to the rear cars
+
 propagate_crossing( Data, Body ) -> 
 	RearCars = utils:first_elements( rear_cars( Data ), bridge_length( Data ) ),
 	propagate_crossing_wrapper( Data, RearCars, Body ).
 
+
+%% @doc helper for the above function
 
 propagate_crossing_wrapper( Data, RearCars, Body ) -> 
 	if length( RearCars ) > 0, Body#car_state.bridge_capacity > 0 ->

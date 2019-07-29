@@ -12,6 +12,9 @@
 -include( "car.hrl" ).
 
 
+%% @doc car entry point
+%%      parse arguments passed by the bash script and initialize the car data structure
+
 start( Args ) -> 
     utils:log( "Supervisor: Args: ~p", [ Args ] ),
     [ WSHost, WSPort, Host, Ip, PSide, PPower, PSize, PBridgeCapacity, PBridgeLength, 
@@ -77,6 +80,8 @@ start( Args ) ->
     car:default_behaviour( State#car_state.name ),
     loop().
 
+
+%% @doc main loop that manages every car call and every interaction with timers and other supervisors
 
 loop() ->
     receive
