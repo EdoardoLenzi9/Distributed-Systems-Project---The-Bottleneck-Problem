@@ -70,7 +70,6 @@ function OnDocumentMouseMove( event ) {
 				console.log("Hide Details");
 				selectedObject.parent.hideDetails();
 			}
-			debugger;
 			selectedObject = res.object;
 			if(selectedObject != null && selectedObject.parent != null){
 				console.log("Show Details");

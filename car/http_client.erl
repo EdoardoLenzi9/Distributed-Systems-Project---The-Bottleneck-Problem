@@ -1,3 +1,8 @@
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
 -module( http_client ).
 -compile( export_all ).
 -include( "car.hrl" ).
@@ -7,12 +12,12 @@
 %%% web service calls
 %%%===================================================================
 
-get_sync(Name, Side, Power, Host, Port) -> 
+get_sync( Name, Side, Power, Host, Port ) -> 
     Content = { [ { name, Name }, { side, Side }, { power, Power } ] },
     call( post, Host, Port, "/car/sync", Content, http_client, unmarshalling_sync ).
 
 
-get_adj(Data) -> 
+get_adj( Data ) -> 
     Host = Data#car_state.ws_host,
     Port = Data#car_state.ws_port,
     Content = { [    
@@ -62,11 +67,11 @@ call( Method, Host, Port, Uri, Content, Module, Unmarshalling ) ->
                                                 "application/json", 
                                                 "application/json", 
                                                 marshalling( Content ) 
-                                            }, [], []),
-    utils:log("Body: ~p~n~n", [Body]),
-    Module:Unmarshalling(jiffy:decode(Body)).
+                                            }, [ ], [ ] ),
+    utils:log( "Body: ~p~n~n", [ Body ] ),
+    Module:Unmarshalling( jiffy:decode( Body ) ).
 
 
-marshalling(Content) ->
-    jiffy:encode(Content).
+marshalling( Content ) ->
+    jiffy:encode( Content ).
 

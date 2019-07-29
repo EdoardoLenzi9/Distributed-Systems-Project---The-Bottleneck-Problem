@@ -139,7 +139,7 @@ build-docker-ws: env cred
 	sudo docker build -t webservice:v1 .
 
 
-build: 
+build: env cred
 	@echo "make rule build"
 
 	@echo "clean logs"
@@ -154,3 +154,6 @@ build:
 	@echo "build web service"
 	@cd web_service ; \
 	sudo ./rebar3 run || true
+
+run: build
+	@echo "make rule run"

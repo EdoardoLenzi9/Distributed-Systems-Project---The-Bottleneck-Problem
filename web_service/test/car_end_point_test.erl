@@ -1,13 +1,18 @@
--module(car_end_point_test).
--compile(export_all).
--include_lib("eunit/include/eunit.hrl").
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
+-module( car_end_point_test ).
+-compile( export_all ).
+-include_lib( "eunit/include/eunit.hrl" ).
 
 
 sync_test_() ->
     db_manager:start(),
     % 6 3 2 1 [bridge] 4 5
     Car1 = "{\"name\":\"car1\",\"side\":-1,\"power\":2}",
-    Res1 = <<"[]">>,
+    Res1 = <<"[ ]">>,
     Car2 = "{\"name\":\"car2\",\"side\":-1,\"power\":2}",
     Res2 = list_to_binary(utils:concat(["[", Car1, "]"])),
     Car3 = "{\"name\":\"car3\",\"side\":-1,\"power\":2}",
@@ -30,15 +35,15 @@ adj_test_() ->
         db_manager:start(),
         % 3 2 1 [bridge] 4 5
         Car1 = "{\"name\":\"car1\",\"side\":-1,\"power\":2,\"size\":1,\"arrival_time\":1000,\"delta\":5,\"state\":\"create\"}",
-        Res1 = <<"[[],[]]">>,
+        Res1 = <<"[[ ],[ ]]">>,
         Car2 = "{\"name\":\"car2\",\"side\":-1,\"power\":2,\"size\":1,\"arrival_time\":2000,\"delta\":5,\"state\":\"create\"}",
-        Res2 = list_to_binary(utils:concat(["[[", Car1, "],[]]"])),
+        Res2 = list_to_binary(utils:concat(["[[", Car1, "],[ ]]"])),
         Car3 = "{\"name\":\"car3\",\"side\":-1,\"power\":2,\"size\":1,\"arrival_time\":3000,\"delta\":5,\"state\":\"create\"}",
-        Res3 = list_to_binary(utils:concat(["[[", Car2, ",", Car1, "],[]]"])),
+        Res3 = list_to_binary(utils:concat(["[[", Car2, ",", Car1, "],[ ]]"])),
         Car4 = "{\"name\":\"car4\",\"side\":1,\"power\":2,\"size\":1,\"arrival_time\":4000,\"delta\":5,\"state\":\"create\"}",
-        Res4 = list_to_binary(utils:concat(["[[", Car1, ",", Car2, "],[]]"])),
+        Res4 = list_to_binary(utils:concat(["[[", Car1, ",", Car2, "],[ ]]"])),
         Car5 = "{\"name\":\"car5\",\"side\":1,\"power\":2,\"size\":1,\"arrival_time\":5000,\"delta\":5,\"state\":\"create\"}",
-        Res5 = list_to_binary(utils:concat(["[[", Car4, ",", Car1, "],[]]"])),
+        Res5 = list_to_binary(utils:concat(["[[", Car4, ",", Car1, "],[ ]]"])),
         % Update state of car1 to leader
         Car1_leader = "{\"name\":\"car1\",\"side\":-1,\"power\":2,\"size\":1,\"arrival_time\":1000,\"delta\":5,\"state\":\"leader\"}",
         Res6 = list_to_binary(utils:concat(["[[", Car4, ",", Car5, "],[", Car2, ",", Car3, "]]"])),

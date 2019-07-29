@@ -78,7 +78,7 @@ function Init() {
 		// load test state (polling)
 		window.setInterval(function(){
 			httpPostAsync('/simulation', {}, function(content){
-				if(content != '[]'){
+				if(content != '[ ]'){
 					console.log(content);
 				}
 				LoadState(JSON.parse(content));
@@ -109,10 +109,12 @@ function Init() {
 				parent.CreateCarAsync(0, parameters)
 			}
 
-			if(5 + parent.carIndex - parent.deadCarIndex > streetCapacity / 2){
-				streetCapacity = (5 + parent.carIndex - parent.deadCarIndex) * 2;
-				//UpdateStreet();
-			}
+			// Uncomment in order to update the street size dynamically;
+			// pay attention cause when the street length is updated some gliches can appear 
+			//if(5 + parent.carIndex - parent.deadCarIndex > streetCapacity / 2){
+			//	streetCapacity = (5 + parent.carIndex - parent.deadCarIndex) * 2;
+			//	UpdateStreet();
+			//}
 		}, 2 * maxRTT);
 	})
 
