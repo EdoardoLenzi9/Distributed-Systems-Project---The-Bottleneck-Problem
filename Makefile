@@ -154,3 +154,6 @@ build: env cred
 	@echo "build web service"
 	@cd web_service ; \
 	sudo ./rebar3 run || true
+
+run: build
+	@echo "make rule run"

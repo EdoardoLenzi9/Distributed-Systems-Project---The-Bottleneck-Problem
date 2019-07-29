@@ -36,7 +36,7 @@ start( Args ) ->
                         size = Size,
                         speed = 0,
                         obstacle_position = 0, 
-                        position = Side - 1, 
+                        position = ( ( Size / 2 ) + 1) * Side - 1, 
                         last_position = Side - 1,
                         last_crossing = false,
                         crossing = false,

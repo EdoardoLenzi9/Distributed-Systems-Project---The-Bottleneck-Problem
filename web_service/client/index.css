@@ -42,6 +42,11 @@ iframe{
     text-align: center;
 }
 
+
+.right{
+    float: right;
+}
+
 /*
 * Small devices
 */

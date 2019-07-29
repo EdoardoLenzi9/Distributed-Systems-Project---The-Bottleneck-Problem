@@ -26,28 +26,76 @@ with some API for any further **UI application**.
 * Talissa Dreossi
 
 
-## Sprints and Deadlines
-
-The project deadline is 28 of June; we ar going to split the month into 4 sprints of a week:
-* Sprint 1 (28 May) **interconnections**
-    * Docker container with Docker container
-    * Erlang and Bash
-    * HTML client with Erlang Web Service (simple mok)
-    * Erlang with Mnesia or SQL/SQL Lite/ERTS
-    * Create a Docker Image with an embedded Erlang script
-    * Spawn a new Docker Container with a bash script
-> At the end of this sprint we will have an architecture like this one
-> <br/>
->![Sprint0](report/assets/sprint0.png)
-* Sprint 2 (04 June - 09 June) **connections**
-* Sprint 3 (09 June - 16 June) **business logic**
-* Sprint 3 (16 June - 18 June) **testing**
-* Sprint 4 (18 June - 25 June) **UI and report**
-* 3 days for code refactoring
-
 ## Get Started
 
+In order to run the project are required Docker-ce, npm and Erlang 19+ 
+
+
+Fill the credentials (/credentials/credentials.json) with the ssh credentials of your machines:
+
+```{json}
+[
+    {
+        "id": 1,
+        "host": "host1",
+        "ip": "192.168.130.183",
+        "password": "password1"
+    }, 
+    {
+        "id": 2,
+        "host": "host2",
+        "ip": "192.168.130.37",
+        "password": "password2!"
+    }
+]
 ```
+
+
+Build the project
+
+```{sh}
 sudo make 
-sudo make run
 ```
+
+
+Run the project outside docker
+
+```{sh}
+sudo make run 
+```
+
+> In this way you run the web service outside docker and you can choose to 
+run cars inside or outside docker 
+
+Run the project inside docker
+
+```{sh}
+sudo make run-docker 
+```
+
+> inside docker only cars inside a docker container will work
+
+
+## User manual
+
+![User Manual](web_service/client/assets/user-manual.png)
+
+1. Maximum speed allowed (in terms of blocks/turn)
+2. Bridge capacity (the maximum number of cars that can cross the bridge at the same time)
+3. Tow truck time (elimination time of a broken car in ms)
+4. Max RTT allowed (if a car takes more than that time it is considered broken)
+5. Bridge length
+6. Car scope 
+    * Visible: open a gnome-terminal shell with car logs
+    * Detached: launch the same command of above but in detached mode
+    * Docker: launch the car inside a docker container
+7. Manual creation of a new car on the right side
+8. Manual creation of a new car on the left side
+9. Launch a predefined scenery
+10. Enter in random generation mode
+11. Open a new tab with a log view
+12. Reset simulation (kill every car instance)
+13. Simulation canvas (3d interactive canvas)
+14. Simulation inspector (open once you select a car with the mouse)
+15. Full screen mode
+16. Car (select it in order to see its details in the inspector and its power)
