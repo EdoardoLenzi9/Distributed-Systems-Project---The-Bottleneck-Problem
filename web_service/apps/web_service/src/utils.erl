@@ -9,7 +9,9 @@
 -define( LOG, true ).
 
 
-%% Logger
+%% @doc logger utility
+%%      in order to suppress log comment the above LOG definition
+
 -ifdef( LOG ).
     log( String )->
         ParsedString = io:format( String ),
@@ -21,6 +23,11 @@
     log( String )-> ok.
     log( String, Args ) -> ok.
 -endif.
+
+
+%%%===================================================================
+%%% list management
+%%%===================================================================
 
 
 last_elements( List, Hop ) ->
@@ -52,10 +59,16 @@ first_element( [ First | _ ] ) ->
     First.
 
 
+%%%===================================================================
+%%% time management
+%%%===================================================================
+
 get_timestamp() ->
     { Mega, Seconds, Ms } = os:timestamp(),
     ( Mega*1000000 + Seconds ) * 1000 + erlang:round( Ms / 1000 ).     
 
+
+%% @doc String concat wrapper
 
 concat( [ ] ) ->
     [ ];
@@ -63,7 +76,8 @@ concat( [ First | Rest ] ) ->
     string:concat( First, concat( Rest ) ).
 
 
-% Load environment.json
+%% @doc Load environment.json
+
 load_environment() ->
     { ok, Content } = file:read_file( "environment.json" ),
     { [ { <<"host">>, _Host },
@@ -85,11 +99,14 @@ load_environment() ->
     }.
 
 
-% Load credentials.json
+%% @doc Load credentials.json
+
 load_credentials() ->
     { ok, Content } = file:read_file( "credentials.json" ),
     decode_credentials( jiffy:decode( Content ), [ ] ).
 
+
+%% @doc Decode credentials from JSON format to host_entity record
 
 decode_credentials( [ ], Result ) ->
     utils:log( "Result: ~p", [ Result ] ),
@@ -108,6 +125,8 @@ decode_credentials( [ First | Rest ], Result ) ->
                                             } | Result ] ).
 
 
+%% @doc Launch a bash command through an SSH tunnel to an Host
+
 ssh_command( Host, Command ) ->
         SSHCommand = utils:concat( [ "sshpass -p '", 
                                       Host#host_entity.password, 
@@ -122,6 +141,8 @@ ssh_command( Host, Command ) ->
         os:cmd(SSHCommand).
 
 
+%% @doc Launch kill command for a single car
+
 kill_car( Host, Car ) ->
     CarName = lists:sublist( atom_to_list( Car#adj_entity.name ), 
                              1, 
@@ -129,6 +150,8 @@ kill_car( Host, Car ) ->
                            ),
     kill( Host, CarName ).
 
+
+%% @doc Generic kill command
 
 kill( Host, Name ) ->
     ssh_command( Host, concat( [ "sudo kill $(ps -ef | grep ", Name, " | awk '{print $2}') 2> /dev/null || true" ] ) ),

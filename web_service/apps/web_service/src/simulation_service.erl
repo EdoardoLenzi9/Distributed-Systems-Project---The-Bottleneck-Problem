@@ -123,7 +123,3 @@ reset_host( [ First | Rest ] ) ->
     utils:log( "Reset Host ~p", [ First ]),
     utils:kill( First, "car" ),
     reset_host( Rest ).
-    
-%%%===================================================================
-%%% private functions
-%%%===================================================================

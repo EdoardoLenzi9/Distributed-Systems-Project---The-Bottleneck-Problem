@@ -17,6 +17,7 @@
 
 %% @doc logger utility
 %%      in order to suppress log comment the above LOG definition
+
 -ifdef( LOG ).
     log( String )->
         ParsedString = io:format( String ),
