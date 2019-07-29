@@ -1,3 +1,8 @@
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
 -module( normal_handler ).
 
 -compile(export_all).
@@ -43,35 +48,36 @@ normal( From, Event, Data ) ->
 
             ObstaclePosition = round1f(erlang:max( 
                                             ( last_position( Body ) + ( car_size( Body)  / 2 * side( Body ) ) -
-                                              ( bridge_length( Body ) * utils:bool_to_int(last_crossing( Body ) ) * utils:bool_to_int( not crossing( Data ) ) * side( Body ) ) 
+                                              ( bridge_length( Body ) * utils:bool_to_int(last_crossing( Body ) ) * 
+                                              utils:bool_to_int( not crossing( Data ) ) * side( Body ) ) 
                                             ) * side( Body ),
                                             
                                             0
-                                         ) * side(Data)),
+                                         ) * side( Data ) ),
 
-            utils:log("Car: body last position ~p ~p, obstacle position: ~p", [last_position(Body), last_crossing(Body), ObstaclePosition]),
+            utils:log("Car: body last position ~p ~p, obstacle position: ~p", [ last_position( Body ), last_crossing( Body ), ObstaclePosition ] ),
 
-            NewData = obstacle_position(Data, ObstaclePosition),
+            NewData = obstacle_position( Data, ObstaclePosition ),
 
             NewData2 = if ( Body#car_state.synchronized ) ->
 
                 car_call_supervisor_api:car_call( { 
                                                     log_state, 
-                                                    name(NewData), 
+                                                    name( NewData ), 
                                                     undefined, 
-                                                    max_RTT(NewData), 
+                                                    max_RTT( NewData ), 
                                                     NewData 
                                                 } ),
-                update_last_position(synchronized(NewData, true));
+                update_last_position(synchronized( NewData, true ) );
             true ->
                 NewData
             end,
 
             car_call_supervisor_api:car_call( { 
                                                 wait, 
-                                                name(NewData2), 
+                                                name( NewData2 ), 
                                                 undefined, 
-                                                max_RTT(NewData2), 
+                                                max_RTT( NewData2 ), 
                                                 default_behaviour
                                             } ),
 
@@ -81,24 +87,24 @@ normal( From, Event, Data ) ->
     default_behaviour ->
         utils:log( "EVENT default_behaviour" ),
 
-        TravelTime = ( utils:get_timestamp() - current_time(Data) ) / 1000,
+        TravelTime = ( utils:get_timestamp() - current_time( Data ) ) / 1000,
 
-        Distance = round1f(erlang:min( ( TravelTime * max_speed( Data ) ), 
-                             ( ( position(Data) - obstacle_position( Data ) ) * side(Data) - (car_size(Data) / 2)) 
-                             ) * side(Data)),
+        Distance = round1f( erlang:min( ( TravelTime * max_speed( Data ) ), 
+                             ( ( position( Data ) - obstacle_position( Data ) ) * side( Data ) - ( car_size( Data ) / 2 ) ) 
+                            ) * side( Data ) ),
 
-        utils:log("Current position ~p, TravelTime ~p, Distance ~p", [position(Data), TravelTime, Distance]),
-        NewData = position(Data, round1f(position(Data) - Distance)),
-        utils:log("Jump to new position ~p", [position(NewData)]),
+        utils:log( "Current position ~p, TravelTime ~p, Distance ~p", [ position( Data ), TravelTime, Distance ] ),
+        NewData = position( Data, round1f( position( Data ) - Distance ) ),
+        utils:log( "Jump to new position ~p", [ position( NewData ) ] ),
 
         if Data#car_state.crash_type > 0 ->
             utils:log( "Postponed events, car crashed during sync" ),
             car_call_supervisor_api:car_call( { 
                                                 crash, 
-                                                name(Data), 
-                                                name(Data), 
-                                                max_RTT(Data), 
-                                                crash_type(Data) 
+                                                name( Data ), 
+                                                name( Data ), 
+                                                max_RTT( Data ), 
+                                                crash_type( Data ) 
                                             } );
         true ->
             ok
@@ -121,8 +127,8 @@ normal( From, Event, Data ) ->
 
         if NewData#car_state.position * NewData#car_state.side =< NewData#car_state.size / 2 ->
 
-            NewData2 = update_last_position(NewData), 
-            utils:log("Car: update last position ~p ~p", [last_position(NewData2), last_crossing(NewData2)]),
+            NewData2 = update_last_position( NewData ), 
+            utils:log("Car: update last position ~p ~p", [ last_position( NewData2 ), last_crossing( NewData2 ) ] ),
             
             if NewData2#car_state.crossing ->
                 utils:log( "Car: reaches the end of the bridge" ),
@@ -140,31 +146,31 @@ normal( From, Event, Data ) ->
             
                 car_call_supervisor_api:car_call( { 
                                                     log_state, 
-                                                    name(NewData), 
+                                                    name( NewData ), 
                                                     undefined, 
-                                                    max_RTT(NewData), 
+                                                    max_RTT( NewData ), 
                                                     NewData 
                                                 } ),
             
                 car_call_supervisor_api:car_call( { 
                                                     wait, 
-                                                    name(NewData), 
+                                                    name( NewData ), 
                                                     undefined, 
-                                                    max_RTT(NewData), 
+                                                    max_RTT( NewData ), 
                                                     default_behaviour 
                                                 } ),
 
-                utils:log("Car: update last position ~p ~p", [position(NewData), crossing(NewData)]),
-                obstacle_position(update_last_position(synchronized(NewData, true)), 0);
+                utils:log( "Car: update last position ~p ~p", [ position( NewData ), crossing( NewData ) ] ),
+                obstacle_position( update_last_position( synchronized( NewData, true ) ), 0 );
             
             true -> 
                 utils:log( "Car: there is a car, on the same side, in front of me" ),
             
                 car_call_supervisor_api:car_call( { 
                                                     check, 
-                                                    name(NewData), 
-                                                    name(FrontCar), 
-                                                    max_RTT(NewData), 
+                                                    name( NewData ), 
+                                                    name( FrontCar ), 
+                                                    max_RTT( NewData ), 
                                                     NewData 
                                                 } ),
                 NewData
@@ -180,4 +186,4 @@ normal( From, Event, Data ) ->
 
 
 round1f( Float ) ->
-  round( Float * 10 )/10. 
+  round( Float * 10 ) / 10. 

@@ -16,7 +16,7 @@ Read("environment.json", function(env){
 
 	window.setInterval(function(){
 		httpPostAsync('/simulation', {}, function(content){
-			if(content != "[]"){
+			if(content != "[ ]"){
 				message = message + "<p>" + content + "</p>";
 				$('#message').html(message);
 			} 

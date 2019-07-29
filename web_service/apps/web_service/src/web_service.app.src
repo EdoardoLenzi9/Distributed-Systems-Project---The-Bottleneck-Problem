@@ -1,8 +1,8 @@
 {application, web_service,
  [{description, "An OTP application"},
   {vsn, "0.1.0"},
-  {registered, []},
-  {mod, {web_service_app, []}},
+  {registered, [ ]},
+  {mod, {web_service_app, [ ]}},
   {applications,
    [kernel,
     stdlib,
@@ -10,9 +10,9 @@
     cowboy,
     jiffy
    ]},
-  {env,[]},
-  {modules, []},
+  {env,[ ]},
+  {modules, [ ]},
 
   {licenses, ["Apache 2.0"]},
-  {links, []}
+  {links, [ ]}
  ]}.

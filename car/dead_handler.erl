@@ -1,3 +1,8 @@
+%% @author Edoardo Lenzi, Talissa Dreossi
+%% @copyright GPL-3
+%% @version 1.0.0
+
+
 -module( dead_handler ).
 -compile(export_all).
 -include( "car.hrl" ). 
@@ -51,15 +56,15 @@ dead( From, Event, Data ) ->
 
 
     tow_truck_request ->
-        utils:log( "EVENT tow_truck_request ~p", [Data#car_state.crash_type]),
+        utils:log( "EVENT tow_truck_request ~p", [ Data#car_state.crash_type ] ),
         if Data#car_state.crash_type == 2 ->
             flow:ignore( dead, Event, Data, From );
         true ->
             car_call_supervisor_api:car_call( { 
                                                 wait, 
-                                                name(Data), 
+                                                name( Data ), 
                                                 undefined, 
-                                                tow_truck_time(Data), 
+                                                tow_truck_time( Data ), 
                                                 tow_truck
                                             } ),
             flow:keep( Data, From, { dead_tow_truck_request, Data } )
@@ -87,9 +92,9 @@ dead( From, Event, Data ) ->
             1 -> 
                 car_call_supervisor_api:car_call( { 
                                                     tow_truck_request, 
-                                                    name(Data), 
-                                                    name(Data), 
-                                                    tow_truck_time(Data), 
+                                                    name( Data ), 
+                                                    name( Data ), 
+                                                    tow_truck_time( Data ), 
                                                     Data
                                                 } ),
                 flow:keep( Data, From, { dead_default_behaviour_1, Data } );
