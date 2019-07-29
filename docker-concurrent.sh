@@ -1,3 +1,0 @@
-#!/bin/bash
-gnome-terminal -e "sudo docker run --net ds_network -e host='192.168.130.37' -e port='8090' -e name='car30' -e side=0 -e power=1 -e size=1 -e bridge_capacity=2 -e bridge_length=2 -e max_speed=2 -e tow_truck_time=10 -e max_RTT=1000 -e crash_type=1 -e timeout=0 -it car:v1"
-gnome-terminal -e "sudo docker run --net ds_network -e host='192.168.130.37' -e port='8090' -e name='car31' -e side=0 -e power=1 -e size=1 -e bridge_capacity=2 -e bridge_length=2 -e max_speed=2 -e tow_truck_time=10 -e max_RTT=1000 -e crash_type=1 -e timeout=0 -it car:v1"
