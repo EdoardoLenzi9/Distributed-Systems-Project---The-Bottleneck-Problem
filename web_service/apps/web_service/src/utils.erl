@@ -68,13 +68,13 @@ load_environment() ->
     { ok, Content } = file:read_file( "environment.json" ),
     { [ { <<"host">>, _Host },
         { <<"port">>, _Port },
-        { <<"process_visibility">> ,ProcessVisibility },
+        { <<"process_visibility">>, ProcessVisibility },
         { <<"max_speed">>, MaxSpeed },
         { <<"bridge_capacity">>, BridgeCapacity },
         { <<"bridge_length">>, BridgeLength },
         { <<"tow_truck_time">>, TowTruckTime },
         { <<"max_RTT">>, MaxRTT } ] } = jiffy:decode( Content ),
-
+        
     #settings_entity{
         process_visibility = list_to_atom( binary_to_list( ProcessVisibility ) ),
         max_speed = MaxSpeed, 
@@ -96,9 +96,9 @@ decode_credentials( [ ], Result ) ->
     Result;
 decode_credentials( [ First | Rest ], Result ) ->
     { [ { <<"id">>, Id },
-    { <<"host">>, Host },
-    { <<"ip">>, Ip },
-    { <<"password">>, Password } ] } = First,
+        { <<"host">>, Host },
+        { <<"ip">>, Ip },
+        { <<"password">>, Password } ] } = First,
     decode_credentials( Rest, [ #host_entity{
                                                 id = Id,
                                                 host = binary_to_list( Host ),

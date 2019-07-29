@@ -139,7 +139,7 @@ build-docker-ws: env cred
 	sudo docker build -t webservice:v1 .
 
 
-build: 
+build: env cred
 	@echo "make rule build"
 
 	@echo "clean logs"
