@@ -75,6 +75,15 @@ sudo make run-docker
 
 > inside docker only cars inside a docker container will work
 
+If the client appears without a style probably you have configured npm only as 
+a bash alias and it isn't reachable from a detached command so, in order to fix that, 
+launch the following commands:
+
+```{sh}
+cd web_services/client
+npm install
+```
+
 
 ## User manual
 
